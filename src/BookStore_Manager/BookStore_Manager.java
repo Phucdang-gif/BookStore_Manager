@@ -2,13 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package qlcuahangsach;
+package BookStore_Manager;
 
 /**
  *
  * @author pc
  */
-public class QLCuaHangSach {
+public class BookStore_Manager {
 
     /**
      * @param args the command line arguments
