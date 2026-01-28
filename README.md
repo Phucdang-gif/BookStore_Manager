@@ -4,11 +4,6 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 ![Swing](https://img.shields.io/badge/GUI-Java_Swing-red?style=for-the-badge&logo=java)
 ![FlatLaf](https://img.shields.io/badge/UI-FlatLaf-blue?style=for-the-badge)
-
-> **Dự án môn học:** Lập trình Java  
-> **Giảng viên hướng dẫn:** [Tên GVHD nếu có]  
-> **Sinh viên thực hiện:** Đặng Hoàng Phúc
-
 ---
 
 ## 📑 Mục lục
