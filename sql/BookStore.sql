@@ -1,0 +1,252 @@
+DROP DATABASE IF EXISTS bookstore_db;
+CREATE DATABASE bookstore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE bookstore_db;
+
+-- =============================================
+-- EMPLOYEE & ACCOUNT MANAGEMENT
+-- =============================================
+
+CREATE TABLE employees (
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    date_of_birth DATE,
+    gender ENUM('male', 'female', 'other') DEFAULT 'other',
+    phone VARCHAR(15),
+    address VARCHAR(255),
+    position VARCHAR(50),
+    salary DECIMAL(15,2),
+    hire_date DATE,
+    termination_date DATE,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    avatar VARCHAR(255)
+) ENGINE=InnoDB;
+
+CREATE TABLE permission_groups (
+    permission_group_id INT AUTO_INCREMENT PRIMARY KEY,
+    group_name VARCHAR(100) NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE accounts (
+    account_id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL UNIQUE,
+    permission_group_id INT NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    status ENUM('active', 'locked') DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+    FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE functions (
+    function_id INT AUTO_INCREMENT PRIMARY KEY,
+    function_name VARCHAR(100) NOT NULL,
+    system_function_code VARCHAR(50) UNIQUE,
+    function_group VARCHAR(100)
+) ENGINE=InnoDB;
+
+CREATE TABLE permission_details (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    permission_group_id INT NOT NULL,
+    function_id INT NOT NULL,
+    actions VARCHAR(255),
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id),
+    FOREIGN KEY (function_id) REFERENCES functions(function_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- CUSTOMER MANAGEMENT
+-- =============================================
+
+CREATE TABLE customers (
+    customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    loyalty_points INT DEFAULT 0,
+    registration_date DATE DEFAULT (CURRENT_DATE)
+) ENGINE=InnoDB;
+
+CREATE TABLE point_redemption_history (
+    history_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    points_redeemed INT NOT NULL,
+    value_received DECIMAL(15,2) NOT NULL,
+    redemption_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    redemption_type VARCHAR(50),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- BOOK MANAGEMENT
+-- =============================================
+
+CREATE TABLE publishers (
+    publisher_id INT AUTO_INCREMENT PRIMARY KEY,
+    publisher_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    status ENUM('active', 'inactive') DEFAULT 'active'
+) ENGINE=InnoDB;
+
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    display_order INT,
+    status ENUM('active', 'inactive') DEFAULT 'active'
+) ENGINE=InnoDB;
+
+CREATE TABLE books (
+    book_id INT AUTO_INCREMENT PRIMARY KEY,
+    publisher_id INT,
+    category_id INT,
+    isbn VARCHAR(20),
+    book_title VARCHAR(255) NOT NULL,
+    page_count INT,
+    language VARCHAR(50),
+    publication_year INT,
+    cover_type VARCHAR(50),
+    import_price DECIMAL(15,2),
+    selling_price DECIMAL(15,2),
+    stock_quantity INT DEFAULT 0,
+    minimum_stock INT DEFAULT 0,
+    image VARCHAR(255),
+    status ENUM('in_stock', 'out_of_stock', 'discontinued') DEFAULT 'in_stock',
+    added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (publisher_id) REFERENCES publishers(publisher_id),
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE authors (
+    author_id INT AUTO_INCREMENT PRIMARY KEY,
+    author_name VARCHAR(100) NOT NULL,
+    avatar VARCHAR(255)
+) ENGINE=InnoDB;
+
+CREATE TABLE book_authors (
+    book_author_id INT AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    author_id INT NOT NULL,
+    role VARCHAR(50),
+    display_order INT,
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    FOREIGN KEY (author_id) REFERENCES authors(author_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- SALES MANAGEMENT
+-- =============================================
+
+CREATE TABLE invoices (
+    invoice_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT,
+    employee_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(15,2),
+    total_discount DECIMAL(15,2),
+    points_used DECIMAL(15,2),
+    points_value DECIMAL(15,2),
+    final_amount DECIMAL(15,2),
+    payment_method VARCHAR(50),
+    status VARCHAR(50),
+    points_earned INT,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE invoice_details (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    book_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(15,2),
+    discount DECIMAL(15,2),
+    subtotal DECIMAL(15,2),
+    FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
+    FOREIGN KEY (book_id) REFERENCES books(book_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- DISCOUNT SERVICE
+-- =============================================
+
+CREATE TABLE discount_services (
+    service_id INT AUTO_INCREMENT PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    discount_type VARCHAR(50),
+    discount_value DECIMAL(15,2),
+    minimum_value DECIMAL(15,2),
+    maximum_discount DECIMAL(15,2),
+    start_date DATETIME,
+    end_date DATETIME,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    description TEXT
+) ENGINE=InnoDB;
+
+CREATE TABLE invoice_services (
+    invoice_service_id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    service_id INT NOT NULL,
+    service_type VARCHAR(50),
+    discount_value DECIMAL(15,2),
+    description TEXT,
+    FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
+    FOREIGN KEY (service_id) REFERENCES discount_services(service_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- SUPPLIER & IMPORT MANAGEMENT
+-- =============================================
+
+CREATE TABLE suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    status ENUM('active', 'inactive') DEFAULT 'active'
+) ENGINE=InnoDB;
+
+CREATE TABLE import_receipts (
+    receipt_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_id INT NOT NULL,
+    employee_id INT NOT NULL,
+    import_date DATETIME,
+    receipt_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(15,2),
+    status VARCHAR(50),
+    notes TEXT,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE import_receipt_details (
+    detail_id INT AUTO_INCREMENT PRIMARY KEY,
+    receipt_id INT NOT NULL,
+    book_id INT NOT NULL,
+    quantity INT NOT NULL,
+    unit_price DECIMAL(15,2),
+    subtotal DECIMAL(15,2),
+    expiry_date DATE,
+    FOREIGN KEY (receipt_id) REFERENCES import_receipts(receipt_id),
+    FOREIGN KEY (book_id) REFERENCES books(book_id)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- SYSTEM PARAMETERS
+-- =============================================
+
+CREATE TABLE system_parameters (
+    parameter_code VARCHAR(50) PRIMARY KEY,
+    parameter_value VARCHAR(255),
+    description VARCHAR(255)
+) ENGINE=InnoDB;
+
+-- =============================================
+-- INDEXES
+-- =============================================
+
+CREATE INDEX idx_employee_phone ON employees(phone);
+CREATE INDEX idx_customer_phone ON customers(phone);
+CREATE INDEX idx_book_title ON books(book_title);
+CREATE INDEX idx_invoice_date ON invoices(created_at);
+CREATE INDEX idx_receipt_date ON import_receipts(import_date);

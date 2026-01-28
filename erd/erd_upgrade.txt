@@ -1,0 +1,334 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+	direction TB
+	NHAN_VIEN {
+		int ma_nhan_vien PK ""  
+		string ho_ten  ""  
+		date ngay_sinh  ""  
+		string gioi_tinh  ""  
+		string sdt  "UNIQUE"  
+		string dia_chi  ""  
+		string chuc_vu  ""  
+		decimal luong  "CHECK > 0"  
+		date ngay_vao_lam  ""  
+		date ngay_nghi_viec  ""  
+		string trang_thai  ""  
+		string hinh_anh  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	HOA_DON {
+		int ma_hoa_don PK ""  
+		int ma_khach_hang FK "INDEX"  
+		int ma_nhan_vien FK "INDEX"  
+		datetime ngay_lap  "INDEX"  
+		decimal tong_tien_hang  "CHECK >= 0"  
+		decimal tong_giam_gia  "CHECK >= 0"  
+		decimal diem_su_dung  "CHECK >= 0"  
+		decimal gia_tri_diem_su_dung  "CHECK >= 0"  
+		decimal thanh_tien  "CHECK >= 0"  
+		string phuong_thuc_thanh_toan  ""  
+		string trang_thai  ""  
+		int diem_tich_luy_duoc  "CHECK >= 0"  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	PHIEU_NHAP {
+		int ma_phieu_nhap PK ""  
+		int ma_ncc FK "INDEX"  
+		int ma_nhan_vien FK "INDEX"  
+		datetime ngay_nhap  "INDEX"  
+		datetime ngay_lap_phieu  ""  
+		decimal tong_tien  "CHECK >= 0"  
+		string trang_thai  ""  
+		text ghi_chu  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	TAI_KHOAN {
+		int ma_tai_khoan PK ""  
+		int ma_nhan_vien FK "UNIQUE"  
+		int ma_nhom_quyen FK "INDEX"  
+		string ten_dang_nhap  "UNIQUE"  
+		string mat_khau  ""  
+		string trang_thai  ""  
+		datetime ngay_tao  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+		datetime last_login_at  ""  
+		string last_login_ip  ""  
+	}
+
+	NHOM_QUYEN {
+		int ma_nhom_quyen PK ""  
+		string ten_nhom_quyen  "UNIQUE"  
+		string trang_thai  ""  
+		datetime ngay_tao  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	CHI_TIET_NHOM_QUYEN {
+		int ma_chi_tiet PK ""  
+		int ma_nhom_quyen FK "INDEX"  
+		int ma_chuc_nang FK "INDEX"  
+		string hanhdong  ""  
+		datetime ngay_gan  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+	}
+
+	CHUC_NANG {
+		int ma_chuc_nang PK ""  
+		string ten_chuc_nang  ""  
+		string ma_chuc_nang_he_thong  "UNIQUE"  
+		string nhom_chuc_nang  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+	}
+
+	KHACH_HANG {
+		int ma_khach_hang PK ""  
+		string ho_ten  ""  
+		string sdt  "UNIQUE, CHECK format"  
+		string email  "UNIQUE"  
+		string dia_chi  ""  
+		int diem_tich_luy  "DEFAULT 0, CHECK >= 0"  
+		date ngay_dang_ky  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	LICH_SU_QUI_DOI_DIEM {
+		int ma_lich_su PK ""  
+		int ma_khach_hang FK "INDEX"  
+		int diem_qui_doi  "CHECK > 0"  
+		decimal gia_tri_nhan_duoc  "CHECK > 0"  
+		datetime ngay_qui_doi  "INDEX"  
+		string loai_qui_doi  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+	}
+
+	CHI_TIET_HOA_DON {
+		int ma_chi_tiet PK ""  
+		int ma_hoa_don FK "INDEX"  
+		int ma_sach FK "INDEX"  
+		int so_luong  "CHECK > 0"  
+		decimal don_gia  "CHECK > 0"  
+		decimal giam_gia  "CHECK >= 0"  
+		decimal thanh_tien  "CHECK >= 0"  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+	}
+
+	SACH {
+		int ma_sach PK ""  
+		int ma_nxb FK "INDEX"  
+		int ma_the_loai FK "INDEX"  
+		string ma_hang_isbn  "UNIQUE"  
+		string ten_sach  "INDEX FULLTEXT"  
+		int so_trang  "CHECK > 0"  
+		string ngon_ngu  ""  
+		int nam_xuat_ban  "CHECK >= 1900"  
+		string loai_bia  ""  
+		decimal gia_nhap  "CHECK > 0"  
+		decimal gia_ban  "CHECK > gia_nhap"  
+		int so_luong_ton  "CHECK >= 0"  
+		int so_luong_toi_thieu  "CHECK >= 0"  
+		string hinh_anh  ""  
+		string trang_thai  ""  
+		datetime ngay_them  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	DICH_VU_HOA_DON {
+		int ma_dich_vu_hoa_don PK ""  
+		int ma_hoa_don FK "INDEX"  
+		int ma_dich_vu_giam_gia FK "INDEX"  
+		string loai_dich_vu  ""  
+		decimal gia_tri_giam  "CHECK >= 0"  
+		text mo_ta  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+	}
+
+	DICH_VU_GIAM_GIA {
+		int ma_dich_vu_giam_gia PK ""  
+		string ten_dich_vu  "UNIQUE"  
+		string loai_giam_gia  ""  
+		decimal gia_tri_giam  "CHECK > 0"  
+		decimal gia_tri_toi_thieu  "CHECK >= 0"  
+		decimal giam_toi_da  "CHECK >= 0"  
+		datetime ngay_bat_dau  "INDEX"  
+		datetime ngay_ket_thuc  "INDEX"  
+		string trang_thai  ""  
+		text mo_ta  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	NHA_XUAT_BAN {
+		int ma_nxb PK ""  
+		string ten_nxb  "UNIQUE"  
+		string sdt  ""  
+		string email  ""  
+		string dia_chi  ""  
+		string trang_thai  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	THE_LOAI {
+		int ma_the_loai PK ""  
+		string ten_the_loai  "UNIQUE"  
+		int thu_tu  ""  
+		string trang_thai  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	TAC_GIA {
+		int ma_tac_gia PK ""  
+		string ten_tac_gia  ""  
+		string hinh_anh  ""  
+		text tieu_su  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	SACH_TAC_GIA {
+		int ma_sach_tac_gia PK ""  
+		int ma_sach FK "INDEX"  
+		int ma_tac_gia FK "INDEX"  
+		string vai_tro  "tác giả chính, đồng tác giả"  
+		int thu_tu  "Thứ tự hiển thị"  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+	}
+
+	NHA_CUNG_CAP {
+		int ma_ncc PK ""  
+		string ten_ncc  "UNIQUE"  
+		string sdt  ""  
+		string email  ""  
+		string dia_chi  ""  
+		string trang_thai  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+		datetime deleted_at  "NULL - Soft Delete"  
+		int deleted_by  "FK"  
+	}
+
+	CHI_TIET_PHIEU_NHAP {
+		int ma_chi_tiet PK ""  
+		int ma_phieu_nhap FK "INDEX"  
+		int ma_sach FK "INDEX"  
+		int so_luong  "CHECK > 0"  
+		decimal don_gia  "CHECK > 0"  
+		decimal thanh_tien  "CHECK >= 0"  
+		date han_su_dung  ""  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int created_by  "FK"  
+		int updated_by  "FK"  
+	}
+
+	THAM_SO_HE_THONG {
+		string ma_tham_so PK "Khóa chính là chuỗi ký tự"  
+		string gia_tri  "Lưu giá trị cấu hình"  
+		string mo_ta  "Giải thích tham số này làm gì"  
+		datetime created_at  "DEFAULT CURRENT_TIMESTAMP"  
+		datetime updated_at  "ON UPDATE CURRENT_TIMESTAMP"  
+		int updated_by  "FK"  
+	}
+
+	NHAT_KY_HOAT_DONG {
+		int ma_nhat_ky PK ""  
+		int ma_nhan_vien FK "INDEX"  
+		string bang  "Tên bảng bị thay đổi"  
+		int id_ban_ghi  "ID bản ghi bị thay đổi"  
+		string hanh_dong  "INSERT, UPDATE, DELETE"  
+		text du_lieu_cu  "JSON - Dữ liệu trước khi sửa"  
+		text du_lieu_moi  "JSON - Dữ liệu sau khi sửa"  
+		string ip_address  ""  
+		datetime created_at  "INDEX"  
+	}
+
+	NHAN_VIEN||--o{HOA_DON:"tạo"
+	NHAN_VIEN||--o{PHIEU_NHAP:"lập"
+	TAI_KHOAN||--||NHAN_VIEN:"thuộc về"
+	TAI_KHOAN}o--||NHOM_QUYEN:"có nhóm quyền"
+	NHOM_QUYEN||--|{CHI_TIET_NHOM_QUYEN:"có"
+	CHUC_NANG||--o{CHI_TIET_NHOM_QUYEN:"được gán"
+	KHACH_HANG||--o{HOA_DON:"mua"
+	KHACH_HANG||--o{LICH_SU_QUI_DOI_DIEM:"quy đổi điểm"
+	HOA_DON||--|{CHI_TIET_HOA_DON:"có"
+	SACH||--o{CHI_TIET_HOA_DON:"trong"
+	HOA_DON||--o{DICH_VU_HOA_DON:"áp dụng dịch vụ"
+	DICH_VU_GIAM_GIA||--o{DICH_VU_HOA_DON:"được sử dụng"
+	NHA_XUAT_BAN||--o{SACH:"xuất bản"
+	THE_LOAI||--o{SACH:"phân loại"
+	TAC_GIA||--o{SACH_TAC_GIA:"viết"
+	SACH||--o{SACH_TAC_GIA:"có"
+	NHA_CUNG_CAP||--o{PHIEU_NHAP:"cung cấp"
+	PHIEU_NHAP||--|{CHI_TIET_PHIEU_NHAP:"có"
+	SACH||--o{CHI_TIET_PHIEU_NHAP:"được nhập"
+	NHAN_VIEN||--o{NHAT_KY_HOAT_DONG:"thực hiện"

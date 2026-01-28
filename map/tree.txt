@@ -1,0 +1,243 @@
+bookstore-management/
+│
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   ├── com/
+│   │   │   │   ├── bookstore/
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── Sach.java                    # Thông tin sách
+│   │   │   │   │   │   ├── TheLoai.java                 # Thể loại sách
+│   │   │   │   │   │   ├── NhaXuatBan.java              # Nhà xuất bản
+│   │   │   │   │   │   ├── NhaCungCap.java              # Nhà cung cấp
+│   │   │   │   │   │   ├── TacGia.java                  # Tác giả
+│   │   │   │   │   │   ├── NhanVien.java                # Nhân viên
+│   │   │   │   │   │   ├── TaiKhoan.java                # Tài khoản
+│   │   │   │   │   │   ├── ChucNang.java                # Chức năng hệ thống
+│   │   │   │   │   │   ├── KhachHang.java               # Khách hàng
+│   │   │   │   │   │   ├── HoaDon.java                  # Hóa đơn
+│   │   │   │   │   │   ├── ChiTietHoaDon.java           # Chi tiết hóa đơn
+│   │   │   │   │   │   ├── PhieuNhap.java               # Phiếu nhập hàng
+│   │   │   │   │   │   ├── ChiTietPhieuNhap.java        # Chi tiết phiếu nhập
+│   │   │   │   │   │   ├── ChiTietNhomQuyen.java        # Phân quyền
+│   │   │   │   │   │   ├── GioiHanGia.java              # Giới hạn giá
+│   │   │   │   │   │   ├── Diem.java                    # Điểm tích lũy
+│   │   │   │   │   │   ├── ThamSoHeThong.java           # Tham số hệ thống
+│   │   │   │   │   │   └── NhomQuyen.java               # Nhóm quyền
+│   │   │   │   │   │
+│   │   │   │   │   ├── dao/
+│   │   │   │   │   │   ├── DatabaseConnection.java      # Kết nối database
+│   │   │   │   │   │   ├── interfaces/
+│   │   │   │   │   │   │   └── IBaseDAO.java            # Interface CRUD cơ bản
+│   │   │   │   │   │   ├── SachDAO.java                 # CRUD sách
+│   │   │   │   │   │   ├── TheLoaiDAO.java              # CRUD thể loại
+│   │   │   │   │   │   ├── NhaXuatBanDAO.java           # CRUD nhà xuất bản
+│   │   │   │   │   │   ├── NhaCungCapDAO.java           # CRUD nhà cung cấp
+│   │   │   │   │   │   ├── TacGiaDAO.java               # CRUD tác giả
+│   │   │   │   │   │   ├── NhanVienDAO.java             # CRUD nhân viên
+│   │   │   │   │   │   ├── TaiKhoanDAO.java             # CRUD tài khoản
+│   │   │   │   │   │   ├── ChucNangDAO.java             # CRUD chức năng
+│   │   │   │   │   │   ├── KhachHangDAO.java            # CRUD khách hàng
+│   │   │   │   │   │   ├── HoaDonDAO.java               # CRUD hóa đơn
+│   │   │   │   │   │   ├── ChiTietHoaDonDAO.java        # CRUD chi tiết hóa đơn
+│   │   │   │   │   │   ├── PhieuNhapDAO.java            # CRUD phiếu nhập
+│   │   │   │   │   │   ├── ChiTietPhieuNhapDAO.java     # CRUD chi tiết phiếu nhập
+│   │   │   │   │   │   ├── ChiTietNhomQuyenDAO.java     # CRUD phân quyền
+│   │   │   │   │   │   ├── GioiHanGiaDAO.java           # CRUD giới hạn giá
+│   │   │   │   │   │   ├── DiemDAO.java                 # CRUD điểm
+│   │   │   │   │   │   ├── ThamSoHeThongDAO.java        # CRUD tham số
+│   │   │   │   │   │   └── NhomQuyenDAO.java            # CRUD nhóm quyền
+│   │   │   │   │   │
+│   │   │   │   │   ├── bus/
+│   │   │   │   │   │   ├── SachBUS.java                 # Business Logic sách
+│   │   │   │   │   │   ├── TheLoaiBUS.java              # Business Logic thể loại
+│   │   │   │   │   │   ├── NhaXuatBanBUS.java           # Business Logic NXB
+│   │   │   │   │   │   ├── NhaCungCapBUS.java           # Business Logic NCC
+│   │   │   │   │   │   ├── TacGiaBUS.java               # Business Logic tác giả
+│   │   │   │   │   │   ├── NhanVienBUS.java             # Business Logic nhân viên
+│   │   │   │   │   │   ├── TaiKhoanBUS.java             # Business Logic tài khoản
+│   │   │   │   │   │   ├── ChucNangBUS.java             # Business Logic chức năng
+│   │   │   │   │   │   ├── KhachHangBUS.java            # Business Logic khách hàng
+│   │   │   │   │   │   ├── HoaDonBUS.java               # Business Logic hóa đơn
+│   │   │   │   │   │   ├── PhieuNhapBUS.java            # Business Logic phiếu nhập
+│   │   │   │   │   │   ├── PhanQuyenBUS.java            # Business Logic phân quyền
+│   │   │   │   │   │   ├── GioiHanGiaBUS.java           # Business Logic giới hạn giá
+│   │   │   │   │   │   ├── DiemBUS.java                 # Business Logic điểm
+│   │   │   │   │   │   ├── ThamSoHeThongBUS.java        # Business Logic tham số
+│   │   │   │   │   │   ├── ThongKeBUS.java              # Business Logic thống kê
+│   │   │   │   │   │   └── ValidationBUS.java           # Validate dữ liệu
+│   │   │   │   │   │
+│   │   │   │   │   ├── gui/
+│   │   │   │   │   │   ├── MainFrame.java               # Giao diện chính
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── login/
+│   │   │   │   │   │   │   ├── LoginPanel.java          # Màn hình đăng nhập
+│   │   │   │   │   │   │   └── ForgotPasswordDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── dashboard/
+│   │   │   │   │   │   │   ├── DashboardPanel.java      # Trang tổng quan
+│   │   │   │   │   │   │   └── StatisticsPanel.java     # Thống kê tổng quan
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── sach/
+│   │   │   │   │   │   │   ├── SachPanel.java           # Quản lý sách - giao diện chính
+│   │   │   │   │   │   │   ├── SachTableModel.java      # Table model hiển thị danh sách
+│   │   │   │   │   │   │   ├── ThemSachDialog.java      # Dialog thêm sách mới
+│   │   │   │   │   │   │   ├── SuaSachDialog.java       # Dialog sửa thông tin sách
+│   │   │   │   │   │   │   ├── XemChiTietSachDialog.java # Dialog xem chi tiết
+│   │   │   │   │   │   │   ├── TimKiemSachPanel.java    # Panel tìm kiếm, lọc
+│   │   │   │   │   │   │   └── XuatExcelSachDialog.java # Xuất excel danh sách
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── theloai/
+│   │   │   │   │   │   │   ├── TheLoaiPanel.java        # Quản lý thể loại
+│   │   │   │   │   │   │   ├── TheLoaiTableModel.java
+│   │   │   │   │   │   │   ├── ThemTheLoaiDialog.java
+│   │   │   │   │   │   │   └── SuaTheLoaiDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── nhaxuatban/
+│   │   │   │   │   │   │   ├── NhaXuatBanPanel.java     # Quản lý NXB
+│   │   │   │   │   │   │   ├── NhaXuatBanTableModel.java
+│   │   │   │   │   │   │   ├── ThemNXBDialog.java
+│   │   │   │   │   │   │   └── SuaNXBDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── nhacungcap/
+│   │   │   │   │   │   │   ├── NhaCungCapPanel.java     # Quản lý NCC
+│   │   │   │   │   │   │   ├── NhaCungCapTableModel.java
+│   │   │   │   │   │   │   ├── ThemNCCDialog.java
+│   │   │   │   │   │   │   └── SuaNCCDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── tacgia/
+│   │   │   │   │   │   │   ├── TacGiaPanel.java         # Quản lý tác giả
+│   │   │   │   │   │   │   ├── TacGiaTableModel.java
+│   │   │   │   │   │   │   ├── ThemTacGiaDialog.java
+│   │   │   │   │   │   │   └── SuaTacGiaDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── phieunhap/
+│   │   │   │   │   │   │   ├── PhieuNhapPanel.java      # Quản lý phiếu nhập
+│   │   │   │   │   │   │   ├── PhieuNhapTableModel.java
+│   │   │   │   │   │   │   ├── TaoPhieuNhapDialog.java
+│   │   │   │   │   │   │   ├── XemChiTietPhieuNhapDialog.java
+│   │   │   │   │   │   │   └── ChiTietPhieuNhapTableModel.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── hoadon/
+│   │   │   │   │   │   │   ├── HoaDonPanel.java         # Quản lý hóa đơn
+│   │   │   │   │   │   │   ├── HoaDonTableModel.java
+│   │   │   │   │   │   │   ├── TaoHoaDonDialog.java
+│   │   │   │   │   │   │   ├── XemChiTietHoaDonDialog.java
+│   │   │   │   │   │   │   └── ChiTietHoaDonTableModel.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── khachhang/
+│   │   │   │   │   │   │   ├── KhachHangPanel.java      # Quản lý khách hàng
+│   │   │   │   │   │   │   ├── KhachHangTableModel.java
+│   │   │   │   │   │   │   ├── ThemKhachHangDialog.java
+│   │   │   │   │   │   │   ├── SuaKhachHangDialog.java
+│   │   │   │   │   │   │   └── LichSuMuaHangDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── nhanvien/
+│   │   │   │   │   │   │   ├── NhanVienPanel.java       # Quản lý nhân viên
+│   │   │   │   │   │   │   ├── NhanVienTableModel.java
+│   │   │   │   │   │   │   ├── ThemNhanVienDialog.java
+│   │   │   │   │   │   │   └── SuaNhanVienDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── taikhoan/
+│   │   │   │   │   │   │   ├── TaiKhoanPanel.java       # Quản lý tài khoản
+│   │   │   │   │   │   │   ├── TaiKhoanTableModel.java
+│   │   │   │   │   │   │   ├── ThemTaiKhoanDialog.java
+│   │   │   │   │   │   │   ├── DoiMatKhauDialog.java
+│   │   │   │   │   │   │   └── PhanQuyenDialog.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── phanquyen/
+│   │   │   │   │   │   │   ├── PhanQuyenPanel.java      # Phân quyền
+│   │   │   │   │   │   │   ├── NhomQuyenPanel.java
+│   │   │   │   │   │   │   └── ChucNangPanel.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── thongke/
+│   │   │   │   │   │   │   ├── ThongKePanel.java        # Thống kê báo cáo
+│   │   │   │   │   │   │   ├── ThongKeDoanhThuPanel.java
+│   │   │   │   │   │   │   ├── ThongKeTonKhoPanel.java
+│   │   │   │   │   │   │   ├── ThongKeBanChayPanel.java
+│   │   │   │   │   │   │   └── BieuDoPanel.java         # Biểu đồ thống kê
+│   │   │   │   │   │   │
+│   │   │   │   │   │   ├── cauhinh/
+│   │   │   │   │   │   │   ├── CauHinhPanel.java        # Cấu hình hệ thống
+│   │   │   │   │   │   │   ├── ThamSoHeThongPanel.java
+│   │   │   │   │   │   │   └── GioiHanGiaPanel.java
+│   │   │   │   │   │   │
+│   │   │   │   │   │   └── components/
+│   │   │   │   │   │       ├── CustomButton.java        # Components tùy chỉnh
+│   │   │   │   │   │       ├── CustomTable.java
+│   │   │   │   │   │       ├── CustomTextField.java
+│   │   │   │   │   │       ├── CustomComboBox.java
+│   │   │   │   │   │       ├── DatePickerPanel.java
+│   │   │   │   │   │       ├── ImagePanel.java
+│   │   │   │   │   │       └── LoadingDialog.java
+│   │   │   │   │   │
+│   │   │   │   │   ├── utils/
+│   │   │   │   │   │   ├── DatabaseConfig.java          # Config database
+│   │   │   │   │   │   ├── Validation.java              # Validate input
+│   │   │   │   │   │   ├── DateTimeUtil.java            # Xử lý ngày tháng
+│   │   │   │   │   │   ├── CurrencyUtil.java            # Xử lý tiền tệ
+│   │   │   │   │   │   ├── ExcelExporter.java           # Xuất Excel
+│   │   │   │   │   │   ├── PDFExporter.java             # Xuất PDF
+│   │   │   │   │   │   ├── ImageUtil.java               # Xử lý ảnh
+│   │   │   │   │   │   ├── PasswordUtil.java            # Mã hóa mật khẩu
+│   │   │   │   │   │   ├── Logger.java                  # Ghi log
+│   │   │   │   │   │   └── Constants.java               # Các hằng số
+│   │   │   │   │   │
+│   │   │   │   │   └── Main.java                        # Class chạy chương trình
+│   │   │   │   │
+│   │   ├── resources/
+│   │   │   ├── config/
+│   │   │   │   ├── database.properties                  # Config database
+│   │   │   │   └── application.properties               # Config app
+│   │   │   │
+│   │   │   ├── images/
+│   │   │   │   ├── icons/                               # Icons cho GUI
+│   │   │   │   │   ├── add.png
+│   │   │   │   │   ├── edit.png
+│   │   │   │   │   ├── delete.png
+│   │   │   │   │   ├── search.png
+│   │   │   │   │   ├── refresh.png
+│   │   │   │   │   └── export.png
+│   │   │   │   │
+│   │   │   │   ├── logo/                                # Logo cửa hàng
+│   │   │   │   │   └── bookstore-logo.png
+│   │   │   │   │
+│   │   │   │   └── default/                             # Ảnh mặc định
+│   │   │   │       ├── book-default.png
+│   │   │   │       └── user-default.png
+│   │   │   │
+│   │   │   └── sql/
+│   │   │       ├── schema.sql                           # Script tạo database
+│   │   │       └── data.sql                             # Dữ liệu mẫu
+│   │   │
+│   ├── test/
+│   │   └── java/
+│   │       └── com/
+│   │           └── bookstore/
+│   │               ├── dao/                             # Test DAO
+│   │               │   ├── SachDAOTest.java
+│   │               │   └── ...
+│   │               │
+│   │               └── bus/                             # Test BUS
+│   │                   ├── SachBUSTest.java
+│   │                   └── ...
+│   │
+├── lib/                                                 # Thư viện external
+│   ├── mysql-connector-java-8.0.x.jar                  # JDBC MySQL
+│   ├── jcalendar-1.4.jar                               # Date picker
+│   ├── poi-5.2.3.jar                                   # Apache POI (Excel)
+│   ├── itext-5.5.13.jar                                # iText (PDF)
+│   └── bcrypt-0.9.0.jar                                # Mã hóa password
+│
+├── docs/                                                # Tài liệu
+│   ├── ERD.png                                          # Sơ đồ ERD
+│   ├── UseCase.pdf                                      # Use case diagram
+│   └── UserManual.pdf                                   # Hướng dẫn sử dụng
+│
+├── database/
+│   └── bookstore.sql                                    # File backup database
+│
+├── build.xml                                            # Ant build file
+├── pom.xml                                              # Maven config (nếu dùng Maven)
+└── README.md                                            # Hướng dẫn projects

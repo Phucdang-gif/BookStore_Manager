@@ -1,0 +1,217 @@
+---
+config:
+  layout: elk
+---
+erDiagram
+	direction TB
+	NHAN_VIEN {
+		int ma_nhan_vien PK ""  
+		string ho_ten  ""  
+		date ngay_sinh  ""  
+		string gioi_tinh  ""  
+		string sdt  ""  
+		string dia_chi  ""  
+		string chuc_vu  ""  
+		decimal luong  ""  
+		date ngay_vao_lam  ""  
+		date ngay_nghi_viec  ""  
+		string trang_thai  ""  
+		string hinh_anh  ""  
+	}
+
+	HOA_DON {
+		int ma_hoa_don PK ""  
+		int ma_khach_hang FK ""  
+		int ma_nhan_vien FK ""  
+		datetime ngay_lap  ""  
+		decimal tong_tien_hang  ""  
+		decimal tong_giam_gia  ""  
+		decimal diem_su_dung  ""  
+		decimal gia_tri_diem_su_dung  ""  
+		decimal thanh_tien  ""  
+		string phuong_thuc_thanh_toan  ""  
+		string trang_thai  ""  
+		int diem_tich_luy_duoc  ""  
+	}
+
+	PHIEU_NHAP {
+		int ma_phieu_nhap PK ""  
+		int ma_ncc FK ""  
+		int ma_nhan_vien FK ""  
+		datetime ngay_nhap  ""  
+		datetime ngay_lap_phieu  ""  
+		decimal tong_tien  ""  
+		string trang_thai  ""  
+		text ghi_chu  ""  
+	}
+
+	TAI_KHOAN {
+		int ma_tai_khoan PK ""  
+		int ma_nhan_vien FK ""  
+		int ma_nhom_quyen FK ""  
+		string ten_dang_nhap  ""  
+		string mat_khau  ""  
+		string trang_thai  ""  
+		datetime ngay_tao  ""  
+	}
+
+	NHOM_QUYEN {
+		int ma_nhom_quyen PK ""  
+		string ten_nhom_quyen  ""  
+		string trang_thai  ""  
+		datetime ngay_tao  ""  
+	}
+
+	CHI_TIET_NHOM_QUYEN {
+		int ma_chi_tiet PK ""  
+		int ma_nhom_quyen FK ""  
+		int ma_chuc_nang FK ""  
+		string hanhdong  ""  
+		datetime ngay_gan  ""  
+	}
+
+	CHUC_NANG {
+		int ma_chuc_nang PK ""  
+		string ten_chuc_nang  ""  
+		string ma_chuc_nang_he_thong  ""  
+		string nhom_chuc_nang  ""  
+	}
+
+	KHACH_HANG {
+		int ma_khach_hang PK ""  
+		string ho_ten  ""  
+		string sdt  ""  
+		int diem_tich_luy  ""  
+		date ngay_dang_ky  ""  
+	}
+
+	LICH_SU_QUI_DOI_DIEM {
+		int ma_lich_su PK ""  
+		int ma_khach_hang FK ""  
+		int diem_qui_doi  ""  
+		decimal gia_tri_nhan_duoc  ""  
+		datetime ngay_qui_doi  ""  
+		string loai_qui_doi  ""  
+	}
+
+	CHI_TIET_HOA_DON {
+		int ma_chi_tiet PK ""  
+		int ma_hoa_don FK ""  
+		int ma_sach FK ""  
+		int so_luong  ""  
+		decimal don_gia  ""  
+		decimal giam_gia  ""  
+		decimal thanh_tien  ""  
+	}
+
+	SACH {
+		int ma_sach PK ""  
+		int ma_nxb FK ""  
+		int ma_the_loai FK ""  
+		string ma_hang(isbn)  ""  
+		string ten_sach  ""  
+		int so_trang  ""  
+		string ngon_ngu  ""  
+		int nam_xuat_ban  ""  
+		string loai_bia  ""  
+		decimal gia_nhap  ""  
+		decimal gia_ban  ""  
+		int so_luong_ton  ""  
+		int so_luong_toi_thieu  ""  
+		string hinh_anh  ""  
+		string trang_thai  ""  
+		datetime ngay_them  ""  
+	}
+
+	DICH_VU_HOA_DON {
+		int ma_dich_vu_hoa_don PK ""  
+		int ma_hoa_don FK ""  
+		int ma_dich_vu_giam_gia FK ""  
+		string loai_dich_vu  ""  
+		decimal gia_tri_giam  ""  
+		text mo_ta  ""  
+	}
+
+	DICH_VU_GIAM_GIA {
+		int ma_dich_vu_giam_gia PK ""  
+		string ten_dich_vu  ""  
+		string loai_giam_gia  ""  
+		decimal gia_tri_giam  ""  
+		decimal gia_tri_toi_thieu  ""  
+		decimal giam_toi_da  ""  
+		datetime ngay_bat_dau  ""  
+		datetime ngay_ket_thuc  ""  
+		string trang_thai  ""  
+		text mo_ta  ""  
+	}
+
+	NHA_XUAT_BAN {
+		int ma_nxb PK ""  
+		string ten_nxb  ""  
+		string sdt  ""  
+		string trang_thai  ""  
+	}
+
+	THE_LOAI {
+		int ma_the_loai PK ""  
+		string ten_the_loai  ""  
+		int thu_tu  ""  
+		string trang_thai  ""  
+	}
+
+	TAC_GIA {
+		int ma_tac_gia PK ""  
+		string ten_tac_gia  ""  
+		string hinh_anh  ""  
+	}
+
+	SACH_TAC_GIA {
+		int ma_sach_tac_gia PK ""  
+		int ma_sach FK ""  
+		int ma_tac_gia FK ""  
+		string vai_tro  ""  
+		int thu_tu  ""  
+	}
+
+	NHA_CUNG_CAP {
+		int ma_ncc PK ""  
+		string ten_ncc  ""  
+		string sdt  ""  
+		string trang_thai  ""  
+	}
+
+	CHI_TIET_PHIEU_NHAP {
+		int ma_chi_tiet PK ""  
+		int ma_phieu_nhap FK ""  
+		int ma_sach FK ""  
+		int so_luong  ""  
+		decimal don_gia  ""  
+		decimal thanh_tien  ""  
+		date han_su_dung  ""  
+	}
+
+	THAM_SO_HE_THONG {
+		string ma_tham_so PK "Khóa chính là chuỗi ký tự"  
+		string gia_tri  "Lưu giá trị cấu hình"  
+		string mo_ta  "Giải thích tham số này làm gì"  
+	}
+
+	NHAN_VIEN||--o{HOA_DON:"tạo"
+	NHAN_VIEN||--o{PHIEU_NHAP:"lập"
+	TAI_KHOAN||--||NHAN_VIEN:"thuộc về"
+	TAI_KHOAN}o--||NHOM_QUYEN:"có nhóm quyền"
+	NHOM_QUYEN||--|{CHI_TIET_NHOM_QUYEN:"có"
+	CHUC_NANG||--o{CHI_TIET_NHOM_QUYEN:"được gán"
+	KHACH_HANG||--o{HOA_DON:"mua"
+	KHACH_HANG||--o{LICH_SU_QUI_DOI_DIEM:"quy đổi điểm"
+	HOA_DON||--|{CHI_TIET_HOA_DON:"có"
+	SACH||--o{CHI_TIET_HOA_DON:"trong"
+	HOA_DON||--o{DICH_VU_HOA_DON:"áp dụng dịch vụ"
+	DICH_VU_GIAM_GIA||--o{DICH_VU_HOA_DON:"được sử dụng"
+	NHA_XUAT_BAN||--o{SACH:"xuất bản"
+	THE_LOAI||--o{SACH:"phân loại"
+	TAC_GIA||--o{SACH_TAC_GIA:"viết"
+	SACH||--o{SACH_TAC_GIA:"có"
+	NHA_CUNG_CAP||--o{PHIEU_NHAP:"cung cấp"
+	PHIEU_NHAP||--|{CHI_TIET_PHIEU_NHAP:"có"
+	SACH||--o{CHI_TIET_PHIEU_NHAP:"được nhập"
