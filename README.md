@@ -42,7 +42,7 @@ Dự án được xây dựng theo **Mô hình 3 lớp (3-Layer Architecture)** 
 - ✅ Xem danh sách sách, tìm kiếm tác giả có gợi ý.
 - ✅ Thêm mới sách với đầy đủ thông tin: Tác giả, NXB, Thể loại, Giá nhập/bán.
 - ✅ Upload và hiển thị ảnh bìa sách .
-- 🛠️ Xuất danh sách sách ra file Excel 🛠️.
+- 🛠️ Xuất danh sách sách ra file Excel.
 
 ### 2. Quản lý Kho hàng
 - Nhập hàng từ nhà cung cấp (Tạo phiếu nhập).
