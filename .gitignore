@@ -1,0 +1,20 @@
+# --- Các file biên dịch của Java ---
+*.class
+*.log
+*.jar
+*.war
+
+# --- Maven (Nếu bạn dùng cấu trúc src/main/java) ---
+target/
+
+# --- NetBeans đặc thù ---
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# --- Các file cấu hình hệ thống ---
+.DS_Store
+Thumbs.db
