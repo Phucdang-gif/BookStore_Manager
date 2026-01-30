@@ -7,11 +7,9 @@ import java.util.ArrayList;
 import GUI.model.ButtonModel;
 
 public class ToolBarPanel extends JPanel {
-
     public ToolBarPanel(ArrayList<ButtonModel> buttonList, java.awt.event.ActionListener listener) {
         setOpaque(false);
         setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
-
         // Dùng vòng lặp for-each để tạo nút từ mảng
         for (ButtonModel data : buttonList) {
             // Tạo nút ActionButton (đã có ở file trước của bạn)

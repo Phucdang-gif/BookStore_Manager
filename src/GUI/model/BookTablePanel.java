@@ -11,100 +11,93 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 
 import java.awt.*;
-import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class BookTablePanel extends JPanel {
     private BookBUS bookBUS;
     private JTable bookTable;
     private DefaultTableModel tableModel;
-    private static final int TABLE_WIDTH_CONSTANT = 1200;
+    private String[] columns = { "ID", "ISBN", "TÊN SÁCH", "GIÁ NHẬP", "GIÁ BÁN", "TỒN KHO", "TỒN KHO TỐI THIỂU",
+            "TRẠNG THÁI" };
 
-    public BookTablePanel() {
-        this.bookBUS = new BookBUS();
-
-        // Nếu không có file UIConstants, bạn có thể thay bằng Color.WHITE
-        try {
-            setBackground(UIConstants.BACKGROUND_COLOR);
-        } catch (Exception e) {
-            setBackground(Color.WHITE);
-        }
-
+    public BookTablePanel(BookBUS bus) {
+        this.bookBUS = bus;
+        setBackground(UIConstants.BACKGROUND_COLOR);
         setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
         initComponents();
         loadTableData();
     }
 
     private void initComponents() {
-        // Cấu trúc cột bảng
-        String[] columns = { "ID", "ISBN", "TÊN SÁCH", "GIÁ NHẬP", "GIÁ BÁN", "TỒN KHO", "TỒN KHO TỐI THIỂU",
-                "TRẠNG THÁI" };
-
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override
+            @Override // Không cho phép sửa trực tiếp trên bảng
             public boolean isCellEditable(int row, int column) {
-                return false; // Ngăn không cho sửa trực tiếp trên bảng
+                return false;
             }
         };
-
         bookTable = new JTable(tableModel);
-        // Thiết lập font chữ cơ bản (fallback nếu UIConstants lỗi)
+        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        // 2. Style cho bảng (Làm đẹp)
+        styleTable();
+
+        JScrollPane scrollPane = new JScrollPane(bookTable);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void styleTable() {
+        // Font chữ
         try {
             bookTable.setFont(UIConstants.NORMAL_FONT);
         } catch (Exception e) {
             bookTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         }
-
-        bookTable.setRowHeight(30);
+        bookTable.setRowHeight(UIConstants.ROW_HEIGHT);
         bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        bookTable.setShowGrid(true);
-        bookTable.setGridColor(Color.LIGHT_GRAY);
-        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        bookTable.setShowVerticalLines(true);
+        bookTable.setShowHorizontalLines(true);
+        bookTable.setGridColor(new Color(200, 200, 200));
 
-        // Thiết lập Header của bảng
+        // Header
         JTableHeader header = bookTable.getTableHeader();
-        try {
-            header.setFont(UIConstants.TABLE_HEADER_FONT);
-            header.setBackground(UIConstants.GREEN_BACKGROUND);
-            header.setForeground(UIConstants.DARK_TEXT);
-        } catch (Exception e) {
-            header.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            header.setBackground(new Color(200, 255, 200));
-            header.setForeground(Color.BLACK);
-        }
-        header.setPreferredSize(new Dimension(0, 35));
+        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        header.setBackground(new Color(248, 249, 250)); // Màu xám nhẹ
+        header.setForeground(new Color(33, 37, 41));
+        header.setPreferredSize(new Dimension(0, 45)); // Header cao hơn chút
+        header.setBackground(UIConstants.GREEN_BACKGROUND);
 
-        // Căn giữa dữ liệu (Trừ cột tên sách)
+        // Căn giữa dữ liệu (Trừ tên sách để căn trái)
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-        for (int i = 0; i < bookTable.getColumnCount(); i++) {
-            if (i != 2) { // Cột 2 là Tên sách -> Để mặc định (căn trái)
-                bookTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-            }
+
+        // Cột ID, ISBN, Giá, Tồn, Trạng thái -> Căn giữa
+        for (int i = 0; i < columns.length; i++) {
+            if (i == 2)
+                continue;
+            bookTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
         }
 
-        // Tính toán độ rộng cột
-        float[] columnPercentages = { 5f, 15f, 30f, 12.5f, 12.5f, 10f, 10f, 15f };
+        // Độ rộng cột tương đối
+        int[] widths = {
+                60, // ID (Nhỏ)
+                140, // ISBN
+                300, // TÊN SÁCH (Rất rộng để không bị che)
+                120, // GIÁ NHẬP
+                120, // GIÁ BÁN
+                100, // TỒN KHO
+                140, // TỒN KHO TỐI THIỂU
+                150 // TRẠNG THÁI
+        };
         TableColumnModel columnModel = bookTable.getColumnModel();
-        for (int i = 0; i < columnPercentages.length; i++) {
-            if (i < columnModel.getColumnCount()) {
-                int width = Math.round((TABLE_WIDTH_CONSTANT * columnPercentages[i]) / 100f);
-                columnModel.getColumn(i).setPreferredWidth(width);
-            }
+        for (int i = 0; i < widths.length && i < columnModel.getColumnCount(); i++) {
+            columnModel.getColumn(i).setPreferredWidth(widths[i]);
         }
-
-        JScrollPane scrollPane = new JScrollPane(bookTable);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
-        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 10));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-
-        add(scrollPane, BorderLayout.CENTER);
     }
 
     // Tải dữ liệu từ BUS lên bảng
@@ -115,19 +108,16 @@ public class BookTablePanel extends JPanel {
 
     public void setTableData(ArrayList<BookDTO> books) {
         tableModel.setRowCount(0);
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("vi", "VN"));
-
         for (BookDTO book : books) {
-            String statusVN = getStatusVN(book.getStatus());
             tableModel.addRow(new Object[] {
                     book.getBookId(),
                     book.getIsbn(),
                     book.getBookTitle(),
-                    currencyFormat.format(book.getImportPrice()),
-                    currencyFormat.format(book.getSellingPrice()),
+                    book.getFormattedImportPrice(),
+                    book.getFormattedSellingPrice(),
                     book.getStockQuantity(),
                     book.getMinimumStock(),
-                    statusVN
+                    book.getStatusVietnamese()
             });
         }
         bookTable.repaint();
@@ -153,19 +143,4 @@ public class BookTablePanel extends JPanel {
         loadTableData();
     }
 
-    private String getStatusVN(String statusEN) {
-        if (statusEN == null)
-            return "Còn hàng"; // Mặc định
-
-        switch (statusEN) {
-            case "IN_STOCK":
-                return "Còn hàng";
-            case "OUT_OF_STOCK":
-                return "Hết hàng";
-            case "SUSPENDED":
-                return "Ngừng kinh doanh";
-            default:
-                return statusEN; // Nếu không khớp case nào thì trả về nguyên gốc
-        }
-    }
 }

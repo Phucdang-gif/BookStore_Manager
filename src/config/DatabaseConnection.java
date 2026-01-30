@@ -6,15 +6,10 @@ import javax.swing.JOptionPane;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
-    // 2. Biến connection để dùng chung
     private Connection connection;
     String url = "jdbc:mysql://localhost:3306/bookstore_db";
     String userName = "root";
-    String password = ""; // Kiểm tra lại pass của bạn
-    // 3. ĐÂY MỚI LÀ CONSTRUCTOR (Hàm khởi tạo)
-    // - Phải là private (để đảm bảo Singleton)
-    // - KHÔNG ĐƯỢC có kiểu trả về (void, Connection...)
-    // - KHÔNG ĐƯỢC có từ khóa static
+    String password = "";
 
     private DatabaseConnection() {
         try {
@@ -23,11 +18,11 @@ public class DatabaseConnection {
             // Tạo kết nối và GÁN VÀO BIẾN this.connection
             this.connection = DriverManager.getConnection(url, userName, password);
 
-            System.out.println("Kết nối Database thành công!");
+            System.out.println("Connect to database success");
 
         } catch (Exception e) {
             e.printStackTrace(); // In lỗi ra console để debug
-            JOptionPane.showMessageDialog(null, "Không thể kết nối đến cơ sở dữ liệu: " + e.getMessage(), "Lỗi",
+            JOptionPane.showMessageDialog(null, "Connect Failed" + e.getMessage(), "Lỗi",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

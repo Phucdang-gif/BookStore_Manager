@@ -2,239 +2,158 @@ package GUI.model;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import BUS.BookBUS;
 import DTO.BookDTO;
-
 import java.awt.*;
-
-import GUI.components.ActionButton;
-import GUI.util.IconHelper;
-import GUI.components.SearchTextField;
 import java.util.ArrayList;
 
+import GUI.components.SearchTextField;
+import GUI.components.UserProfilePanel; // Import cái vừa tạo
+import GUI.components.ToolBarPanel;
 import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
+import java.awt.event.ActionListener;
 
 public class Header extends JPanel {
-    private JButton btnAdd, btnEdit, btnDelete, btnDetail, btnExportExcel;
+    private ToolBarPanel toolBar;
     private SearchTextField txtSearch;
-    private final int AVATAR_SIZE = 70;
-    private JPanel toolBar;
-    private BookTablePanel panelTable;
+    private UserProfilePanel userProfile; // Dùng cái class mới
+
+    private BookTablePanel panelTable; // Tham chiếu đến bảng để refresh
     private BookBUS bookBUS;
 
-    public Header() {
+    public Header(BookBUS bus) { // Nhận BUS từ bên ngoài vào (Dependency Injection)
+        this.bookBUS = bus;
         this.setOpaque(false);
         this.setLayout(new BorderLayout());
-        this.bookBUS = new BookBUS();
-        setPreferredSize(new Dimension(0, 100));
+        initStyle();
+
         initComponents();
-        setupLayout();
-        initEvents();
     }
 
     private void initComponents() {
-        toolBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        toolBar.setBackground(Color.LIGHT_GRAY);
-        ArrayList<ButtonModel> dsChucNang = new ArrayList<>();
-        dsChucNang.add(new ButtonModel("THÊM", "GUI/icon/add.svg", "ADD"));
-        dsChucNang.add(new ButtonModel("SỬA", "GUI/icon/edit.svg", "EDIT"));
-        dsChucNang.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
-        dsChucNang.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "READ"));
-        dsChucNang.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
-        for (ButtonModel chucnang : dsChucNang) {
-            JButton btn = createToolBar(chucnang);
-            toolBar.add(btn);
-            if (chucnang.getActionCommand().equals("ADD"))
-                btnAdd = btn;
-            if (chucnang.getActionCommand().equals("EDIT"))
-                btnEdit = btn;
-            if (chucnang.getActionCommand().equals("DELETE"))
-                btnDelete = btn;
-            if (chucnang.getActionCommand().equals("READ"))
-                btnDetail = btn;
-            if (chucnang.getActionCommand().equals("EXPORT"))
-                btnExportExcel = btn;
-        }
-        txtSearch = new SearchTextField();
+        // 1. Tạo Toolbar (Trái)
+        ArrayList<ButtonModel> listButtons = new ArrayList<>();
+        listButtons.add(new ButtonModel("THÊM", "GUI/icon/add.svg", "ADD"));
+        listButtons.add(new ButtonModel("SỬA", "GUI/icon/edit.svg", "EDIT"));
+        listButtons.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
+        listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
+        listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
 
+        // --- 2. TẠO LISTENER CHUNG (Controller tại chỗ) ---
+        // ToolBarPanel yêu cầu 1 Listener chung cho tất cả các nút
+        ActionListener toolBarListener = e -> {
+            String command = e.getActionCommand();
+            switch (command) {
+                case "ADD":
+                    onAdd();
+                    break;
+                case "EDIT":
+                    onEdit();
+                    break;
+                case "DELETE":
+                    onDelete();
+                    break;
+                case "DETAIL":
+                    onDetail();
+                    break;
+                case "EXPORT":
+                    System.out.println("Tính năng xuất Excel đang phát triển...");
+                    break;
+            }
+        };
+
+        // --- 3. KHỞI TẠO TOOLBAR PANEL ---
+        // Truyền list và listener vào constructor của ToolBarPanel
+        toolBar = new ToolBarPanel(listButtons, toolBarListener);
+        toolBar.setBackground(Color.RED);
+        toolBar.setOpaque(true);
+
+        // 2. Tạo Search (Giữa)
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
+        centerPanel.setOpaque(false);
+        txtSearch = new SearchTextField();
+        centerPanel.add(txtSearch);
+
+        // 3. Tạo Profile (Phải) - Code siêu ngắn gọn nhờ tách file
+        userProfile = new UserProfilePanel("Đặng Hoàng Phúc", "Quản lý kho");
+
+        // Gép lại
+        add(toolBar, BorderLayout.WEST);
+        add(centerPanel, BorderLayout.CENTER);
+        add(userProfile, BorderLayout.EAST);
+
+        setBorder(new EmptyBorder(0, 20, 0, 20)); // Padding 2 bên
     }
 
-    public void initEvents() {
-        // --- 1. CHỨC NĂNG THÊM ---
-        btnAdd.addActionListener(e -> {
+    private void initStyle() {
+        // 1. Set nền trắng cho toàn bộ Header
+        this.setOpaque(true);
+        this.setBackground(Color.WHITE);
+        this.setPreferredSize(new Dimension(0, 80));
+        this.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+    }
+    // --- CÁC HÀM XỬ LÝ LOGIC (PRIVATE) ---
+    // Giúp code dễ đọc, dễ sửa hơn là viết dồn cục trong initevents
+
+    private void onAdd() {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+        BookDialog dialog = new BookDialog(parent, null, DialogMode.ADD);
+        dialog.setVisible(true);
+        if (dialog.isSucceeded()) {
+            panelTable.refreshTable();
+        }
+    }
+
+    private void onEdit() {
+        int selectedId = panelTable.getSelectedBookId();
+        if (selectedId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần sửa!");
+            return;
+        }
+        BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
+        if (fullInfo != null) {
             JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-            // Truyền null vì thêm mới chưa có sách, Mode là ADD
-            BookDialog dialog = new BookDialog(parent, null, DialogMode.ADD);
+            BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.EDIT);
             dialog.setVisible(true);
             if (dialog.isSucceeded()) {
                 panelTable.refreshTable();
             }
-        });
-        // --- 2. CHỨC NĂNG XEM CHI TIẾT ---
-        this.getBtnDetail().addActionListener(e -> {
-            int selectedId = panelTable.getSelectedBookId();
-            if (selectedId == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn sách để xem!");
-                return;
-            }
-
-            // Gọi BUS để lấy thông tin chi tiết (bao gồm cả tác giả...)
-            BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
-            if (fullInfo != null) {
-                JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-                BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.READ);
-                dialog.setVisible(true);
-            } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin sách!");
-            }
-        });
-
-        // --- 3. CHỨC NĂNG SỬA ---
-        btnEdit.addActionListener(e -> {
-            int selectedId = panelTable.getSelectedBookId();
-            if (selectedId == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần sửa!");
-                return;
-            }
-            BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
-
-            if (fullInfo != null) {
-                JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-                BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.EDIT);
-                dialog.setVisible(true);
-                if (dialog.isSucceeded()) {
-                    panelTable.refreshTable();
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin sách!");
-            }
-        });
-        // ... (Code nút Thêm, Sửa giữ nguyên) ...
-
-        // --- XỬ LÝ NÚT XÓA ---
-        if (btnDelete != null) {
-            btnDelete.addActionListener(e -> {
-                // 1. Kiểm tra xem người dùng đã chọn dòng nào chưa
-                int selectedId = panelTable.getSelectedBookId();
-                if (selectedId == -1) {
-                    JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần xóa!");
-                    return;
-                }
-                // 2. Hỏi xác nhận (Tránh lỡ tay bấm nhầm)
-                int confirm = JOptionPane.showConfirmDialog(
-                        this,
-                        "Bạn có chắc chắn muốn xóa sách có ID: " + selectedId
-                                + " không?\nHành động này không thể hoàn tác!",
-                        "Xác nhận xóa",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE);
-
-                if (confirm == JOptionPane.YES_OPTION) {
-                    // 3. Gọi BUS để xóa
-                    // nếu sản phẩm này có hóa đơn hoặc phiếu nhập thì cách xóa này database sẽ
-                    // không chịu xóa
-                    // Thay vì gọi deleteBook, ta gọi updateStatus
-                    // Bạn cần viết thêm hàm updateStatus trong BUS/DAO nếu muốn làm cách này
-                    // Ví dụ: bookBUS.updateStatus(selectedId, "SUSPENDED");
-                    boolean result = bookBUS.deleteBook(selectedId);
-                    if (result) {
-                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                        panelTable.refreshTable();
-                    } else {
-                        JOptionPane.showMessageDialog(this,
-                                "Xóa thất bại! Có thể sách này đang tồn tại trong hóa đơn.");
-                    }
-                }
-            });
         }
-        // --- 5. TÌM KIẾM (Gợi ý thêm) ---
-        // txtSearch.addKeyListener(...) -> gọi bookBUS.search...
     }
 
-    private void setupLayout() {
-        JPanel cardPanel = new JPanel(new BorderLayout());
-        // Panel chứa các nút (Bên trái)
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 25, 25));
-        leftPanel.setBackground(Color.WHITE);
-        leftPanel.add(toolBar);
-        // 2. Panel chứa thanh tìm kiếm (Ở giữa)
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 5));
-        centerPanel.setBackground(Color.WHITE);
-        centerPanel.add(txtSearch);
-        // Panel chứa profile (Bên phải)
-        JPanel rightPanel = new JPanel();
-        rightPanel.setBackground(Color.WHITE);
-        rightPanel.add(createProfilePanel());
+    private void onDelete() {
+        int selectedId = panelTable.getSelectedBookId();
+        if (selectedId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần xóa!");
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa ID: " + selectedId + "?",
+                "Xác nhận", JOptionPane.YES_NO_OPTION);
 
-        cardPanel.add(leftPanel, BorderLayout.WEST);
-        cardPanel.add(centerPanel, BorderLayout.CENTER);
-        cardPanel.add(rightPanel, BorderLayout.EAST);
-        add(cardPanel, BorderLayout.CENTER);
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (bookBUS.deleteBook(selectedId)) {
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                panelTable.refreshTable();
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+            }
+        }
     }
 
-    private JPanel createProfilePanel() {
-        JPanel profilePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        profilePanel.setBackground(Color.RED);
-        // Avatar
-        JLabel lblAvatar = new JLabel();
-        IconHelper.setIcon(lblAvatar, "GUI/icon/avatar.svg", AVATAR_SIZE, AVATAR_SIZE);
-
-        // Panel chứa tên và chức vụ
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setBackground(Color.WHITE);
-
-        JLabel lblName = new JLabel("ĐẶNG HOÀNG PHÚC");
-        lblName.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblName.setForeground(new Color(33, 37, 41));
-        lblName.setAlignmentX(Component.RIGHT_ALIGNMENT);
-
-        JLabel lblRole = new JLabel("Quản lý kho hàng");
-        lblRole.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblRole.setForeground(new Color(108, 117, 125));
-        lblRole.setAlignmentX(Component.RIGHT_ALIGNMENT);
-
-        infoPanel.add(lblName);
-        infoPanel.add(Box.createVerticalStrut(2));
-        infoPanel.add(lblRole);
-
-        profilePanel.add(infoPanel);
-        profilePanel.add(lblAvatar);
-        profilePanel.setBorder(new EmptyBorder(20, 10, 20, 10));
-        return profilePanel;
-    }
-
-    private JButton createToolBar(ButtonModel model) {
-        ActionButton btn = new ActionButton(model.getTitle(), model.getIconPath(), 25);
-        btn.setActionCommand(model.getActionCommand());
-        return btn;
-    }
-
-    // Thêm vào cuối file Header.java
-    public JButton getBtnAdd() {
-        return btnAdd;
-    }
-
-    public JButton getBtnEdit() {
-        return btnEdit;
-    }
-
-    public JButton getBtnDelete() {
-        return btnDelete;
-    }
-
-    public JButton getBtnDetail() {
-        return btnDetail;
-    }
-
-    public JButton getBtnExportExcel() {
-        return btnExportExcel;
-    }
-
-    public SearchTextField getTxtSearch() {
-        return txtSearch;
+    private void onDetail() {
+        int selectedId = panelTable.getSelectedBookId();
+        if (selectedId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách xem chi tiết!");
+            return;
+        }
+        BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
+        if (fullInfo != null) {
+            BookDialog dialog = new BookDialog((JFrame) SwingUtilities.getWindowAncestor(this), fullInfo,
+                    DialogMode.READ);
+            dialog.setVisible(true);
+        }
     }
 
     public void setPanelTable(BookTablePanel panelTable) {

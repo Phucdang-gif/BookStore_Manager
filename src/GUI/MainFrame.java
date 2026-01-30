@@ -16,7 +16,6 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         initComponents();
         setupLayout();
-
     }
 
     private void initComponents() {

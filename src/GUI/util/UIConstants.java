@@ -22,4 +22,6 @@ public class UIConstants {
     public static final int HEADER_HEIGHT = 100;
     public static final int BUTTON_HEIGHT = 40;
     public static final Dimension BUTTON_SIZE = new Dimension(160, 40);
+    public static final int TABLE_WIDTH_CONSTANT = 1200;
+    public static final int ROW_HEIGHT = 40;
 }

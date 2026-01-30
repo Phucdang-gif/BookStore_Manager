@@ -2,6 +2,8 @@ package DTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 
 public class BookDTO {
@@ -214,6 +216,22 @@ public class BookDTO {
 
     public void setAuthorNames(List<String> authorNames) {
         this.authorNames = authorNames;
+    }
+
+    public String getStatusVietnamese() {
+        if ("IN_STOCK".equals(this.status))
+            return "Còn hàng";
+        if ("OUT_OF_STOCK".equals(this.status))
+            return "Hết hàng";
+        return "Ngừng kinh doanh";
+    }
+
+    public String getFormattedSellingPrice() {
+        return NumberFormat.getCurrencyInstance(Locale.of("vi", "VN")).format(this.sellingPrice);
+    }
+
+    public String getFormattedImportPrice() {
+        return NumberFormat.getCurrencyInstance(Locale.of("vi", "VN")).format(this.importPrice);
     }
 
     // toString() để debug dễ dàng
