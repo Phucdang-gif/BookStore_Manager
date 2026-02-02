@@ -1,6 +1,8 @@
 package GUI.util;
 
 import java.awt.*;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 public class UIConstants {
     public static final Color CYAN_BACKGROUND = new Color(3, 154, 195);
@@ -24,4 +26,12 @@ public class UIConstants {
     public static final Dimension BUTTON_SIZE = new Dimension(160, 40);
     public static final int TABLE_WIDTH_CONSTANT = 1200;
     public static final int ROW_HEIGHT = 40;
+
+    public static String removeAccent(String s) {
+        if (s == null)
+            return "";
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("").toLowerCase().replace("đ", "d");
+    }
 }

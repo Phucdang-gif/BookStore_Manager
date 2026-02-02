@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
+import javax.swing.text.Utilities;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class BookTablePanel extends JPanel {
     private DefaultTableModel tableModel;
     private String[] columns = { "ID", "ISBN", "TÊN SÁCH", "GIÁ NHẬP", "GIÁ BÁN", "TỒN KHO", "TỒN KHO TỐI THIỂU",
             "TRẠNG THÁI" };
+    private ArrayList<BookDTO> listOriginal;
 
     public BookTablePanel(BookBUS bus) {
         this.bookBUS = bus;
@@ -102,8 +104,8 @@ public class BookTablePanel extends JPanel {
 
     // Tải dữ liệu từ BUS lên bảng
     public void loadTableData() {
-        ArrayList<BookDTO> books = bookBUS.getAll();
-        setTableData(books);
+        listOriginal = bookBUS.getAll();
+        setTableData(listOriginal);
     }
 
     public void setTableData(ArrayList<BookDTO> books) {
@@ -143,4 +145,32 @@ public class BookTablePanel extends JPanel {
         loadTableData();
     }
 
+    public void filterTable(String keyword) {
+        if (listOriginal == null)
+            return;
+
+        if (keyword == null || keyword.trim().isEmpty()) {
+            setTableData(listOriginal);
+            return;
+        }
+
+        String key = UIConstants.removeAccent(keyword);
+
+        ArrayList<BookDTO> listFiltered = new ArrayList<>();
+
+        for (BookDTO book : listOriginal) {
+            // Lấy các trường muốn tìm kiếm
+            String name = UIConstants.removeAccent(book.getBookTitle());
+            String isbn = UIConstants.removeAccent(book.getIsbn());
+
+            // Nếu muốn tìm cả tác giả thì nối chuỗi tác giả vào đây
+            // String author = UIConstants.removeAccent(book.getAuthorNames());
+            if (name.contains(key) || isbn.contains(key)) {
+                listFiltered.add(book);
+            }
+        }
+
+        // Cập nhật lại bảng với dữ liệu đã lọc
+        setTableData(listFiltered);
+    }
 }

@@ -158,6 +158,23 @@ public class BookDAO {
         return false;
     }
 
+    public boolean updateQuantity(int bookId, int quantitySold) {
+        try {
+            // Trừ số lượng tồn kho
+            String sql = "UPDATE books SET stock_quantity = stock_quantity - ? WHERE book_id = ?";
+            PreparedStatement ps = DatabaseConnection.getInstance().getConnection().prepareStatement(sql);
+
+            ps.setInt(1, quantitySold);
+            ps.setInt(2, bookId);
+
+            int rows = ps.executeUpdate();
+            return rows > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Hàm phụ: Xóa tất cả tác giả của một cuốn sách (Dùng khi Update hoặc Delete
      * sách)

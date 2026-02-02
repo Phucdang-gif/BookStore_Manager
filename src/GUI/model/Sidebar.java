@@ -4,84 +4,80 @@ import GUI.util.UIConstants;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class Sidebar extends JPanel {
-    private JButton btnSelected; // Lưu nút đang được chọn
+    private JButton btnSelected;
+    // Interface để giao tiếp với bên ngoài
+    private ActionListener menuListener;
 
-    // --- CẤU HÌNH KÍCH THƯỚC (Tùy chỉnh độ rộng tại đây) ---
-    private final int SIDEBAR_WIDTH = 200; // Sidebar rộng hơn (300px) để nhìn sang trọng
+    private final int SIDEBAR_WIDTH = 220;
 
     public Sidebar() {
         initComponents();
     }
 
+    public void setMenuListener(ActionListener listener) {
+        this.menuListener = listener;
+    }
+
     private void initComponents() {
-        // Màu nền Sidebar (Xanh Navy đậm)
         setBackground(UIConstants.CYAN_BACKGROUND);
         setLayout(new BorderLayout());
-        // 1. Thiết lập chiều rộng cố định cho Sidebar
         setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
 
-        // --- PHẦN MENU BUTTONS ---
         JPanel menuPanel = new JPanel();
         menuPanel.setOpaque(false);
         menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.Y_AXIS));
 
-        // Tạo các nút menu
-        JButton btn1 = createMenuButton("QUẢN LÝ SÁCH", "/icon/book.svg");
-        JButton btn2 = createMenuButton("DANH MỤC", "/icon/category.svg");
-        JButton btn3 = createMenuButton("PHIẾU NHẬP", "/icon/import.svg");
-        JButton btn4 = createMenuButton("PHIẾU XUẤT", "/icon/export.svg");
+        // --- DANH SÁCH MENU ---
+        // command string ("BOOK", "SALES"...) sẽ được gửi đi khi bấm
+        JButton btnBook = createMenuButton("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK");
+        JButton btnSales = createMenuButton("BÁN HÀNG", "GUI/icon/product.svg", "SALES"); // Icon tạm
+        JButton btnCategory = createMenuButton("DANH MỤC", "GUI/icon/category.svg", "CATEGORY");
 
-        menuPanel.add(btn1);
-        menuPanel.add(Box.createVerticalStrut(10)); // Khoảng cách giữa các nút
-        menuPanel.add(btn2);
+        menuPanel.add(btnBook);
         menuPanel.add(Box.createVerticalStrut(10));
-        menuPanel.add(btn3);
+        menuPanel.add(btnSales);
         menuPanel.add(Box.createVerticalStrut(10));
-        menuPanel.add(btn4);
+        menuPanel.add(btnCategory);
 
-        // Chọn mặc định nút đầu tiên
-        setActiveButton(btn1);
+        setActiveButton(btnBook);
         add(menuPanel, BorderLayout.CENTER);
     }
 
-    // --- HÀM TẠO NÚT MENU ---
-    private JButton createMenuButton(String text, String iconPath) {
+    private JButton createMenuButton(String text, String iconPath, String command) {
         JButton btn = new JButton(text);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setForeground(Color.WHITE);
-        btn.setBackground(UIConstants.CYAN_BACKGROUND); // Cùng màu nền
-
-        // Padding trong nút: Trên/Dưới 14px, Trái 40px (cho rộng)
+        btn.setBackground(UIConstants.CYAN_BACKGROUND);
         btn.setBorder(new EmptyBorder(14, 40, 14, 20));
-
         btn.setHorizontalAlignment(SwingConstants.LEFT);
-        btn.setMaximumSize(new Dimension(SIDEBAR_WIDTH, 60)); // Chiều rộng full, cao 60px
+        btn.setMaximumSize(new Dimension(SIDEBAR_WIDTH, 60));
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Sự kiện click
-        btn.addActionListener(e -> setActiveButton(btn));
+        // Quan trọng: Đặt ActionCommand để phân biệt nút nào được bấm
+        btn.setActionCommand(command);
+
+        btn.addActionListener(e -> {
+            setActiveButton(btn);
+            if (menuListener != null) {
+                menuListener.actionPerformed(e); // Gửi sự kiện ra ngoài
+            }
+        });
         return btn;
     }
 
-    // --- HÀM XỬ LÝ HIGHLIGHT KHI CHỌN NÚT ---
     private void setActiveButton(JButton btn) {
         if (btnSelected != null) {
-            // Trả lại trạng thái cũ cho nút trước đó
             btnSelected.setBackground(UIConstants.CYAN_BACKGROUND);
             btnSelected.setBorder(new EmptyBorder(14, 40, 14, 20));
         }
         btnSelected = btn;
-
-        // Màu nền khi được chọn (Sáng hơn nền sidebar một chút)
         btnSelected.setBackground(UIConstants.YELLOW_BACKGROUND);
-
-        // Tạo đường kẻ màu xanh bên trái (Indicator)
         btnSelected.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 6, 0, 0, new Color(179, 188, 204)), // Vạch 6px
-                new EmptyBorder(14, 34, 14, 20) // Padding trái giảm đi 6px để bù vào vạch
-        ));
+                BorderFactory.createMatteBorder(0, 6, 0, 0, new Color(179, 188, 204)),
+                new EmptyBorder(14, 34, 14, 20)));
     }
 }

@@ -16,6 +16,7 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
         initComponents();
         setupLayout();
+        initEvents();
     }
 
     private void initComponents() {
@@ -27,6 +28,14 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
         add(content, BorderLayout.CENTER);
         add(sidebar, BorderLayout.WEST);
+    }
+
+    private void initEvents() {
+        // Lắng nghe sự kiện click từ Sidebar
+        sidebar.setMenuListener(e -> {
+            String command = e.getActionCommand(); // "BOOK", "SALES"...
+            content.showPanel(command); // Bảo MainPanel chuyển tab
+        });
     }
 
     public static void main(String[] args) {

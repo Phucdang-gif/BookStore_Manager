@@ -120,15 +120,13 @@ CREATE TABLE books (
 
 CREATE TABLE authors (
     author_id INT AUTO_INCREMENT PRIMARY KEY,
-    author_name VARCHAR(100) NOT NULL,
-    avatar VARCHAR(255)
+    author_name VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE book_authors (
     book_author_id INT AUTO_INCREMENT PRIMARY KEY,
     book_id INT NOT NULL,
     author_id INT NOT NULL,
-    role VARCHAR(50),
     display_order INT,
     FOREIGN KEY (book_id) REFERENCES books(book_id),
     FOREIGN KEY (author_id) REFERENCES authors(author_id)

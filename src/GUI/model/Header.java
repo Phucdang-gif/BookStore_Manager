@@ -12,13 +12,15 @@ import GUI.components.UserProfilePanel; // Import cái vừa tạo
 import GUI.components.ToolBarPanel;
 import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
+import GUI.dialog.sale.SalesDialog;
+
 import java.awt.event.ActionListener;
 
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
     private SearchTextField txtSearch;
     private UserProfilePanel userProfile; // Dùng cái class mới
-
+    private InvoiceTablePanel pnlInvoice;
     private BookTablePanel panelTable; // Tham chiếu đến bảng để refresh
     private BookBUS bookBUS;
 
@@ -29,6 +31,7 @@ public class Header extends JPanel {
         initStyle();
 
         initComponents();
+        initEvents();
     }
 
     private void initComponents() {
@@ -40,32 +43,9 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
 
-        // --- 2. TẠO LISTENER CHUNG (Controller tại chỗ) ---
-        // ToolBarPanel yêu cầu 1 Listener chung cho tất cả các nút
-        ActionListener toolBarListener = e -> {
-            String command = e.getActionCommand();
-            switch (command) {
-                case "ADD":
-                    onAdd();
-                    break;
-                case "EDIT":
-                    onEdit();
-                    break;
-                case "DELETE":
-                    onDelete();
-                    break;
-                case "DETAIL":
-                    onDetail();
-                    break;
-                case "EXPORT":
-                    System.out.println("Tính năng xuất Excel đang phát triển...");
-                    break;
-            }
-        };
-
         // --- 3. KHỞI TẠO TOOLBAR PANEL ---
         // Truyền list và listener vào constructor của ToolBarPanel
-        toolBar = new ToolBarPanel(listButtons, toolBarListener);
+        toolBar = new ToolBarPanel(listButtons);
         toolBar.setBackground(Color.RED);
         toolBar.setOpaque(true);
 
@@ -98,10 +78,22 @@ public class Header extends JPanel {
 
     private void onAdd() {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        BookDialog dialog = new BookDialog(parent, null, DialogMode.ADD);
-        dialog.setVisible(true);
-        if (dialog.isSucceeded()) {
-            panelTable.refreshTable();
+        if (panelTable != null && panelTable.isShowing()) {
+            // Đang ở tab Sách -> Bật BookDialog
+            BookDialog dialog = new BookDialog(parent, null, DialogMode.ADD);
+            dialog.setVisible(true);
+            if (dialog.isSucceeded())
+                panelTable.refreshTable();
+
+        } else if (pnlInvoice != null && pnlInvoice.isShowing()) {
+            // Đang ở tab Hóa đơn -> Bật SalesDialog (Tạo hóa đơn)
+            SalesDialog dialog = new SalesDialog(parent);
+            dialog.setVisible(true);
+
+            // Nếu bán thành công thì reload lại bảng hóa đơn
+            if (dialog.isSucceeded()) {
+                pnlInvoice.loadData();
+            }
         }
     }
 
@@ -156,7 +148,55 @@ public class Header extends JPanel {
         }
     }
 
+    private void onSearch() {
+        // 1. Lấy từ khóa
+        String text = txtSearch.getText();
+
+        // 2. Gọi bảng để lọc
+        if (panelTable != null) {
+            panelTable.filterTable(text);
+        }
+    }
+
     public void setPanelTable(BookTablePanel panelTable) {
         this.panelTable = panelTable;
+    }
+
+    private void initEvents() {
+        toolBar.initEvent(e -> {
+            String command = e.getActionCommand();
+            switch (command) {
+                case "ADD":
+                    onAdd();
+                    break;
+                case "EDIT":
+                    onEdit();
+                    break;
+                case "DELETE":
+                    onDelete();
+                    break;
+                case "DETAIL":
+                    onDetail();
+                    break;
+                case "EXPORT":
+                    System.out.println("Xuất Excel...");
+                    break;
+            }
+        });
+
+        // --- B. XỬ LÝ TÌM KIẾM (Đã làm ở bài trước) ---
+        txtSearch.getBtnSearch().addActionListener(e -> onSearch());
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    onSearch();
+                }
+            }
+        });
+    }
+
+    public void setPanelInvoice(InvoiceTablePanel pnl) {
+        this.pnlInvoice = pnl;
     }
 }

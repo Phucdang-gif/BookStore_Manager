@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.text.NumberFormat;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 public class BookDTO {
     private int bookId; // book_id
@@ -22,7 +22,7 @@ public class BookDTO {
     private int minimumStock; // minimum_stock
     private String image; // image
     private String status; // status (in_stock, out_of_stock, discontinued)
-    private LocalDateTime addedAt; // added_at
+    private Timestamp addedAt; // added_at
 
     // Fields bổ sung cho hiển thị (JOIN với publishers, categories)
     private String publisherName;
@@ -186,11 +186,11 @@ public class BookDTO {
         this.status = status;
     }
 
-    public LocalDateTime getAddedAt() {
+    public Timestamp getAddedAt() {
         return addedAt;
     }
 
-    public void setAddedAt(LocalDateTime addedAt) {
+    public void setAddedAt(Timestamp addedAt) {
         this.addedAt = addedAt;
     }
 

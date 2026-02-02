@@ -30,7 +30,6 @@ public class DatabaseConnection {
     // 4. Hàm lấy Instance duy nhất
     public static DatabaseConnection getInstance() {
         if (instance == null) {
-            // Khi gọi new ở đây, nó sẽ chạy vào cái Constructor private ở trên
             instance = new DatabaseConnection();
         }
         return instance;
