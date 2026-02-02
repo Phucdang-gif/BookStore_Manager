@@ -4,25 +4,27 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import BUS.BookBUS;
 import DTO.BookDTO;
+
 import java.awt.*;
 import java.util.ArrayList;
 
+import GUI.util.ExcelHelper;
+import GUI.components.ActionButton;
 import GUI.components.SearchTextField;
-import GUI.components.UserProfilePanel; // Import cái vừa tạo
 import GUI.components.ToolBarPanel;
 import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
-import GUI.dialog.sale.SalesDialog;
-
-import java.awt.event.ActionListener;
+import GUI.dialog.invoice.InvoiceDialog;
+import GUI.components.RoundedBorderButton;
 
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
     private SearchTextField txtSearch;
-    private UserProfilePanel userProfile; // Dùng cái class mới
     private InvoiceTablePanel pnlInvoice;
     private BookTablePanel panelTable; // Tham chiếu đến bảng để refresh
     private BookBUS bookBUS;
+    private String currentTab = "BOOK";
+    private ActionButton btnRefresh;
 
     public Header(BookBUS bus) { // Nhận BUS từ bên ngoài vào (Dependency Injection)
         this.bookBUS = bus;
@@ -35,6 +37,7 @@ public class Header extends JPanel {
     }
 
     private void initComponents() {
+        setBorder(BorderFactory.createMatteBorder(1, 0, 0, 1, new Color(230, 230, 230)));
         // 1. Tạo Toolbar (Trái)
         ArrayList<ButtonModel> listButtons = new ArrayList<>();
         listButtons.add(new ButtonModel("THÊM", "GUI/icon/add.svg", "ADD"));
@@ -42,28 +45,32 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
-
         // --- 3. KHỞI TẠO TOOLBAR PANEL ---
         // Truyền list và listener vào constructor của ToolBarPanel
         toolBar = new ToolBarPanel(listButtons);
-        toolBar.setBackground(Color.RED);
-        toolBar.setOpaque(true);
 
+        btnRefresh = new RoundedBorderButton(
+                "LÀM MỚI",
+                "GUI/icon/refresh.svg",
+                new Color(0, 153, 255), // Màu xanh chủ đạo
+                20 // Độ bo góc
+        );
         // 2. Tạo Search (Giữa)
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
         centerPanel.setOpaque(false);
         txtSearch = new SearchTextField();
         centerPanel.add(txtSearch);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 20));
+        rightPanel.setOpaque(false); // Trong suốt
 
-        // 3. Tạo Profile (Phải) - Code siêu ngắn gọn nhờ tách file
-        userProfile = new UserProfilePanel("Đặng Hoàng Phúc", "Quản lý kho");
-
+        // 2. Thêm nút vào Panel phụ này
+        rightPanel.add(btnRefresh);
         // Gép lại
         add(toolBar, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
-        add(userProfile, BorderLayout.EAST);
+        add(rightPanel, BorderLayout.EAST);
 
-        setBorder(new EmptyBorder(0, 20, 0, 20)); // Padding 2 bên
+        setBorder(new EmptyBorder(0, 10, 0, 20)); // Padding 2 bên
     }
 
     private void initStyle() {
@@ -78,39 +85,48 @@ public class Header extends JPanel {
 
     private void onAdd() {
         JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-        if (panelTable != null && panelTable.isShowing()) {
-            // Đang ở tab Sách -> Bật BookDialog
-            BookDialog dialog = new BookDialog(parent, null, DialogMode.ADD);
-            dialog.setVisible(true);
-            if (dialog.isSucceeded())
-                panelTable.refreshTable();
 
-        } else if (pnlInvoice != null && pnlInvoice.isShowing()) {
-            // Đang ở tab Hóa đơn -> Bật SalesDialog (Tạo hóa đơn)
-            SalesDialog dialog = new SalesDialog(parent);
-            dialog.setVisible(true);
+        switch (currentTab) {
+            case "BOOK":
+                // Logic thêm sách
+                BookDialog bookDialog = new BookDialog(parent, null, DialogMode.ADD);
+                bookDialog.setVisible(true);
+                if (bookDialog.isSucceeded())
+                    panelTable.refreshTable();
+                break;
 
-            // Nếu bán thành công thì reload lại bảng hóa đơn
-            if (dialog.isSucceeded()) {
-                pnlInvoice.loadData();
-            }
+            case "SALES":
+                InvoiceDialog invoiceDialog = new InvoiceDialog(parent);
+                invoiceDialog.setVisible(true);
+                if (invoiceDialog.isSucceeded()) {
+                    pnlInvoice.loadData();
+                }
+                break;
         }
     }
 
     private void onEdit() {
-        int selectedId = panelTable.getSelectedBookId();
-        if (selectedId == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần sửa!");
-            return;
-        }
-        BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
-        if (fullInfo != null) {
-            JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
-            BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.EDIT);
-            dialog.setVisible(true);
-            if (dialog.isSucceeded()) {
-                panelTable.refreshTable();
-            }
+        switch (currentTab) {
+            case "BOOK":
+                int selectedBookId = panelTable.getSelectedBookId();
+                if (selectedBookId == -1) {
+                    JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần sửa!");
+                    return;
+                }
+                BookDTO fullInfo = bookBUS.getBookDetails(selectedBookId);
+                if (fullInfo != null) {
+                    JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+                    BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.EDIT);
+                    dialog.setVisible(true);
+                    if (dialog.isSucceeded()) {
+                        panelTable.refreshTable();
+                    }
+                }
+                break;
+
+            case "SALES":
+                JOptionPane.showMessageDialog(this, "Hóa đơn đã xuất không thể sửa! Chỉ có thể xem chi tiết.");
+                break;
         }
     }
 
@@ -123,14 +139,28 @@ public class Header extends JPanel {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc chắn muốn xóa ID: " + selectedId + "?",
                 "Xác nhận", JOptionPane.YES_NO_OPTION);
+        switch (currentTab) {
+            case "BOOK":
+                if (confirm == JOptionPane.YES_OPTION) {
+                    if (bookBUS.deleteBook(selectedId)) {
+                        JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                        panelTable.refreshTable();
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+                    }
+                }
+                break;
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            if (bookBUS.deleteBook(selectedId)) {
-                JOptionPane.showMessageDialog(this, "Xóa thành công!");
-                panelTable.refreshTable();
-            } else {
-                JOptionPane.showMessageDialog(this, "Xóa thất bại!");
-            }
+            // case "SALES":
+            // if (confirm == JOptionPane.YES_OPTION) {
+            // if (invoiceBUS.deleteInvoice(selectedId)) {
+            // JOptionPane.showMessageDialog(this, "Xóa thành công!");
+            // panelTable.refreshTable();
+            // } else {
+            // JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+            // }
+            // }
+            // break;
         }
     }
 
@@ -140,19 +170,59 @@ public class Header extends JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn sách xem chi tiết!");
             return;
         }
-        BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
-        if (fullInfo != null) {
-            BookDialog dialog = new BookDialog((JFrame) SwingUtilities.getWindowAncestor(this), fullInfo,
-                    DialogMode.READ);
-            dialog.setVisible(true);
+        switch (currentTab) {
+            case "BOOK":
+                BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
+                if (fullInfo != null) {
+                    BookDialog dialog = new BookDialog((JFrame) SwingUtilities.getWindowAncestor(this), fullInfo,
+                            DialogMode.READ);
+                    dialog.setVisible(true);
+                }
+                break;
+
+            case "SALES":
+                break;
+        }
+
+    }
+
+    private void onRefresh() {
+        boolean isSuccess = false;
+        switch (currentTab) {
+            case "BOOK":
+                if (panelTable != null) {
+                    isSuccess = panelTable.refreshTable();
+                }
+                break;
+            case "SALES":
+                break;
+        }
+
+        if (isSuccess) {
+            JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // Icon lỗi màu đỏ
+            JOptionPane.showMessageDialog(this, "Lỗi: Không thể tải dữ liệu!\nVui lòng kiểm tra lại kết nối Database.",
+                    "Thất bại", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void onExportExcel() {
+        switch (currentTab) {
+            case "BOOK":
+                if (panelTable != null) {
+                    ExcelHelper.exportToExcel(panelTable.getBookTable(), "Danh sách Sách", this);
+                }
+                break;
+
+            default:
+                JOptionPane.showMessageDialog(this, "Chức năng xuất Excel chưa hỗ trợ tab này!");
         }
     }
 
     private void onSearch() {
-        // 1. Lấy từ khóa
         String text = txtSearch.getText();
-
-        // 2. Gọi bảng để lọc
         if (panelTable != null) {
             panelTable.filterTable(text);
         }
@@ -179,7 +249,7 @@ public class Header extends JPanel {
                     onDetail();
                     break;
                 case "EXPORT":
-                    System.out.println("Xuất Excel...");
+                    onExportExcel();
                     break;
             }
         });
@@ -194,9 +264,21 @@ public class Header extends JPanel {
                 }
             }
         });
+        btnRefresh.addActionListener(e -> onRefresh());
     }
 
     public void setPanelInvoice(InvoiceTablePanel pnl) {
         this.pnlInvoice = pnl;
+    }
+
+    public void setPnlName(String name) {
+        this.currentTab = name;
+
+        // (Nâng cao) Tùy chỉnh toolbar theo tab
+        // Ví dụ: Hóa đơn thì không cho sửa -> Ẩn nút sửa
+
+        if (name.equals("SALES")) {
+            // Có thể ẩn bớt nút nếu muốn
+        }
     }
 }

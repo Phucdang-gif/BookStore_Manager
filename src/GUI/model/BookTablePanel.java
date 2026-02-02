@@ -9,7 +9,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
-import javax.swing.text.Utilities;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -139,10 +138,14 @@ public class BookTablePanel extends JPanel {
     }
 
     // Làm mới bảng (Gọi lại data từ DB)
-    public void refreshTable() {
-        // Trong mô hình BUS hiện tại, cần reload lại listBook trước
-        bookBUS.loadDataFromDB();
-        loadTableData();
+    public boolean refreshTable() {
+        boolean isSuccess = bookBUS.loadDataFromDB();
+
+        if (isSuccess) {
+            loadTableData(); // Chỉ nạp lại bảng nếu thành công
+        }
+
+        return isSuccess;
     }
 
     public void filterTable(String keyword) {
@@ -173,4 +176,9 @@ public class BookTablePanel extends JPanel {
         // Cập nhật lại bảng với dữ liệu đã lọc
         setTableData(listFiltered);
     }
+
+    public JTable getBookTable() {
+        return bookTable;
+    }
+
 }

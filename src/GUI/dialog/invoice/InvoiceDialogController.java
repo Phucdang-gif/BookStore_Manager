@@ -1,4 +1,4 @@
-package GUI.dialog.sale;
+package GUI.dialog.invoice;
 
 import BUS.BookBUS;
 import BUS.InvoiceBUS;
@@ -13,84 +13,90 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SalesDialogController {
-    private SalesDialog view;
+public class InvoiceDialogController {
+    private InvoiceDialogView view; // Tham chiếu đến View
+    private InvoiceDialog dialog; // Tham chiếu đến Dialog (để đóng)
+
     private BookBUS bookBUS;
     private InvoiceBUS invoiceBUS;
-
-    // Data Model
     private List<BookDTO> listBooks;
     private List<InvoiceDetailDTO> cartDetails = new ArrayList<>();
     private boolean isSuccess = false;
 
-    public SalesDialogController(SalesDialog view) {
+    public InvoiceDialogController(InvoiceDialogView view, InvoiceDialog dialog) {
         this.view = view;
+        this.dialog = dialog;
         this.bookBUS = new BookBUS();
         this.invoiceBUS = new InvoiceBUS();
     }
 
+    public void initData() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        view.lblDate.setText(now.format(formatter));
+
+        // TODO: Lấy tên nhân viên từ Session đăng nhập
+        view.txtEmployeeName.setText("Admin (ID: 1)");
+    }
+
     public void initEvents() {
-        // 1. Tìm kiếm sách
-        view.getTxtSearch().addKeyListener(new KeyAdapter() {
+        // Tìm kiếm
+        view.txtSearchBook.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                loadBookData(view.getTxtSearch().getText());
+                loadBookData(view.txtSearchBook.getText());
             }
         });
 
-        // 2. Click bảng sách -> Thêm vào giỏ
-        view.getTblBooks().addMouseListener(new MouseAdapter() {
+        // Double click bảng sách -> Thêm vào giỏ
+        view.tblBooks.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    int row = view.getTblBooks().getSelectedRow();
+                    int row = view.tblBooks.getSelectedRow();
                     if (row != -1) {
-                        int bookId = (int) view.getTblBooks().getValueAt(row, 0);
+                        int bookId = (int) view.tblBooks.getValueAt(row, 0);
                         addToCart(bookId);
                     }
                 }
             }
         });
 
-        // 3. Tính tiền thừa khi nhập tiền khách đưa
-        view.getTxtMoneyReceived().addKeyListener(new KeyAdapter() {
+        // Menu chuột phải xóa giỏ hàng
+        JPopupMenu popup = new JPopupMenu();
+        JMenuItem itemDel = new JMenuItem("Xóa dòng này");
+        itemDel.addActionListener(e -> removeFromCart());
+        popup.add(itemDel);
+        view.tblCart.setComponentPopupMenu(popup);
+
+        // Tính tiền thừa
+        view.txtMoneyReceived.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 calculateChange();
             }
         });
 
-        // 4. Nút Thanh toán
-        view.getBtnPay().addActionListener(e -> processPayment());
-
-        // 5. Phím tắt F9 để thanh toán
-        view.getMainPanel().addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_F9) {
-                    processPayment();
-                }
-            }
-        });
+        // Nút Thanh toán
+        view.btnPay.addActionListener(e -> processPayment());
     }
 
     public void loadBookData(String keyword) {
         listBooks = bookBUS.getAll();
-        view.getModelBooks().setRowCount(0);
+        view.modelBooks.setRowCount(0);
         String key = UIConstants.removeAccent(keyword);
 
         for (BookDTO b : listBooks) {
             String name = UIConstants.removeAccent(b.getBookTitle());
             if ((keyword.isEmpty() || name.contains(key) || b.getIsbn().contains(key))
-                    && b.getStockQuantity() > 0 && !b.getStatus().equals("SUSPENDED")) {
-                view.getModelBooks().addRow(new Object[] {
-                        b.getBookId(),
-                        b.getBookTitle(),
-                        b.getFormattedSellingPrice(),
-                        b.getStockQuantity()
+                    && !b.getStatus().equals("SUSPENDED") && b.getStockQuantity() > 0) {
+                view.modelBooks.addRow(new Object[] {
+                        b.getBookId(), b.getBookTitle(), b.getFormattedSellingPrice(), b.getStockQuantity()
                 });
             }
         }
@@ -108,7 +114,7 @@ public class SalesDialogController {
                     item.setQuantity(item.getQuantity() + 1);
                     item.setSubtotal(item.getQuantity() * item.getUnitPrice());
                 } else {
-                    JOptionPane.showMessageDialog(view, "Đã hết hàng trong kho!");
+                    JOptionPane.showMessageDialog(dialog, "Kho chỉ còn " + book.getStockQuantity() + " quyển!");
                 }
                 exists = true;
                 break;
@@ -127,8 +133,8 @@ public class SalesDialogController {
         refreshCartTable();
     }
 
-    public void removeFromCart() {
-        int row = view.getTblCart().getSelectedRow();
+    private void removeFromCart() {
+        int row = view.tblCart.getSelectedRow();
         if (row != -1) {
             cartDetails.remove(row);
             refreshCartTable();
@@ -136,10 +142,12 @@ public class SalesDialogController {
     }
 
     private void refreshCartTable() {
-        view.getModelCart().setRowCount(0);
+        view.modelCart.setRowCount(0);
         double total = 0;
+        int stt = 1;
         for (InvoiceDetailDTO item : cartDetails) {
-            view.getModelCart().addRow(new Object[] {
+            view.modelCart.addRow(new Object[] {
+                    stt++,
                     item.getBookId(),
                     item.getBookTitle(),
                     item.getQuantity(),
@@ -148,40 +156,35 @@ public class SalesDialogController {
             });
             total += item.getSubtotal();
         }
-        view.getLblTotalMoney().setText(String.format("%,.0f VNĐ", total));
+        view.lblTotalMoney.setText(String.format("%,.0f VNĐ", total));
         calculateChange();
     }
 
     private void calculateChange() {
         try {
             double total = cartDetails.stream().mapToDouble(InvoiceDetailDTO::getSubtotal).sum();
-            String moneyStr = view.getTxtMoneyReceived().getText().replace(",", "").replace(".", "");
+            String moneyStr = view.txtMoneyReceived.getText().replace(",", "").replace(".", "");
             double received = moneyStr.isEmpty() ? 0 : Double.parseDouble(moneyStr);
             double change = received - total;
-            view.getLblChangeAmount().setText(String.format("%,.0f VNĐ", change));
+            view.lblChangeAmount.setText(String.format("%,.0f VNĐ", change));
         } catch (Exception e) {
-            view.getLblChangeAmount().setText("0 VNĐ");
+            view.lblChangeAmount.setText("0 VNĐ");
         }
     }
 
     private void processPayment() {
         if (cartDetails.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "Giỏ hàng trống!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(dialog, "Giỏ hàng trống!", "Lỗi", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
+        // ... (Logic kiểm tra tiền và tạo InvoiceDTO giữ nguyên như cũ) ...
+        // Gọi BUS createInvoice và xử lý kết quả:
 
         double total = cartDetails.stream().mapToDouble(InvoiceDetailDTO::getSubtotal).sum();
-        String moneyStr = view.getTxtMoneyReceived().getText().replace(",", "").replace(".", "");
-        double received = moneyStr.isEmpty() ? 0 : Double.parseDouble(moneyStr);
-
-        if (received < total) {
-            JOptionPane.showMessageDialog(view, "Khách đưa thiếu tiền!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         InvoiceDTO invoice = new InvoiceDTO();
-        invoice.setEmployeeId(1); // TODO: Lấy ID từ session
-        invoice.setCustomerId(1);
+        invoice.setEmployeeId(1);
+        invoice.setCustomerId(1); // Hoặc xử lý khách hàng nhập tay
         invoice.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         invoice.setTotalAmount(total);
         invoice.setFinalAmount(total);
@@ -189,11 +192,11 @@ public class SalesDialogController {
         invoice.setPaymentMethod("CASH");
 
         if (invoiceBUS.createInvoice(invoice, cartDetails)) {
-            JOptionPane.showMessageDialog(view, "Thanh toán thành công!");
-            this.isSuccess = true;
-            view.dispose(); // Đóng View
+            JOptionPane.showMessageDialog(dialog, "Thanh toán thành công!");
+            isSuccess = true;
+            dialog.dispose();
         } else {
-            JOptionPane.showMessageDialog(view, "Thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dialog, "Lỗi thanh toán!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 

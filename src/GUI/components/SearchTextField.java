@@ -39,7 +39,7 @@ public class SearchTextField extends JPanel {
         txtSearch.setBorder(null);
         txtSearch.setOpaque(false);
         txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
+        txtSearch.putClientProperty("JTextField.placeholderText", "Tìm kiếm...");
         // --- 4. Add vào Panel ---
         add(btnSearch, BorderLayout.WEST);
         add(txtSearch, BorderLayout.CENTER);

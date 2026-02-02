@@ -12,20 +12,20 @@ import DTO.AuthorDTO;
 import config.DatabaseConnection;
 
 public class BookDAO {
-    private Connection connection;
-
     public BookDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
     }
 
     // --- CÁC HÀM THÊM MỚI (CREATE)
     public int insertBook(BookDTO book) throws SQLException {
         int generatedBookId = -1;
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return -1;
         String sql = "INSERT INTO books (isbn, book_title, publisher_id, category_id, " +
                 "page_count, language, publication_year, cover_type, import_price, " +
                 "selling_price, stock_quantity, minimum_stock, image, status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pst = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pst = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             setBookParameters(pst, book);
 
             int affected = pst.executeUpdate();
@@ -44,8 +44,10 @@ public class BookDAO {
         if (authors == null || authors.isEmpty())
             return;
         String sql = "INSERT INTO book_authors (book_id, author_id, display_order) VALUE (?,?,?)";
-
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             for (int i = 0; i < authors.size(); i++) {
                 AuthorDTO author = authors.get(i);
                 pst.setInt(1, bookId);
@@ -66,8 +68,12 @@ public class BookDAO {
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
                 "ORDER BY b.book_id ASC";
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null) {
+            return books;
+        }
 
-        try (PreparedStatement pst = connection.prepareStatement(sql);
+        try (PreparedStatement pst = conn.prepareStatement(sql);
                 ResultSet rs = pst.executeQuery()) {
 
             while (rs.next()) {
@@ -83,8 +89,10 @@ public class BookDAO {
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
                 "WHERE b.book_id = ?";
-
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return null;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, bookId);
             try (ResultSet rs = pst.executeQuery()) {
                 if (rs.next()) {
@@ -105,8 +113,10 @@ public class BookDAO {
                 "JOIN book_authors ba ON a.author_id = ba.author_id " +
                 "WHERE ba.book_id = ? " +
                 "ORDER BY ba.display_order ASC";
-
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return authors;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, bookId);
             try (ResultSet rs = pst.executeQuery()) {
                 while (rs.next()) {
@@ -132,8 +142,10 @@ public class BookDAO {
                 "page_count=?, language=?, publication_year=?, cover_type=?, import_price=?, " +
                 "selling_price=?, stock_quantity=?, minimum_stock=?, image=?, status=? " +
                 "WHERE book_id=?";
-
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return false;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             // Gán các tham số từ 1 đến 14 (Sử dụng hàm setBookParameters đã viết ở phần
             // trước)
             setBookParameters(pst, book);
@@ -181,7 +193,10 @@ public class BookDAO {
      */
     public void deleteBookAuthors(int bookId) throws SQLException {
         String sql = "DELETE FROM book_authors WHERE book_id = ?";
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, bookId);
             pst.executeUpdate();
         }
@@ -193,7 +208,10 @@ public class BookDAO {
 
         // Bước 2: Xóa sách
         String sql = "DELETE FROM books WHERE book_id = ?";
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        if (conn == null)
+            return false;
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, bookId);
             return pst.executeUpdate() > 0;
         }

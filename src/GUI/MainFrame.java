@@ -14,6 +14,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 600);
         setLocationRelativeTo(null);
+        getContentPane().setBackground(Color.decode("#121212"));
         initComponents();
         setupLayout();
         initEvents();
@@ -39,7 +40,12 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
+        try {
+            com.formdev.flatlaf.FlatLightLaf.setup(); // Giao diện sáng (khuyên dùng)
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);

@@ -19,8 +19,6 @@ import java.awt.event.KeyEvent;
 // -------------------------------
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -389,16 +387,16 @@ public class BookDialogController {
             String statusVN = view.cbStatus.getSelectedItem().toString();
             switch (statusVN) {
                 case "Còn hàng":
-                    bookDTO.setStatus("IN_STOCK");
+                    bookDTO.setStatus("in_stock");
                     break;
                 case "Hết hàng":
-                    bookDTO.setStatus("OUT_OF_STOCK");
+                    bookDTO.setStatus("out_of_stock");
                     break;
                 case "Ngừng kinh doanh":
-                    bookDTO.setStatus("SUSPENDED");
+                    bookDTO.setStatus("discontinued");
                     break;
                 default:
-                    bookDTO.setStatus("IN_STOCK"); // Mặc định
+                    bookDTO.setStatus("in_stock"); // Mặc định
             }
             bookDTO.setCoverType(view.cbCoverType.getSelectedItem().toString());
             bookDTO.setAuthors(currentAuthors);

@@ -14,11 +14,16 @@ public class BookBUS {
         }
     }
 
-    public void loadDataFromDB() {
+    public boolean loadDataFromDB() {
         try {
             listBook = bookDAO.selectAll();
+            // Nếu list trả về null (do lỗi kết nối bên DAO) thì coi như thất bại
+            if (listBook == null)
+                return false;
+            return true; // Thành công
         } catch (Exception e) {
             e.printStackTrace();
+            return false; // Có lỗi xảy ra
         }
     }
 

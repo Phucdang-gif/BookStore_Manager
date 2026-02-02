@@ -39,4 +39,8 @@ public class InvoiceBUS {
     public List<InvoiceDTO> getAll() {
         return invoiceDAO.selectAll();
     }
+
+    public InvoiceDTO getInvoiceById(int id) {
+        return invoiceDAO.selectById(id);
+    }
 }

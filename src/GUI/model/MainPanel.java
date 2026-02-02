@@ -37,7 +37,6 @@ public class MainPanel extends JPanel {
         pnlBook = new BookTablePanel(bookBUS);
         pnlInvoice = new InvoiceTablePanel();
 
-        // Thêm vào centerPanel với tên định danh (Key)
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlInvoice, "SALES");
 
@@ -53,9 +52,11 @@ public class MainPanel extends JPanel {
         cardLayout.show(centerPanel, panelName);
 
         header.setVisible(true);
-        if (panelName.equals("BOOK")) { // Hoặc chỉ setVisible cho Toolbar bên trong
-            header.setPanelTable(pnlBook); // Gán lại bảng để Header tìm kiếm đúng
+        header.setPnlName(panelName);
+        if (panelName.equals("BOOK")) {
+            header.setPanelTable(pnlBook);
         } else if (panelName.equals("SALES")) {
+            // Logic riêng cho sales nếu cần
         }
     }
 }

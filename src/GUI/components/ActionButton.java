@@ -41,7 +41,7 @@ public class ActionButton extends JButton {
         setIconTextGap(8);
 
         // Border và padding
-        setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setContentAreaFilled(false);
     }
 

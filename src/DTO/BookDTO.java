@@ -219,9 +219,9 @@ public class BookDTO {
     }
 
     public String getStatusVietnamese() {
-        if ("IN_STOCK".equals(this.status))
+        if ("in_stock".equals(this.status))
             return "Còn hàng";
-        if ("OUT_OF_STOCK".equals(this.status))
+        if ("out_of_stock".equals(this.status))
             return "Hết hàng";
         return "Ngừng kinh doanh";
     }

@@ -70,4 +70,31 @@ public class InvoiceDAO {
         }
         return list;
     }
+
+    public InvoiceDTO selectById(int invoiceId) {
+        InvoiceDTO invoice = null;
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            String sql = "SELECT * FROM invoices WHERE invoice_id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, invoiceId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                invoice = new InvoiceDTO();
+                invoice.setInvoiceId(rs.getInt("invoice_id"));
+                invoice.setCustomerId(rs.getInt("customer_id"));
+                invoice.setEmployeeId(rs.getInt("employee_id"));
+                invoice.setTotalAmount(rs.getDouble("total_amount"));
+                invoice.setTotalDiscount(rs.getDouble("total_discount"));
+                invoice.setFinalAmount(rs.getDouble("final_amount"));
+                invoice.setPaymentMethod(rs.getString("payment_method"));
+                invoice.setStatus(rs.getString("status"));
+                invoice.setCreatedAt(rs.getTimestamp("created_at"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return invoice;
+    }
 }
