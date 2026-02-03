@@ -15,11 +15,11 @@ public class CategoryDTO {
         this.status = status;
     }
 
-    public int getID() {
+    public int getId() {
         return categoryID;
     }
 
-    public void setID(int categoryID) {
+    public void setId(int categoryID) {
         this.categoryID = categoryID;
     }
 

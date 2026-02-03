@@ -12,7 +12,7 @@ import GUI.util.ThemeColor;
 public class ActionButton extends JButton {
 
     private static final Color DEFAULT_TEXT_COLOR = ThemeColor.textMain;
-    private static final Color DEFAULT_HOVER_COLOR = ThemeColor.ACCENT_COLOR;
+    private static final Color DEFAULT_HOVER_COLOR = ThemeColor.borderColor;
     private static final Font DEFAULT_FONT = new Font("Arial", Font.BOLD, 11);
     private static final int DEFAULT_ICON_SIZE = 35;
 

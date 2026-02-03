@@ -219,11 +219,25 @@ public class BookDTO {
     }
 
     public String getStatusVietnamese() {
-        if ("in_stock".equals(this.status))
-            return "Còn hàng";
-        if ("out_of_stock".equals(this.status))
-            return "Hết hàng";
-        return "Ngừng kinh doanh";
+        if (this.status == null)
+            return "Không xác định"; // Xử lý null an toàn
+
+        switch (this.status) {
+            case "in_stock":
+            case "Còn hàng":
+                return "Còn hàng";
+
+            case "out_of_stock":
+            case "Hết hàng":
+                return "Hết hàng";
+
+            case "discontinued":
+            case "Ngừng kinh doanh":
+                return "Ngừng kinh doanh";
+
+            default:
+                return "Ngừng kinh doanh"; // Hoặc trả về this.status nếu muốn giữ nguyên
+        }
     }
 
     public String getFormattedSellingPrice() {

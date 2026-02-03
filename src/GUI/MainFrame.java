@@ -17,7 +17,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 600);
         setLocationRelativeTo(null);
-        setTheme(true); // true: dark theme, false: light theme
+        setTheme(false); // true: dark theme, false: light theme
         initComponents();
         setupLayout();
         initEvents();
@@ -64,14 +64,6 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        try {
-            // Đẩy màu vào UIManager TRƯỚC FlatLaf.setup()
-            ThemeColor.applyUIManager();
-            com.formdev.flatlaf.FlatLightLaf.setup();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);

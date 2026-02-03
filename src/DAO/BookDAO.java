@@ -61,23 +61,44 @@ public class BookDAO {
     }
     // --- CÁC HÀM SELECT (READ) ---
 
+    // Trong file DAO/BookDAO.java
+
     public ArrayList<BookDTO> selectAll() throws SQLException {
         ArrayList<BookDTO> books = new ArrayList<>();
-        String sql = "SELECT b.*, p.publisher_name, c.category_name " +
+
+        // Câu lệnh SQL nâng cấp: JOIN 5 bảng và gộp tên tác giả
+        String sql = "SELECT b.*, p.publisher_name, c.category_name, " +
+                "GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors_list " + // <--- MỚI
                 "FROM books b " +
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "LEFT JOIN book_authors ba ON b.book_id = ba.book_id " + // <--- MỚI
+                "LEFT JOIN authors a ON ba.author_id = a.author_id " + // <--- MỚI
+                "GROUP BY b.book_id " + // <--- MỚI
                 "ORDER BY b.book_id ASC";
+
         Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null) {
             return books;
         }
-
         try (PreparedStatement pst = conn.prepareStatement(sql);
                 ResultSet rs = pst.executeQuery()) {
-
             while (rs.next()) {
-                books.add(mapResultSetToBook(rs));
+                BookDTO book = mapResultSetToBook(rs);
+                // --- XỬ LÝ DANH SÁCH TÁC GIẢ ---
+                String authorsStr = rs.getString("authors_list"); // Lấy chuỗi "Tác giả A, Tác giả B"
+                List<String> authorNames = new ArrayList<>();
+
+                if (authorsStr != null && !authorsStr.isEmpty()) {
+                    // Tách chuỗi thành mảng dựa trên dấu phẩy
+                    String[] arr = authorsStr.split(", ");
+                    for (String s : arr) {
+                        authorNames.add(s);
+                    }
+                }
+                book.setAuthorNames(authorNames);
+
+                books.add(book);
             }
         }
         return books;

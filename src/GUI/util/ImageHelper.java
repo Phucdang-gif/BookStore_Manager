@@ -5,7 +5,10 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Tiện ích xử lý ảnh thuần (BufferedImage)
@@ -28,9 +31,29 @@ public class ImageHelper {
             if (f.exists())
                 return ImageIO.read(f);
         } catch (Exception e) {
-            System.err.println("❌ Lỗi đọc ảnh: " + path);
+            System.err.println("Loi doc anh: " + path);
         }
         return null;
+    }
+
+    public static String saveImageToProject(File sourceFile) {
+        try {
+            String newFileName = sourceFile.getName();
+            File destFolder = new File("src/image");
+            if (!destFolder.exists()) {
+                destFolder.mkdirs();
+            }
+
+            // 3. File đích
+            File destFile = new File(destFolder, newFileName);
+
+            Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            return newFileName;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**

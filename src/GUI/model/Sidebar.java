@@ -94,12 +94,12 @@ public class Sidebar extends JPanel {
         btnSelected = btn;
 
         // Style nút được chọn: Nền xanh nhạt, Chữ xanh dương đậm
-        btnSelected.setBackground(ThemeColor.accentBg);
-        btnSelected.setForeground(ThemeColor.ACCENT_COLOR);
+        btnSelected.setBackground(ThemeColor.btnActiveBg);
+        btnSelected.setForeground(ThemeColor.btnActiveText);
 
         // Thêm vạch bên trái đánh dấu
         btnSelected.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 5, 0, 0, ThemeColor.ACCENT_COLOR),
+                BorderFactory.createMatteBorder(0, 5, 0, 0, ThemeColor.btnActiveText),
                 new EmptyBorder(12, 20, 12, 20)));
     }
 }

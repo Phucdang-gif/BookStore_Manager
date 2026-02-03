@@ -21,6 +21,9 @@ public class BookTablePanel extends JPanel {
             "TRẠNG THÁI" };
     private ArrayList<BookDTO> listOriginal;
 
+    private static final int COL_PRICE_IMPORT = 3;
+    private static final int COL_PRICE_SELLING = 4;
+
     public BookTablePanel(BookBUS bus) {
         this.bookBUS = bus;
         setBackground(ThemeColor.bgPanel);
@@ -32,14 +35,14 @@ public class BookTablePanel extends JPanel {
 
     private void initComponents() {
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override // Không cho phép sửa trực tiếp trên bảng
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
         bookTable = new JTable(tableModel);
         bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        // 2. Style cho bảng (Làm đẹp)
+
         styleTable();
 
         JScrollPane scrollPane = new JScrollPane(bookTable);
@@ -52,62 +55,118 @@ public class BookTablePanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    // ================================================================
+    // Zebra + align (các cột thường)
+    // ================================================================
+    private class ZebraCenterRenderer extends DefaultTableCellRenderer {
+        private final int horizontalAlignment;
+
+        ZebraCenterRenderer(int alignment) {
+            this.horizontalAlignment = alignment;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setHorizontalAlignment(horizontalAlignment);
+            setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+            if (isSelected) {
+                setBackground(ThemeColor.selectionBg); // ← mới
+                setForeground(ThemeColor.selectionText); // ← mới
+            } else {
+                setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                setForeground(ThemeColor.tableText);
+            }
+
+            setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
+            return this;
+        }
+    }
+
+    // ================================================================
+    // Zebra + màu chữ giá tiền
+    // ================================================================
+    private class PriceRenderer extends DefaultTableCellRenderer {
+        private final Color priceColor;
+
+        PriceRenderer(Color priceColor) {
+            this.priceColor = priceColor;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+                JTable table, Object value, boolean isSelected,
+                boolean hasFocus, int row, int column) {
+
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setHorizontalAlignment(JLabel.CENTER);
+            setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+            if (isSelected) {
+                setBackground(ThemeColor.selectionBg); // ← mới
+                setForeground(ThemeColor.selectionText); // ← mới
+            } else {
+                setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                setForeground(priceColor);
+            }
+
+            setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
+            return this;
+        }
+    }
+
+    // ================================================================
     private void styleTable() {
         bookTable.setRowHeight(UIConstants.ROW_HEIGHT);
         bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bookTable.setShowVerticalLines(true);
         bookTable.setShowHorizontalLines(true);
-        bookTable.setGridColor(ThemeColor.borderColor);
 
-        bookTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        // Màu nền và chữ mặc định của các dòng
+        bookTable.setFont(new Font("Segoe UI", Font.BOLD, 13));
         bookTable.setBackground(ThemeColor.bgPanel);
-        bookTable.setForeground(ThemeColor.textMain);
+        bookTable.setForeground(ThemeColor.tableText);
+        bookTable.setGridColor(ThemeColor.gridColor);
 
-        // Màu lưới kẻ (grid)
-        bookTable.setGridColor(ThemeColor.borderColor);
-
-        // Màu khi CHỌN một dòng (Selection)
+        // Selection — dùng biến mới
         bookTable.setSelectionBackground(ThemeColor.selectionBg);
-        bookTable.setSelectionForeground(Color.WHITE);
+        bookTable.setSelectionForeground(ThemeColor.selectionText);
 
-        // Header
+        // --- Header ---
         JTableHeader header = bookTable.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        header.setBackground(ThemeColor.accentBg);
-        header.setForeground(ThemeColor.ACCENT_COLOR);
-        header.setPreferredSize(new Dimension(0, 45)); // Header cao hơn chút
+        header.setBackground(ThemeColor.tableHeaderBg);
+        header.setForeground(ThemeColor.tableHeaderText);
+        header.setPreferredSize(new Dimension(0, 45));
 
-        // Căn giữa dữ liệu (Trừ tên sách để căn trái)
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
-
-        // Cột ID, ISBN, Giá, Tồn, Trạng thái -> Căn giữa
+        // --- Renderer từng cột ---
         for (int i = 0; i < columns.length; i++) {
-            if (i == 2)
-                continue;
-            bookTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+            if (i == COL_PRICE_IMPORT) {
+                bookTable.getColumnModel().getColumn(i)
+                        .setCellRenderer(new PriceRenderer(ThemeColor.priceImport));
+            } else if (i == COL_PRICE_SELLING) {
+                bookTable.getColumnModel().getColumn(i)
+                        .setCellRenderer(new PriceRenderer(ThemeColor.priceSelling));
+            } else if (i == 2) {
+                bookTable.getColumnModel().getColumn(i)
+                        .setCellRenderer(new ZebraCenterRenderer(JLabel.LEFT));
+            } else {
+                bookTable.getColumnModel().getColumn(i)
+                        .setCellRenderer(new ZebraCenterRenderer(JLabel.CENTER));
+            }
         }
 
-        // Độ rộng cột tương đối
-        int[] widths = {
-                60, // ID (Nhỏ)
-                140, // ISBN
-                300, // TÊN SÁCH (Rất rộng để không bị che)
-                120, // GIÁ NHẬP
-                120, // GIÁ BÁN
-                100, // TỒN KHO
-                140, // TỒN KHO TỐI THIỂU
-                150 // TRẠNG THÁI
-        };
+        // --- Độ rộng cột ---
+        int[] widths = { 60, 140, 300, 120, 120, 100, 140, 150 };
         TableColumnModel columnModel = bookTable.getColumnModel();
         for (int i = 0; i < widths.length && i < columnModel.getColumnCount(); i++) {
             columnModel.getColumn(i).setPreferredWidth(widths[i]);
         }
     }
 
-    // Tải dữ liệu từ BUS lên bảng
     public void loadTableData() {
         listOriginal = bookBUS.getAll();
         setTableData(listOriginal);
@@ -134,23 +193,18 @@ public class BookTablePanel extends JPanel {
         setTableData(listBooks);
     }
 
-    // Hàm quan trọng: Header sẽ gọi hàm này để lấy ID sách cần xem
     public int getSelectedBookId() {
         int row = bookTable.getSelectedRow();
         if (row == -1)
             return -1;
-        // Cột 0 là ID
         return (int) bookTable.getValueAt(row, 0);
     }
 
-    // Làm mới bảng (Gọi lại data từ DB)
     public boolean refreshTable() {
         boolean isSuccess = bookBUS.loadDataFromDB();
-
         if (isSuccess) {
-            loadTableData(); // Chỉ nạp lại bảng nếu thành công
+            loadTableData();
         }
-
         return isSuccess;
     }
 
@@ -164,22 +218,15 @@ public class BookTablePanel extends JPanel {
         }
 
         String key = UIConstants.removeAccent(keyword);
-
         ArrayList<BookDTO> listFiltered = new ArrayList<>();
 
         for (BookDTO book : listOriginal) {
-            // Lấy các trường muốn tìm kiếm
             String name = UIConstants.removeAccent(book.getBookTitle());
             String isbn = UIConstants.removeAccent(book.getIsbn());
-
-            // Nếu muốn tìm cả tác giả thì nối chuỗi tác giả vào đây
-            // String author = UIConstants.removeAccent(book.getAuthorNames());
             if (name.contains(key) || isbn.contains(key)) {
                 listFiltered.add(book);
             }
         }
-
-        // Cập nhật lại bảng với dữ liệu đã lọc
         setTableData(listFiltered);
     }
 
@@ -190,7 +237,6 @@ public class BookTablePanel extends JPanel {
     @Override
     public void updateUI() {
         super.updateUI();
-        // Khi theme đổi, gọi lại hàm styleTable để áp dụng màu mới
         if (bookTable != null && ThemeColor.bgPanel != null) {
             styleTable();
         }

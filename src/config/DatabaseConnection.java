@@ -33,10 +33,6 @@ public class DatabaseConnection {
                 connection = DriverManager.getConnection(url, user, password);
                 System.out.println(">> Connection successful");
             }
-            // Nếu connection vẫn đang sống, trả về cái cũ (Không tốn tài nguyên tạo mới)
-            else {
-                System.out.println(">> Used existing connection");
-            }
         } catch (Exception e) {
             return null;
         }

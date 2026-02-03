@@ -4,6 +4,7 @@ import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
 import DTO.PublisherDTO;
+import GUI.util.ImageHelper;
 import BUS.BookBUS;
 import BUS.CategoryBUS;
 import BUS.PublisherBUS;
@@ -154,13 +155,35 @@ public class BookDialogController {
         view.cbStatus.setSelectedItem(bookDTO.getStatus());
         view.cbCoverType.setSelectedItem(bookDTO.getCoverType());
 
-        // LOAD ẢNH (Nếu có)
         if (bookDTO.getImage() != null && !bookDTO.getImage().isEmpty()) {
-            this.selectedImagePath = bookDTO.getImage();
-            ImageIcon icon = new ImageIcon(bookDTO.getImage());
-            Image img = icon.getImage().getScaledInstance(250, 360, Image.SCALE_SMOOTH);
-            view.lblImagePreview.setIcon(new ImageIcon(img));
-            view.lblImagePreview.setText("");
+            String imgName = bookDTO.getImage();
+            String finalPath;
+
+            // Logic: Nếu chuỗi lưu trong DB có chứa dấu : (như C:\) hoặc dấu / đầu tiên
+            // thì coi là đường dẫn tuyệt đối (của dữ liệu cũ).
+            // Ngược lại thì coi là tên file và nối thêm "src/image/"
+            if (imgName.contains(":") || imgName.startsWith("/") || imgName.contains("\\")) {
+                finalPath = imgName;
+            } else {
+                finalPath = "src/image/" + imgName; // Đường dẫn tương đối gọn nhẹ
+            }
+
+            File f = new File(finalPath);
+            if (f.exists()) {
+                this.selectedImagePath = imgName;
+
+                ImageIcon icon = new ImageIcon(finalPath);
+                Image img = icon.getImage().getScaledInstance(250, 360, Image.SCALE_SMOOTH);
+                view.lblImagePreview.setIcon(new ImageIcon(img));
+                view.lblImagePreview.setText("");
+            } else {
+                view.lblImagePreview.setIcon(null);
+                view.lblImagePreview.setText("Ảnh không tồn tại");
+                System.err.println("Không tìm thấy file ảnh: " + finalPath);
+            }
+        } else {
+            view.lblImagePreview.setIcon(null);
+            view.lblImagePreview.setText("Chưa có ảnh");
         }
 
         if (bookDTO.getAuthors() != null) {
@@ -171,13 +194,13 @@ public class BookDialogController {
         String statusEN = bookDTO.getStatus(); // DB trả về: IN_STOCK, OUT_OF_STOCK...
         if (statusEN != null) {
             switch (statusEN) {
-                case "IN_STOCK":
+                case "in_stock":
                     view.cbStatus.setSelectedItem("Còn hàng");
                     break;
-                case "OUT_OF_STOCK":
+                case "out_of_stock":
                     view.cbStatus.setSelectedItem("Hết hàng");
                     break;
-                case "SUSPENDED":
+                case "discontinued":
                     view.cbStatus.setSelectedItem("Ngừng kinh doanh");
                     break;
                 default:
@@ -344,13 +367,18 @@ public class BookDialogController {
         // Sự kiện upload ảnh giữ nguyên
         view.btnUpload.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
+            fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Image Files", "jpg", "png", "jpeg"));
             if (fc.showOpenDialog(view) == JFileChooser.APPROVE_OPTION) {
                 File f = fc.getSelectedFile();
-                ImageIcon icon = new ImageIcon(f.getAbsolutePath());
-                Image img = icon.getImage().getScaledInstance(250, 360, Image.SCALE_SMOOTH);
-                view.lblImagePreview.setIcon(new ImageIcon(img));
-                view.lblImagePreview.setText("");
-                this.selectedImagePath = f.getAbsolutePath();
+                String newFileName = ImageHelper.saveImageToProject(f);
+                if (newFileName != null) {
+                    this.selectedImagePath = newFileName;
+                    String fullPath = "src/image/" + newFileName;
+                    ImageIcon icon = new ImageIcon(fullPath);
+                    Image img = icon.getImage().getScaledInstance(250, 360, Image.SCALE_SMOOTH);
+                    view.lblImagePreview.setIcon(new ImageIcon(img));
+                    view.lblImagePreview.setText("");
+                }
             }
         });
     }
@@ -409,7 +437,7 @@ public class BookDialogController {
                 // Tìm trong listCategories xem ông nào có tên trùng thì lấy ID ông đó
                 for (CategoryDTO cat : listCategories) {
                     if (cat.getName().equals(selectedCatName)) {
-                        bookDTO.setCategoryId(cat.getID()); // Set ID để lưu DB
+                        bookDTO.setCategoryId(cat.getId()); // Set ID để lưu DB
                         bookDTO.setCategoryName(cat.getName()); // Set Tên để hiển thị
                         break;
                     }

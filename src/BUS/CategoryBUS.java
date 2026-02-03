@@ -27,7 +27,7 @@ public class CategoryBUS {
     // Hàm cực kỳ quan trọng để mapping tên hiển thị trong BookDialog
     public String getNameById(int id) {
         for (CategoryDTO cat : categoryList) {
-            if (cat.getID() == id)
+            if (cat.getId() == id)
                 return cat.getName();
         }
         return "";

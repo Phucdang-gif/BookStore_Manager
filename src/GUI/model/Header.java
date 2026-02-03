@@ -46,6 +46,7 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
+        listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg", "IMPORT"));
         // --- 3. KHỞI TẠO TOOLBAR PANEL ---
         // Truyền list và listener vào constructor của ToolBarPanel
         toolBar = new ToolBarPanel(listButtons);
@@ -70,7 +71,7 @@ public class Header extends JPanel {
         add(centerPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
 
-        setBorder(new EmptyBorder(0, 10, 0, 20)); // Padding 2 bên
+        setBorder(new EmptyBorder(0, 0, 0, 20)); // Padding 2 bên
     }
 
     private void initStyle() {
@@ -211,13 +212,30 @@ public class Header extends JPanel {
     private void onExportExcel() {
         switch (currentTab) {
             case "BOOK":
-                if (panelTable != null) {
-                    ExcelHelper.exportToExcel(panelTable.getBookTable(), "Danh sách Sách", this);
+                java.util.List<BookDTO> listToExport = bookBUS.getAll();
+
+                if (listToExport != null && !listToExport.isEmpty()) {
+                    ExcelHelper.exportBooks(listToExport, this);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không có dữ liệu để xuất!");
                 }
                 break;
+        }
+    }
+
+    private void onImportExcel() {
+        switch (currentTab) {
+            case "BOOK":
+                // Gọi hàm import từ ExcelHelper hoặc BUS
+                // Ví dụ:
+                // File file = ExcelHelper.chooseFile(this);
+                // if (file != null) {
+                // boolean success = bookBUS.importFromExcel(file);
+                // if(success) panelTable.refreshTable();
+                // }
 
             default:
-                JOptionPane.showMessageDialog(this, "Chức năng xuất Excel chưa hỗ trợ tab này!");
+                JOptionPane.showMessageDialog(this, "Chức năng nhập Excel chưa hỗ trợ tab này!");
         }
     }
 
@@ -251,10 +269,12 @@ public class Header extends JPanel {
                 case "EXPORT":
                     onExportExcel();
                     break;
+                case "IMPORT":
+                    break;
             }
         });
 
-        // --- B. XỬ LÝ TÌM KIẾM (Đã làm ở bài trước) ---
+        // --- B. XỬ LÝ TÌM KIẾM
         txtSearch.getBtnSearch().addActionListener(e -> onSearch());
         txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
@@ -273,12 +293,7 @@ public class Header extends JPanel {
 
     public void setPnlName(String name) {
         this.currentTab = name;
-
-        // (Nâng cao) Tùy chỉnh toolbar theo tab
-        // Ví dụ: Hóa đơn thì không cho sửa -> Ẩn nút sửa
-
         if (name.equals("SALES")) {
-            // Có thể ẩn bớt nút nếu muốn
         }
     }
 
@@ -291,7 +306,5 @@ public class Header extends JPanel {
                     BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColor.borderColor),
                     new EmptyBorder(0, 20, 0, 20)));
         }
-        // Lưu ý: Nút Refresh màu xanh dương (Accent) thì nên giữ nguyên,
-        // không cần đổi theo theme Sáng/Tối, nó vẫn nổi bật trên cả 2 nền.
     }
 }

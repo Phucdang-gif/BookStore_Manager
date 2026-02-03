@@ -1,52 +1,98 @@
 package GUI.util;
 
 import java.awt.Color;
-import javax.swing.UIManager;
 
 public class ThemeColor {
+    // --- BẢNG MÀU CHỾ ĐỔI SÁNG (LIGHT) ---
+    private static final Color LIGHT_BG_MAIN = Color.decode("#EEF2F6");
+    private static final Color LIGHT_BG_PANEL = new Color(245, 246, 250);
+    private static final Color LIGHT_TEXT_MAIN = Color.decode("#1E293B");
+    private static final Color LIGHT_TEXT_SECONDARY = Color.decode("#64748B");
+    private static final Color LIGHT_BORDER = Color.decode("#E2E8F0");
 
-    // ============================================================
-    // LIGHT — "Warm Brown"
-    // Nền: nâu ấm nhạt (giấy cũ, cà phê loãng)
-    // Chữ: đen xám đậm → contrast cao
-    // Accent: nâu cam đất — hợp tông, nổi bật
-    // ============================================================
-    private static final Color LIGHT_BG_MAIN = Color.decode("#EDE5DC"); // nền ngoài: nâu ấm
-    private static final Color LIGHT_BG_PANEL = Color.decode("#FAF7F4"); // nền panel: kem trắng nhạt
-    private static final Color LIGHT_TEXT_MAIN = Color.decode("#2C1810"); // chữ: nâu đen đậm
-    private static final Color LIGHT_TEXT_SECONDARY = Color.decode("#6B5344"); // chữ phụ: nâu xám
-    private static final Color LIGHT_BORDER = Color.decode("#D9CFC4"); // viền: nâu nhạt
+    // Nút Sidebar (giữ nguyên)
+    private static final Color LIGHT_BTN_ACTIVE_BG = Color.decode("#EFF6FF");
+    private static final Color LIGHT_BTN_ACTIVE_TEXT = Color.decode("#2563EB");
 
-    // Accent: nâu cam đất
-    private static final Color LIGHT_ACCENT = Color.decode("#B5651D"); // nâu cam đất đậm
-    private static final Color LIGHT_ACCENT_BG = Color.decode("#F5EBE0"); // nền highlight nâu nhạt
-    private static final Color LIGHT_SELECTION_BG = Color.decode("#C2703A"); // nâu cam đậm
+    // Header Bảng
+    private static final Color LIGHT_TABLE_HEADER_BG = Color.decode("#2563EB");
+    private static final Color LIGHT_TABLE_HEADER_TEXT = Color.decode("#EFF6FF");
 
-    // ============================================================
-    // DARK — giữ nguyên
-    // ============================================================
-    private static final Color DARK_BG_MAIN = Color.decode("#18191A");
-    private static final Color DARK_BG_PANEL = Color.decode("#242526");
-    private static final Color DARK_TEXT_MAIN = Color.decode("#E4E6EB");
-    private static final Color DARK_TEXT_SECONDARY = Color.decode("#B0B3B8");
-    private static final Color DARK_BORDER = Color.decode("#3E4042");
-    private static final Color DARK_ACCENT = Color.decode("#D4915A"); // nâu cam sáng hơn cho dark
-    private static final Color DARK_ACCENT_BG = Color.decode("#3A2E24");
-    private static final Color DARK_SELECTION_BG = Color.decode("#D4915A"); // dark dùng cùng accent đã sáng
+    // Nội dung Bảng
+    private static final Color LIGHT_TABLE_GRID = Color.decode("#E2E8F0");
+    private static final Color LIGHT_TABLE_TEXT = Color.decode("#334155");
 
-    // ============================================================
-    // BIẾN ĐỘNG
-    // ============================================================
+    // Zebra Row
+    private static final Color LIGHT_ROW_EVEN = Color.decode("#FFFFFF");
+    private static final Color LIGHT_ROW_ODD = Color.decode("#F0F7FF");
+
+    // Màu chữ giá tiền
+    private static final Color LIGHT_PRICE_IMPORT = Color.decode("#16A34A");
+    private static final Color LIGHT_PRICE_SELLING = Color.decode("#2563EB");
+
+    // Selection Row — tách ra riêng, không chạm sidebar
+    private static final Color LIGHT_SELECTION_BG = Color.decode("#0D9488"); // teal-600
+    private static final Color LIGHT_SELECTION_TEXT = Color.decode("#FFFFFF"); // trắng
+
+    // --- BẢNG MÀU CHỾ ĐỔI TỐI (DARK) ---
+    private static final Color DARK_BG_MAIN = Color.decode("#111827");
+    private static final Color DARK_BG_PANEL = Color.decode("#1F2937");
+    private static final Color DARK_TEXT_MAIN = Color.decode("#F9FAFB");
+    private static final Color DARK_TEXT_SECONDARY = Color.decode("#9CA3AF");
+    private static final Color DARK_BORDER = Color.decode("#374151");
+
+    // Nút Sidebar Dark (giữ nguyên)
+    private static final Color DARK_BTN_ACTIVE_BG = Color.decode("#374151");
+    private static final Color DARK_BTN_ACTIVE_TEXT = Color.decode("#60A5FA");
+
+    // Header Bảng Dark
+    private static final Color DARK_TABLE_HEADER_BG = Color.decode("#374151");
+    private static final Color DARK_TABLE_HEADER_TEXT = Color.decode("#E5E7EB");
+
+    // Nội dung Bảng Dark
+    private static final Color DARK_TABLE_GRID = Color.decode("#374151");
+    private static final Color DARK_TABLE_TEXT = Color.decode("#D1D5DB");
+
+    // Zebra Row Dark
+    private static final Color DARK_ROW_EVEN = Color.decode("#1F2937");
+    private static final Color DARK_ROW_ODD = Color.decode("#243444");
+
+    // Màu chữ giá tiền Dark
+    private static final Color DARK_PRICE_IMPORT = Color.decode("#34D399");
+    private static final Color DARK_PRICE_SELLING = Color.decode("#60A5FA");
+
+    // Selection Row Dark
+    private static final Color DARK_SELECTION_BG = Color.decode("#0F766E"); // teal-700
+    private static final Color DARK_SELECTION_TEXT = Color.decode("#FFFFFF");
+
+    // --- MÀU ĐIỂM NHẤN ---
+    public static final Color ACCENT_COLOR = Color.decode("#2563EB");
+
+    // --- CÁC BIẾN MÀU ĐỘNG (Public) ---
     public static Color bgMain = LIGHT_BG_MAIN;
     public static Color bgPanel = LIGHT_BG_PANEL;
     public static Color textMain = LIGHT_TEXT_MAIN;
     public static Color textSecondary = LIGHT_TEXT_SECONDARY;
     public static Color borderColor = LIGHT_BORDER;
-    public static Color ACCENT_COLOR = LIGHT_ACCENT;
-    public static Color accentBg = LIGHT_ACCENT_BG;
-    public static Color selectionBg = LIGHT_SELECTION_BG;
 
-    // ============================================================
+    public static Color btnActiveBg = LIGHT_BTN_ACTIVE_BG; // Sidebar dùng cái này
+    public static Color btnActiveText = LIGHT_BTN_ACTIVE_TEXT;
+
+    public static Color tableHeaderBg = LIGHT_TABLE_HEADER_BG;
+    public static Color tableHeaderText = LIGHT_TABLE_HEADER_TEXT;
+
+    public static Color gridColor = LIGHT_TABLE_GRID;
+    public static Color tableText = LIGHT_TABLE_TEXT;
+
+    public static Color rowEven = LIGHT_ROW_EVEN;
+    public static Color rowOdd = LIGHT_ROW_ODD;
+    public static Color priceImport = LIGHT_PRICE_IMPORT;
+    public static Color priceSelling = LIGHT_PRICE_SELLING;
+
+    // Table selection — riêng cái này
+    public static Color selectionBg = LIGHT_SELECTION_BG;
+    public static Color selectionText = LIGHT_SELECTION_TEXT;
+
     public static void applyTheme(boolean isDark) {
         if (isDark) {
             bgMain = DARK_BG_MAIN;
@@ -54,46 +100,46 @@ public class ThemeColor {
             textMain = DARK_TEXT_MAIN;
             textSecondary = DARK_TEXT_SECONDARY;
             borderColor = DARK_BORDER;
-            ACCENT_COLOR = DARK_ACCENT;
-            accentBg = DARK_ACCENT_BG;
+
+            btnActiveBg = DARK_BTN_ACTIVE_BG;
+            btnActiveText = DARK_BTN_ACTIVE_TEXT;
+
+            tableHeaderBg = DARK_TABLE_HEADER_BG;
+            tableHeaderText = DARK_TABLE_HEADER_TEXT;
+
+            gridColor = DARK_TABLE_GRID;
+            tableText = DARK_TABLE_TEXT;
+
+            rowEven = DARK_ROW_EVEN;
+            rowOdd = DARK_ROW_ODD;
+            priceImport = DARK_PRICE_IMPORT;
+            priceSelling = DARK_PRICE_SELLING;
+
             selectionBg = DARK_SELECTION_BG;
+            selectionText = DARK_SELECTION_TEXT;
         } else {
             bgMain = LIGHT_BG_MAIN;
             bgPanel = LIGHT_BG_PANEL;
             textMain = LIGHT_TEXT_MAIN;
             textSecondary = LIGHT_TEXT_SECONDARY;
             borderColor = LIGHT_BORDER;
-            ACCENT_COLOR = LIGHT_ACCENT;
-            accentBg = LIGHT_ACCENT_BG;
+
+            btnActiveBg = LIGHT_BTN_ACTIVE_BG;
+            btnActiveText = LIGHT_BTN_ACTIVE_TEXT;
+
+            tableHeaderBg = LIGHT_TABLE_HEADER_BG;
+            tableHeaderText = LIGHT_TABLE_HEADER_TEXT;
+
+            gridColor = LIGHT_TABLE_GRID;
+            tableText = LIGHT_TABLE_TEXT;
+
+            rowEven = LIGHT_ROW_EVEN;
+            rowOdd = LIGHT_ROW_ODD;
+            priceImport = LIGHT_PRICE_IMPORT;
+            priceSelling = LIGHT_PRICE_SELLING;
+
             selectionBg = LIGHT_SELECTION_BG;
+            selectionText = LIGHT_SELECTION_TEXT;
         }
-        applyUIManager();
-    }
-
-    public static void applyUIManager() {
-        // Nền
-        UIManager.put("Panel.background", bgPanel);
-        UIManager.put("ScrollPane.background", bgPanel);
-        UIManager.put("Table.background", bgPanel);
-        UIManager.put("Table.alternatingRowBackground", bgMain);
-
-        // Chữ
-        UIManager.put("Panel.foreground", textMain);
-        UIManager.put("Table.foreground", textMain);
-
-        // Viền / grid
-        UIManager.put("Table.gridColor", borderColor);
-
-        // Table header
-        UIManager.put("TableHeader.background", accentBg);
-        UIManager.put("TableHeader.foreground", ACCENT_COLOR);
-
-        // Selection — dùng selectionBg riêng (đậm hơn accent)
-        UIManager.put("Table.selectionBackground", selectionBg);
-        UIManager.put("Table.selectionForeground", Color.WHITE);
-
-        // Button
-        UIManager.put("Button.background", bgPanel);
-        UIManager.put("Button.foreground", textMain);
     }
 }
