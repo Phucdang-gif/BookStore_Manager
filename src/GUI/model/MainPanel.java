@@ -3,7 +3,7 @@ package GUI.model;
 import javax.swing.*;
 import java.awt.*;
 import BUS.BookBUS;
-import GUI.util.UIConstants;
+import GUI.util.ThemeColor;
 
 public class MainPanel extends JPanel {
     private Header header;
@@ -19,7 +19,8 @@ public class MainPanel extends JPanel {
     public MainPanel() {
         bookBUS = new BookBUS();
         setLayout(new BorderLayout());
-        setBackground(UIConstants.BACKGROUND_COLOR);
+        setOpaque(true);
+        setBackground(ThemeColor.bgPanel);
         initComponents();
     }
 
@@ -31,7 +32,8 @@ public class MainPanel extends JPanel {
         // 2. Center Panel (Dùng CardLayout để tráo đổi nội dung)
         cardLayout = new CardLayout();
         centerPanel = new JPanel(cardLayout);
-        centerPanel.setOpaque(false);
+        centerPanel.setOpaque(true);
+        centerPanel.setBackground(ThemeColor.bgPanel);
 
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
@@ -39,12 +41,23 @@ public class MainPanel extends JPanel {
 
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlInvoice, "SALES");
-
         add(centerPanel, BorderLayout.CENTER);
 
         // Mặc định ban đầu Header điều khiển bảng Sách
         header.setPanelTable(pnlBook);
         header.setPanelInvoice(pnlInvoice);
+    }
+
+    // FlatLaf gọi updateUI() khi đổi theme → cần re-apply màu ở đây
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        setOpaque(true);
+        setBackground(ThemeColor.bgPanel);
+        if (centerPanel != null) {
+            centerPanel.setOpaque(true);
+            centerPanel.setBackground(ThemeColor.bgPanel);
+        }
     }
 
     // Hàm chuyển tab (Được gọi từ MainFrame)

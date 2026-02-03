@@ -5,13 +5,14 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.awt.event.ActionListener;
 import GUI.model.ButtonModel;
+import GUI.util.ThemeColor;
 
 public class ToolBarPanel extends JPanel {
     private ArrayList<ActionButton> listActions = new ArrayList<>();
 
     public ToolBarPanel(ArrayList<ButtonModel> buttonList) {
         setOpaque(true);
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.bgPanel);
         setLayout(new FlowLayout(FlowLayout.LEFT, 10, 0));
         // Dùng vòng lặp for-each để tạo nút từ mảng
         for (ButtonModel data : buttonList) {

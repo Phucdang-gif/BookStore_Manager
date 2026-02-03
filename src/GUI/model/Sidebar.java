@@ -5,6 +5,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import GUI.util.ThemeColor;
 
 public class Sidebar extends JPanel {
     private JButton btnSelected;
@@ -13,7 +14,7 @@ public class Sidebar extends JPanel {
 
     public Sidebar() {
         initComponents();
-        this.setBackground(Color.decode("#242526"));
+        setBackground(ThemeColor.bgPanel);
     }
 
     public void setMenuListener(ActionListener listener) {
@@ -22,12 +23,12 @@ public class Sidebar extends JPanel {
 
     private void initComponents() {
         // QUAN TRỌNG: Đổi nền thành TRẮNG để tệp với Profile
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.bgPanel);
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
 
         // Tạo đường viền mờ bên phải để ngăn cách với nội dung chính
-        setBorder(BorderFactory.createMatteBorder(1, 0, 0, 1, new Color(230, 230, 230)));
+        setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, ThemeColor.borderColor));
 
         // --- 1. PHẦN USER PROFILE (Đưa vào đây) ---
         // Profile nằm trên cùng (NORTH)
@@ -63,8 +64,8 @@ public class Sidebar extends JPanel {
         btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         // Màu sắc: Chữ xám đậm, Nền trắng (khi chưa chọn)
-        btn.setForeground(new Color(80, 80, 80));
-        btn.setBackground(Color.WHITE);
+        btn.setForeground(ThemeColor.textMain);
+        btn.setBackground(ThemeColor.bgPanel);
 
         btn.setBorder(new EmptyBorder(12, 25, 12, 20)); // Padding trái 25
         btn.setHorizontalAlignment(SwingConstants.LEFT);
@@ -85,20 +86,20 @@ public class Sidebar extends JPanel {
     private void setActiveButton(JButton btn) {
         if (btnSelected != null) {
             // Reset nút cũ về màu trắng
-            btnSelected.setBackground(Color.WHITE);
-            btnSelected.setForeground(new Color(80, 80, 80));
+            btnSelected.setBackground(ThemeColor.bgPanel);
+            btnSelected.setForeground(ThemeColor.textMain);
             // Xóa border đánh dấu
             btnSelected.setBorder(new EmptyBorder(12, 25, 12, 20));
         }
         btnSelected = btn;
 
         // Style nút được chọn: Nền xanh nhạt, Chữ xanh dương đậm
-        btnSelected.setBackground(new Color(235, 245, 255));
-        btnSelected.setForeground(new Color(0, 120, 215));
+        btnSelected.setBackground(ThemeColor.accentBg);
+        btnSelected.setForeground(ThemeColor.ACCENT_COLOR);
 
-        // Thêm vạch xanh bên trái đánh dấu
+        // Thêm vạch bên trái đánh dấu
         btnSelected.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 5, 0, 0, new Color(0, 120, 215)),
+                BorderFactory.createMatteBorder(0, 5, 0, 0, ThemeColor.ACCENT_COLOR),
                 new EmptyBorder(12, 20, 12, 20)));
     }
 }

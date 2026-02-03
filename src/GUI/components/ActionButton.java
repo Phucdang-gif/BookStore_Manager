@@ -3,6 +3,7 @@ package GUI.components;
 import javax.swing.*;
 import java.awt.*;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import GUI.util.ThemeColor;
 
 /**
  * Button với icon nằm phía trên và text nằm phía dưới
@@ -10,8 +11,8 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
  */
 public class ActionButton extends JButton {
 
-    private static final Color DEFAULT_TEXT_COLOR = new Color(0, 51, 102);
-    private static final Color DEFAULT_HOVER_COLOR = new Color(240, 240, 240);
+    private static final Color DEFAULT_TEXT_COLOR = ThemeColor.textMain;
+    private static final Color DEFAULT_HOVER_COLOR = ThemeColor.ACCENT_COLOR;
     private static final Font DEFAULT_FONT = new Font("Arial", Font.BOLD, 11);
     private static final int DEFAULT_ICON_SIZE = 35;
 
@@ -29,7 +30,7 @@ public class ActionButton extends JButton {
         // Font và màu sắc
         setFont(DEFAULT_FONT);
         setForeground(DEFAULT_TEXT_COLOR);
-        setBackground(Color.WHITE);
+        setBackground(ThemeColor.bgPanel);
 
         // Hiệu ứng và con trỏ
         setFocusPainted(false);

@@ -16,6 +16,7 @@ import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
 import GUI.dialog.invoice.InvoiceDialog;
 import GUI.components.RoundedBorderButton;
+import GUI.util.ThemeColor;
 
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
@@ -37,7 +38,7 @@ public class Header extends JPanel {
     }
 
     private void initComponents() {
-        setBorder(BorderFactory.createMatteBorder(1, 0, 0, 1, new Color(230, 230, 230)));
+        setBorder(BorderFactory.createMatteBorder(1, 0, 0, 1, ThemeColor.borderColor));
         // 1. Tạo Toolbar (Trái)
         ArrayList<ButtonModel> listButtons = new ArrayList<>();
         listButtons.add(new ButtonModel("THÊM", "GUI/icon/add.svg", "ADD"));
@@ -48,11 +49,10 @@ public class Header extends JPanel {
         // --- 3. KHỞI TẠO TOOLBAR PANEL ---
         // Truyền list và listener vào constructor của ToolBarPanel
         toolBar = new ToolBarPanel(listButtons);
-
         btnRefresh = new RoundedBorderButton(
                 "LÀM MỚI",
                 "GUI/icon/refresh.svg",
-                new Color(0, 153, 255), // Màu xanh chủ đạo
+                ThemeColor.textMain, // Màu accent chủ đạo
                 20 // Độ bo góc
         );
         // 2. Tạo Search (Giữa)
@@ -76,9 +76,9 @@ public class Header extends JPanel {
     private void initStyle() {
         // 1. Set nền trắng cho toàn bộ Header
         this.setOpaque(true);
-        this.setBackground(Color.WHITE);
+        this.setBackground(ThemeColor.bgPanel);
         this.setPreferredSize(new Dimension(0, 80));
-        this.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+        this.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColor.borderColor));
     }
     // --- CÁC HÀM XỬ LÝ LOGIC (PRIVATE) ---
     // Giúp code dễ đọc, dễ sửa hơn là viết dồn cục trong initevents
@@ -280,5 +280,18 @@ public class Header extends JPanel {
         if (name.equals("SALES")) {
             // Có thể ẩn bớt nút nếu muốn
         }
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        if (ThemeColor.bgPanel != null) {
+            setBackground(ThemeColor.bgPanel);
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColor.borderColor),
+                    new EmptyBorder(0, 20, 0, 20)));
+        }
+        // Lưu ý: Nút Refresh màu xanh dương (Accent) thì nên giữ nguyên,
+        // không cần đổi theo theme Sáng/Tối, nó vẫn nổi bật trên cả 2 nền.
     }
 }

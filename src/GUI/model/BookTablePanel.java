@@ -2,14 +2,14 @@ package GUI.model;
 
 import BUS.BookBUS;
 import DTO.BookDTO;
-import GUI.util.UIConstants; // Giả sử bạn vẫn giữ file này, nếu không hãy thay bằng Color.WHITE/GRAY
+import GUI.util.ThemeColor;
+import GUI.util.UIConstants;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
-
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -23,7 +23,7 @@ public class BookTablePanel extends JPanel {
 
     public BookTablePanel(BookBUS bus) {
         this.bookBUS = bus;
-        setBackground(UIConstants.BACKGROUND_COLOR);
+        setBackground(ThemeColor.bgPanel);
         setLayout(new BorderLayout(10, 10));
 
         initComponents();
@@ -45,33 +45,39 @@ public class BookTablePanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(bookTable);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
-        scrollPane.getViewport().setBackground(Color.WHITE);
+        scrollPane.getViewport().setBackground(ThemeColor.bgPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
     }
 
     private void styleTable() {
-        // Font chữ
-        try {
-            bookTable.setFont(UIConstants.NORMAL_FONT);
-        } catch (Exception e) {
-            bookTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }
         bookTable.setRowHeight(UIConstants.ROW_HEIGHT);
         bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bookTable.setShowVerticalLines(true);
         bookTable.setShowHorizontalLines(true);
-        bookTable.setGridColor(new Color(200, 200, 200));
+        bookTable.setGridColor(ThemeColor.borderColor);
+
+        bookTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        // Màu nền và chữ mặc định của các dòng
+        bookTable.setBackground(ThemeColor.bgPanel);
+        bookTable.setForeground(ThemeColor.textMain);
+
+        // Màu lưới kẻ (grid)
+        bookTable.setGridColor(ThemeColor.borderColor);
+
+        // Màu khi CHỌN một dòng (Selection)
+        bookTable.setSelectionBackground(ThemeColor.selectionBg);
+        bookTable.setSelectionForeground(Color.WHITE);
 
         // Header
         JTableHeader header = bookTable.getTableHeader();
         header.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        header.setBackground(new Color(248, 249, 250)); // Màu xám nhẹ
-        header.setForeground(new Color(33, 37, 41));
+        header.setBackground(ThemeColor.accentBg);
+        header.setForeground(ThemeColor.ACCENT_COLOR);
         header.setPreferredSize(new Dimension(0, 45)); // Header cao hơn chút
-        header.setBackground(UIConstants.GREEN_BACKGROUND);
 
         // Căn giữa dữ liệu (Trừ tên sách để căn trái)
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
@@ -181,4 +187,12 @@ public class BookTablePanel extends JPanel {
         return bookTable;
     }
 
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        // Khi theme đổi, gọi lại hàm styleTable để áp dụng màu mới
+        if (bookTable != null && ThemeColor.bgPanel != null) {
+            styleTable();
+        }
+    }
 }
