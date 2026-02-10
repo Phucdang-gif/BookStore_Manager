@@ -29,8 +29,7 @@ public class PublisherDAO {
                 list.add(new PublisherDTO(
                         rs.getInt("publisher_id"),
                         rs.getString("publisher_name"),
-                        rs.getString("status") // Khớp với constructor PublisherDTO
-                ));
+                        rs.getString("status")));
             }
         }
         return list;

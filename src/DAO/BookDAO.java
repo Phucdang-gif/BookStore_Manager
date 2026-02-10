@@ -12,13 +12,19 @@ import DTO.AuthorDTO;
 import config.DatabaseConnection;
 
 public class BookDAO {
+    private Connection conn;
+
     public BookDAO() {
+        this.conn = DatabaseConnection.getInstance().getConnection();
+    }
+
+    public BookDAO(Connection conn) {
+        this.conn = conn;
     }
 
     // --- CÁC HÀM THÊM MỚI (CREATE)
     public int insertBook(BookDTO book) throws SQLException {
         int generatedBookId = -1;
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return -1;
         String sql = "INSERT INTO books (isbn, book_title, publisher_id, category_id, " +
@@ -44,7 +50,6 @@ public class BookDAO {
         if (authors == null || authors.isEmpty())
             return;
         String sql = "INSERT INTO book_authors (book_id, author_id, display_order) VALUE (?,?,?)";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -76,8 +81,6 @@ public class BookDAO {
                 "LEFT JOIN authors a ON ba.author_id = a.author_id " + // <--- MỚI
                 "GROUP BY b.book_id " + // <--- MỚI
                 "ORDER BY b.book_id ASC";
-
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null) {
             return books;
         }
@@ -110,7 +113,6 @@ public class BookDAO {
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
                 "WHERE b.book_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return null;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -134,7 +136,6 @@ public class BookDAO {
                 "JOIN book_authors ba ON a.author_id = ba.author_id " +
                 "WHERE ba.book_id = ? " +
                 "ORDER BY ba.display_order ASC";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return authors;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -163,7 +164,6 @@ public class BookDAO {
                 "page_count=?, language=?, publication_year=?, cover_type=?, import_price=?, " +
                 "selling_price=?, stock_quantity=?, minimum_stock=?, image=?, status=? " +
                 "WHERE book_id=?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return false;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -208,13 +208,25 @@ public class BookDAO {
         }
     }
 
+    // Hàm này chỉ update cột status, an toàn tuyệt đối cho dữ liệu Tác giả
+    public boolean updateStatus(int bookId, String newStatus) throws SQLException {
+        String sql = "UPDATE books SET status = ? WHERE book_id = ?";
+        if (conn == null)
+            return false;
+
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, newStatus);
+            pst.setInt(2, bookId);
+            return pst.executeUpdate() > 0;
+        }
+    }
+
     /**
      * Hàm phụ: Xóa tất cả tác giả của một cuốn sách (Dùng khi Update hoặc Delete
      * sách)
      */
     public void deleteBookAuthors(int bookId) throws SQLException {
         String sql = "DELETE FROM book_authors WHERE book_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
@@ -226,10 +238,8 @@ public class BookDAO {
     public boolean delete(int bookId) throws SQLException {
         // Bước 1: Xóa các liên kết tác giả trước (để tránh lỗi khóa ngoại)
         deleteBookAuthors(bookId);
-
         // Bước 2: Xóa sách
         String sql = "DELETE FROM books WHERE book_id = ?";
-        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (conn == null)
             return false;
         try (PreparedStatement pst = conn.prepareStatement(sql)) {

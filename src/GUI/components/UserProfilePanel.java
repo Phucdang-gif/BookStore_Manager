@@ -11,14 +11,14 @@ public class UserProfilePanel extends JPanel {
     public UserProfilePanel(String userName, String role) {
 
         setLayout(new BorderLayout(10, 0));
-        setBackground(ThemeColor.bgPanel);
+        setBackground(ThemeColor.bgWhite);
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0,
                         ThemeColor.borderColor), // Đường kẻ mờ bên dưới
                 new EmptyBorder(10, 20, 10, 10)));
         setPreferredSize(new Dimension(240, 80));
         JLabel lblAvatar = new JLabel();
-        IconHelper.setIcon(lblAvatar, "GUI/icon/avatar.svg", 45, 45);
+        IconHelper.setIcon(lblAvatar, "GUI/icon/stafff.svg", 45, 45);
 
         add(lblAvatar, BorderLayout.WEST);
 
@@ -29,12 +29,12 @@ public class UserProfilePanel extends JPanel {
 
         JLabel lblName = new JLabel(userName);
         lblName.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblName.setForeground(ThemeColor.textMain);
+        lblName.setForeground(ThemeColor.ACCENT_COLOR);
         lblName.setVerticalAlignment(SwingConstants.BOTTOM);
 
         JLabel lblRole = new JLabel(role);
         lblRole.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblRole.setForeground(ThemeColor.textSecondary);
+        lblRole.setForeground(ThemeColor.textMain);
 
         textPanel.add(lblName);
         textPanel.add(lblRole);

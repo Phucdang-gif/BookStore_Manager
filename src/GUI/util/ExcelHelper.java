@@ -8,9 +8,12 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.Component;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class ExcelHelper {
 
@@ -137,5 +140,123 @@ public class ExcelHelper {
         style.setBorderLeft(BorderStyle.THIN);
 
         return style;
+    }
+
+    public static File selectExcelFile(Component parent) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn file Excel để nhập dữ liệu");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx", "xls"));
+
+        int userSelection = fileChooser.showOpenDialog(parent);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            return fileChooser.getSelectedFile();
+        }
+        return null;
+    }
+
+    // 2. Hàm đọc dữ liệu từ Excel trả về List
+    public static List<BookDTO> importBooksFromExcel(File file) {
+        List<BookDTO> listBooks = new ArrayList<>();
+
+        try (FileInputStream fis = new FileInputStream(file);
+                Workbook workbook = new XSSFWorkbook(fis)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            // Bỏ qua dòng tiêu đề
+            if (rowIterator.hasNext())
+                rowIterator.next();
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (isRowEmpty(row))
+                    continue;
+
+                BookDTO book = new BookDTO();
+
+                // Đọc đúng thứ tự cột trong file new1.xlsx
+                // 0:ID | 1:ISBN | 2:Tên | 3:Tác giả | 4:NXB | 5:Thể loại
+                // 6:Giá Nhập | 7:Giá Bán | 8:Tồn | 9:Min | 10:Trạng thái | 11:Ảnh
+
+                String idStr = getCellValue(row.getCell(0));
+                book.setBookId(idStr.isEmpty() ? 0 : (int) Double.parseDouble(idStr));
+
+                book.setIsbn(getCellValue(row.getCell(1)));
+
+                String title = getCellValue(row.getCell(2));
+                if (title.isEmpty())
+                    continue; // Bắt buộc có tên
+                book.setBookTitle(title);
+
+                // Tách tác giả
+                String authorsStr = getCellValue(row.getCell(3));
+                List<String> authorNames = new ArrayList<>();
+                if (!authorsStr.isEmpty()) {
+                    String[] arr = authorsStr.split(",");
+                    for (String s : arr)
+                        authorNames.add(s.trim());
+                }
+                book.setAuthorNames(authorNames);
+
+                book.setPublisherName(getCellValue(row.getCell(4)));
+                book.setCategoryName(getCellValue(row.getCell(5)));
+
+                book.setImportPrice(parseCurrency(getCellValue(row.getCell(6))));
+                book.setSellingPrice(parseCurrency(getCellValue(row.getCell(7))));
+                book.setStockQuantity((int) parseCurrency(getCellValue(row.getCell(8))));
+                book.setMinimumStock((int) parseCurrency(getCellValue(row.getCell(9))));
+
+                // Xử lý trạng thái (Dùng hàm static bên BookDTO)
+                String statusVN = getCellValue(row.getCell(10));
+                book.setStatus(BookDTO.getStatusFromVietnamese(statusVN));
+
+                String img = getCellValue(row.getCell(11));
+                book.setImage(img.isEmpty() ? null : img);
+
+                listBooks.add(book);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Lỗi đọc file: " + e.getMessage());
+        }
+        return listBooks;
+    }
+
+    // --- CÁC HÀM BỔ TRỢ ---
+    private static double parseCurrency(String val) {
+        try {
+            return Double.parseDouble(val.replace(",", "").replace("_", ""));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private static String getCellValue(Cell cell) {
+        if (cell == null)
+            return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell))
+                    return cell.getDateCellValue().toString();
+                double val = cell.getNumericCellValue();
+                return (val == (long) val) ? String.format("%d", (long) val) : String.valueOf(val);
+            default:
+                return "";
+        }
+    }
+
+    private static boolean isRowEmpty(Row row) {
+        if (row == null)
+            return true;
+        for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
+            Cell cell = row.getCell(c);
+            if (cell != null && cell.getCellType() != CellType.BLANK && !getCellValue(cell).isEmpty())
+                return false;
+        }
+        return true;
     }
 }

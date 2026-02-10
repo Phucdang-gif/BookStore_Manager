@@ -240,6 +240,28 @@ public class BookDTO {
         }
     }
 
+    public static String getStatusFromVietnamese(String vnStatus) {
+        if (vnStatus == null)
+            return "in_stock";
+
+        switch (vnStatus.trim()) {
+            case "Còn hàng":
+            case "in_stock":
+                return "in_stock";
+
+            case "Hết hàng":
+            case "out_of_stock":
+                return "out_of_stock";
+
+            case "Ngừng kinh doanh":
+            case "discontinued":
+                return "discontinued";
+
+            default:
+                return "in_stock";
+        }
+    }
+
     public String getFormattedSellingPrice() {
         return NumberFormat.getCurrencyInstance(Locale.of("vi", "VN")).format(this.sellingPrice);
     }

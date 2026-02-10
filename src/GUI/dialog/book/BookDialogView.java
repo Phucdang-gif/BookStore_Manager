@@ -7,6 +7,7 @@ import DTO.AuthorDTO;
 
 import java.awt.*;
 import static GUI.dialog.book.BookDialogStyles.*;
+import GUI.util.ThemeColor;
 
 public class BookDialogView extends JPanel {
     // --- COMPONENTS ---
@@ -28,6 +29,7 @@ public class BookDialogView extends JPanel {
     public BookDialogView() {
         setLayout(new BorderLayout());
         setBackground(BG_COLOR);
+        setBorder(BorderFactory.createLineBorder(ThemeColor.borderColor, 2));
         initComponents();
     }
 

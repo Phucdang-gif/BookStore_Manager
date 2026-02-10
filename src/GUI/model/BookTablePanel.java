@@ -2,6 +2,9 @@ package GUI.model;
 
 import BUS.BookBUS;
 import DTO.BookDTO;
+import GUI.dialog.book.BookDialog;
+import GUI.dialog.book.DialogMode;
+import GUI.util.ExcelHelper;
 import GUI.util.ThemeColor;
 import GUI.util.UIConstants;
 
@@ -11,9 +14,10 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 
-public class BookTablePanel extends JPanel {
+public class BookTablePanel extends JPanel implements FeatureController {
     private BookBUS bookBUS;
     private JTable bookTable;
     private DefaultTableModel tableModel;
@@ -75,11 +79,32 @@ public class BookTablePanel extends JPanel {
             setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
             if (isSelected) {
-                setBackground(ThemeColor.selectionBg); // ← mới
-                setForeground(ThemeColor.selectionText); // ← mới
+                setBackground(ThemeColor.selectionBg);
+                setForeground(ThemeColor.selectionText);
             } else {
-                setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
-                setForeground(ThemeColor.tableText);
+                try {
+                    int modelRow = table.convertRowIndexToModel(row);
+                    int stock = Integer.parseInt(table.getModel().getValueAt(modelRow, 5).toString());
+                    int min = Integer.parseInt(table.getModel().getValueAt(modelRow, 6).toString());
+
+                    if (stock == 0) {
+                        setBackground(ThemeColor.outOfStockColor);
+                        setForeground(ThemeColor.outOfStockText);
+                    } else if (stock <= min) {
+                        setBackground(ThemeColor.warningColor);
+                        setForeground(ThemeColor.warningText);
+                    } else {
+                        // TRƯỜNG HỢP 3: BÌNH THƯỜNG -> Màu Zebra (Chẵn/Lẻ)
+                        setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                        setForeground(ThemeColor.tableText);
+                    }
+
+                } catch (Exception e) {
+                    // Nếu lỗi (ví dụ parse số thất bại) -> Về màu mặc định an toàn
+                    setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                    setForeground(ThemeColor.tableText);
+                }
+
             }
 
             setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
@@ -102,19 +127,40 @@ public class BookTablePanel extends JPanel {
                 JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
 
+            // 1. Setup cơ bản
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setHorizontalAlignment(JLabel.CENTER);
             setFont(new Font("Segoe UI", Font.BOLD, 13));
+            setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
 
+            // 2. LOGIC TÔ MÀU
             if (isSelected) {
-                setBackground(ThemeColor.selectionBg); // ← mới
-                setForeground(ThemeColor.selectionText); // ← mới
+                setBackground(ThemeColor.selectionBg);
+                setForeground(ThemeColor.selectionText);
             } else {
-                setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
-                setForeground(priceColor);
+                try {
+                    // Lấy tồn kho và min từ Model để check
+                    int modelRow = table.convertRowIndexToModel(row);
+                    int stock = Integer.parseInt(table.getModel().getValueAt(modelRow, 5).toString());
+                    int min = Integer.parseInt(table.getModel().getValueAt(modelRow, 6).toString());
+
+                    // --- XỬ LÝ MÀU NỀN ---
+                    if (stock == 0) {
+                        setBackground(ThemeColor.outOfStockColor); // Hết hàng -> Nền đỏ nhạt
+                    } else if (stock <= min) {
+                        setBackground(ThemeColor.warningColor); // Sắp hết -> Nền vàng nhạt
+                    } else {
+                        setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                    }
+                    setForeground(priceColor);
+
+                } catch (Exception e) {
+                    // Fallback nếu lỗi
+                    setBackground(row % 2 == 0 ? ThemeColor.rowEven : ThemeColor.rowOdd);
+                    setForeground(priceColor);
+                }
             }
 
-            setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
             return this;
         }
     }
@@ -189,10 +235,6 @@ public class BookTablePanel extends JPanel {
         bookTable.repaint();
     }
 
-    public void refreshTableData(ArrayList<BookDTO> listBooks) {
-        setTableData(listBooks);
-    }
-
     public int getSelectedBookId() {
         int row = bookTable.getSelectedRow();
         if (row == -1)
@@ -232,6 +274,111 @@ public class BookTablePanel extends JPanel {
 
     public JTable getBookTable() {
         return bookTable;
+    }
+
+    @Override
+    public void onAdd() {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+        BookDialog bookDialog = new BookDialog(parent, null, DialogMode.ADD);
+        bookDialog.setVisible(true);
+        if (bookDialog.isSucceeded()) {
+            refreshTable();
+        }
+    }
+
+    @Override
+    public void onEdit() {
+        int selectedBookId = getSelectedBookId();
+        if (selectedBookId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần sửa!");
+            return;
+        }
+        BookDTO fullInfo = bookBUS.getBookDetails(selectedBookId);
+        if (fullInfo != null) {
+            JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+            BookDialog dialog = new BookDialog(parent, fullInfo, DialogMode.EDIT);
+            dialog.setVisible(true);
+            if (dialog.isSucceeded()) {
+                refreshTable();
+            }
+        }
+    }
+
+    @Override
+    public void onDelete() {
+        int selectedId = getSelectedBookId();
+        if (selectedId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách cần xóa!");
+            return;
+        }
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa ID: " + selectedId + "?",
+                "Xác nhận", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (bookBUS.deleteBook(selectedId)) {
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
+                refreshTable();
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!");
+            }
+        }
+    }
+
+    @Override
+    public void onDetail() {
+        int selectedId = getSelectedBookId();
+        if (selectedId == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn sách xem chi tiết!");
+            return;
+        }
+        BookDTO fullInfo = bookBUS.getBookDetails(selectedId);
+        if (fullInfo != null) {
+            BookDialog dialog = new BookDialog((JFrame) SwingUtilities.getWindowAncestor(this), fullInfo,
+                    DialogMode.READ);
+            dialog.setVisible(true);
+        }
+    }
+
+    @Override
+    public void onSearch(String text) {
+        filterTable(text);
+    }
+
+    @Override
+    public void onRefresh() {
+        boolean isSuccess = refreshTable();
+        if (isSuccess) {
+            JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu thành công!", "Thông báo",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Lỗi: Không thể tải dữ liệu!", "Thất bại", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @Override
+    public void onExportExcel() {
+        java.util.List<BookDTO> listToExport = bookBUS.getAll();
+        if (listToExport != null && !listToExport.isEmpty()) {
+            ExcelHelper.exportBooks(listToExport, this);
+        } else {
+            JOptionPane.showMessageDialog(this, "Không có dữ liệu để xuất!");
+        }
+    }
+
+    @Override
+    public void onImportExcel() {
+        File file = ExcelHelper.selectExcelFile(this);
+        if (file == null)
+            return;
+        String resultMessage = bookBUS.importBooksFromExcel(file);
+        JOptionPane.showMessageDialog(this, resultMessage);
+        refreshTable();
+    }
+
+    @Override
+    public boolean[] getButtonConfig() {
+        return new boolean[] { true, true, true, true, true, true };
     }
 
     @Override

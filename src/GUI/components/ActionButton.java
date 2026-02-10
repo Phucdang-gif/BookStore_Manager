@@ -2,7 +2,7 @@ package GUI.components;
 
 import javax.swing.*;
 import java.awt.*;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
+import GUI.util.IconHelper;
 import GUI.util.ThemeColor;
 
 /**
@@ -15,6 +15,11 @@ public class ActionButton extends JButton {
     private static final Color DEFAULT_HOVER_COLOR = ThemeColor.borderColor;
     private static final Font DEFAULT_FONT = new Font("Arial", Font.BOLD, 11);
     private static final int DEFAULT_ICON_SIZE = 35;
+
+    public ActionButton(String text) {
+        super(text);
+        initializeButton();
+    }
 
     public ActionButton(String text, String iconPath) {
         this(text, iconPath, DEFAULT_ICON_SIZE);
@@ -47,13 +52,7 @@ public class ActionButton extends JButton {
     }
 
     private void loadSVGIcon(String svgPath, int iconSize) {
-        try {
-            FlatSVGIcon icon = new FlatSVGIcon(svgPath, iconSize, iconSize);
-            setIcon(icon);
-        } catch (Exception e) {
-            System.err.println("Không thể load SVG icon: " + svgPath);
-            e.printStackTrace();
-        }
+        IconHelper.setIcon(this, svgPath, iconSize, iconSize);
     }
 
     /**

@@ -2,8 +2,10 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
+
 import GUI.model.MainPanel;
 import GUI.model.Sidebar;
+
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import GUI.util.ThemeColor;

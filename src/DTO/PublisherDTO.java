@@ -39,6 +39,6 @@ public class PublisherDTO {
 
     @Override
     public String toString() {
-        return publisherName;
+        return publisherName + '\'' + status + '\'';
     }
 }
