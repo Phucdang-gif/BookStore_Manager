@@ -2,7 +2,7 @@ package GUI.model;
 
 import BUS.AuthorBUS;
 import DTO.AuthorDTO;
-import GUI.dialog.category.AuthorDialog;
+import GUI.dialog.group.AuthorDialog;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,7 +12,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class AuthorPanel extends JPanel implements FeatureController {
+public class AuthorPanel extends JPanel implements FeatureControllerInterface {
 
     private AuthorBUS authorBUS; // Tái sử dụng lớp xử lý nghiệp vụ
     private JTable table;

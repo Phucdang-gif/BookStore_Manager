@@ -1,6 +1,6 @@
 package GUI.components;
 
-import GUI.util.IconHelper; // Giả sử bạn có class này, nếu không thì dùng ImageIcon
+import GUI.util.IconHelper;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -8,18 +8,26 @@ import java.awt.event.MouseEvent;
 
 public class DashboardCard extends JPanel {
     private Color color;
+    private Color originalColor; // Lưu màu gốc để khi hover ra thì trả về màu đúng
+    private JLabel lblValue;
 
     public DashboardCard(String title, String value, String iconPath, Color color, Runnable onClick) {
         this.color = color;
+        this.originalColor = color; // Lưu lại màu gốc
+
         setOpaque(false);
         setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(250, 120)); // Kích thước thẻ
+        setPreferredSize(new Dimension(250, 120));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         // --- ICON (Trái) ---
         JLabel lblIcon = new JLabel();
-        // Nếu bạn chưa có IconHelper, dùng: new ImageIcon(iconPath)
-        IconHelper.setIcon(lblIcon, iconPath, 40, 40);
+        try {
+            IconHelper.setIcon(lblIcon, iconPath, 40, 40);
+        } catch (Exception e) {
+            // Fallback nếu chưa có IconHelper hoặc ảnh lỗi
+            lblIcon.setText("ICON");
+        }
         lblIcon.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 10));
 
         // --- TEXT INFO (Phải) ---
@@ -31,7 +39,8 @@ public class DashboardCard extends JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTitle.setForeground(Color.WHITE);
 
-        JLabel lblValue = new JLabel(value);
+        // Khởi tạo biến toàn cục
+        lblValue = new JLabel(value);
         lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblValue.setForeground(Color.WHITE);
 
@@ -51,17 +60,22 @@ public class DashboardCard extends JPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Hiệu ứng hover nhẹ (tối đi 1 chút)
-                DashboardCard.this.color = color.darker();
+                // Hiệu ứng hover: làm tối màu đi một chút
+                DashboardCard.this.color = originalColor.darker();
                 repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                DashboardCard.this.color = color;
+                // Trả về màu gốc
+                DashboardCard.this.color = originalColor;
                 repaint();
             }
         });
+    }
+
+    public void setValue(String value) {
+        this.lblValue.setText(value);
     }
 
     @Override
@@ -71,7 +85,7 @@ public class DashboardCard extends JPanel {
 
         // Vẽ hình chữ nhật bo tròn với màu phẳng
         g2.setColor(color);
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20); // Bo góc 20px
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
 
         super.paintComponent(g);
     }

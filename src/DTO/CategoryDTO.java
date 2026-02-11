@@ -5,13 +5,15 @@ import java.util.Objects;
 public class CategoryDTO {
     private int categoryID;
     private String categoryName, status;
+    private int displayOrder;
 
     public CategoryDTO() {
     }
 
-    public CategoryDTO(int categoryID, String categoryName, String status) {
+    public CategoryDTO(int categoryID, String categoryName, int displayOrder, String status) {
         this.categoryID = categoryID;
         this.categoryName = categoryName;
+        this.displayOrder = displayOrder;
         this.status = status;
     }
 
@@ -37,6 +39,14 @@ public class CategoryDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public int getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
     }
 
     @Override

@@ -22,6 +22,7 @@ public class CategoryDAO {
                 list.add(new CategoryDTO(
                         rs.getInt("category_id"),
                         rs.getString("category_name"),
+                        rs.getInt("display_order"),
                         rs.getString("status")));
             }
         } catch (SQLException e) {
@@ -39,6 +40,7 @@ public class CategoryDAO {
                 return new CategoryDTO(
                         rs.getInt("category_id"),
                         rs.getString("category_name"),
+                        rs.getInt("display_order"),
                         rs.getString("status"));
             }
         } catch (SQLException e) {

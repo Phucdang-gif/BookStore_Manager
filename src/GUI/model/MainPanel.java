@@ -12,9 +12,8 @@ public class MainPanel extends JPanel {
 
     // Các màn hình con
     private BookTablePanel pnlBook;
-    private InvoiceTablePanel pnlInvoice;
-    private AuthorPanel pnlAuthor;
-    private CategoryPanel pnlCategory;
+    private GroupPanel pnlGroup;
+
     private BookBUS bookBUS;
 
     public MainPanel() {
@@ -37,15 +36,11 @@ public class MainPanel extends JPanel {
 
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
-        pnlInvoice = new InvoiceTablePanel();
-        pnlAuthor = new AuthorPanel();
-        pnlCategory = new CategoryPanel(this);
+        pnlGroup = new GroupPanel(this);
 
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
-        centerPanel.add(pnlInvoice, "SALES");
-        centerPanel.add(pnlAuthor, "AUTHOR");
-        centerPanel.add(pnlCategory, "CATEGORY");
+        centerPanel.add(pnlGroup, "GROUP");
 
         add(centerPanel, BorderLayout.CENTER);
 
@@ -72,17 +67,9 @@ public class MainPanel extends JPanel {
                 header.setController(pnlBook);
                 setHeaderVisible(true);
                 break;
-            case "SALES":
-                // InvoiceTablePanel PHẢI implements SearchAndActions
-                // header.setController((SearchAndActions) pnlInvoice);
-                break;
-            case "AUTHOR":
-                // AuthorPanel PHẢI implements SearchAndActions
-                header.setController((FeatureController) pnlAuthor);
-                break;
-            case "CATEGORY":
-                setHeaderVisible(false);
-                pnlCategory.resetToDashboard();
+            case "GROUP":
+                pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)
+                setHeaderVisible(false); // Ẩn Header chính của MainPanel vì GroupPanel có HeaderBar riêng
                 break;
             default:
                 // Nếu chưa có panel nào thì set null để vô hiệu hóa nút

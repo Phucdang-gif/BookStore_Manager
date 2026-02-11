@@ -15,7 +15,7 @@ public class Header extends JPanel {
     private ToolBarPanel toolBar;
     private SearchTextField txtSearch;
     private ActionButton btnRefresh;
-    private FeatureController currentController;
+    private FeatureControllerInterface currentController;
 
     public Header() {
         this.setLayout(new BorderLayout());
@@ -24,7 +24,7 @@ public class Header extends JPanel {
         initEvents();
     }
 
-    public void setController(FeatureController controller) {
+    public void setController(FeatureControllerInterface controller) {
         this.currentController = controller;
         txtSearch.setText("");
         if (controller != null) {
@@ -50,8 +50,7 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
         listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg", "IMPORT"));
-        // --- 3. KHỞI TẠO TOOLBAR PANEL ---
-        // Truyền list và listener vào constructor của ToolBarPanel
+
         toolBar = new ToolBarPanel(listButtons);
         btnRefresh = new RoundedBorderButton(
                 "LÀM MỚI",
@@ -59,7 +58,7 @@ public class Header extends JPanel {
                 ThemeColor.textMain, // Màu accent chủ đạo
                 20 // Độ bo góc
         );
-        // 2. Tạo Search (Giữa)
+
         JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
         centerPanel.setOpaque(false);
         txtSearch = new SearchTextField();
@@ -67,9 +66,7 @@ public class Header extends JPanel {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 20));
         rightPanel.setOpaque(false); // Trong suốt
 
-        // 2. Thêm nút vào Panel phụ này
         rightPanel.add(btnRefresh);
-        // Gép lại
         add(toolBar, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);

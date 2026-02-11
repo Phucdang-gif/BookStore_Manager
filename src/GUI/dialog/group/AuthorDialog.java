@@ -1,4 +1,4 @@
-package GUI.dialog.category;
+package GUI.dialog.group;
 
 import BUS.AuthorBUS;
 import DTO.AuthorDTO;

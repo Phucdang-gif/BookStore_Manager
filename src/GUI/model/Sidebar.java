@@ -48,8 +48,7 @@ public class Sidebar extends JPanel {
         // --- DANH SÁCH CHỨC NĂNG (SAU NÀY LOAD TỪ DB HOẶC CHECK QUYỀN Ở ĐÂY) ---
         ArrayList<SidebarModel> items = new ArrayList<>();
         items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
-        items.add(new SidebarModel("BÁN HÀNG", "GUI/icon/product.svg", "SALES"));
-        items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "CATEGORY"));
+        items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
         // items.add(new SidebarItem("THỐNG KÊ", "GUI/icon/chart.svg", "STATS"));
 
         // Render ra giao diện

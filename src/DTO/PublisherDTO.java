@@ -2,14 +2,15 @@ package DTO;
 
 public class PublisherDTO {
     private int publisherId;
-    private String publisherName, status;
+    private String publisherName, status, phone;
 
     public PublisherDTO() {
     }
 
-    public PublisherDTO(int publisherId, String publisherName, String status) {
+    public PublisherDTO(int publisherId, String publisherName, String phone, String status) {
         this.publisherId = publisherId;
         this.publisherName = publisherName;
+        this.phone = phone;
         this.status = status;
     }
 
@@ -33,12 +34,20 @@ public class PublisherDTO {
         return status;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
     public void setStatus(String status) {
         this.status = status;
     }
 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     @Override
     public String toString() {
-        return publisherName + '\'' + status + '\'';
+        return publisherName + '\'' + phone + '\'' + status;
     }
 }

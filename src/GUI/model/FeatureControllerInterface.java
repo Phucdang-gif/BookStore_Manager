@@ -1,6 +1,6 @@
 package GUI.model;
 
-public interface FeatureController {
+public interface FeatureControllerInterface {
     void onAdd();
 
     void onEdit();

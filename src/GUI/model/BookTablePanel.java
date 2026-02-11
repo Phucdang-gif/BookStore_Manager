@@ -17,7 +17,7 @@ import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
-public class BookTablePanel extends JPanel implements FeatureController {
+public class BookTablePanel extends JPanel implements FeatureControllerInterface {
     private BookBUS bookBUS;
     private JTable bookTable;
     private DefaultTableModel tableModel;

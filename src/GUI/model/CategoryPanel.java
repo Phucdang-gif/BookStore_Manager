@@ -1,115 +1,146 @@
 package GUI.model;
 
-import GUI.components.RoundedBorderButton;
-import GUI.util.ThemeColor;
+import BUS.CategoryBUS;
+import DTO.CategoryDTO;
+import GUI.dialog.group.CategoryDialog;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
 import java.awt.*;
+import java.util.ArrayList;
 
-public class CategoryPanel extends JPanel {
-    private CardLayout cardLayout;
-    private JPanel container;
+public class CategoryPanel extends JPanel implements FeatureControllerInterface {
 
-    // Header Panel chứa nút Back
-    private JPanel headerBar;
-    private JButton btnBack;
-    private JLabel lblTitle;
+    private CategoryBUS categoryBUS;
+    private JTable table;
+    private DefaultTableModel tableModel;
+    private TableRowSorter<DefaultTableModel> rowSorter;
 
-    // Các màn hình con
-    private CategoryDashboard dashboard;
-    private AuthorPanel pnlAuthor;
-
-    private MainPanel mainPanelContext; // Để gọi ngược lại setController cho Header chính
-
-    public CategoryPanel(MainPanel mainPanel) {
-        this.mainPanelContext = mainPanel;
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-
+    public CategoryPanel() {
+        this.categoryBUS = new CategoryBUS();
         initComponents();
+        loadDataToTable();
     }
 
     private void initComponents() {
-        // 1. THANH ĐIỀU HƯỚNG (HEADER BAR) - Mặc định ẩn
-        headerBar = new JPanel(new BorderLayout());
-        headerBar.setBackground(Color.WHITE);
-        headerBar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        headerBar.setVisible(false); // Chỉ hiện khi vào trang con
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
-        btnBack = new RoundedBorderButton(null, "GUI/icon/left-arrow.svg", ThemeColor.textMain, 10);
-        btnBack.setPreferredSize(new Dimension(35, 35));
-        btnBack.addActionListener(e -> backToDashboard());
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setOpaque(false);
+        tablePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        lblTitle = new JLabel("CHI TIẾT DANH MỤC");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitle.setForeground(ThemeColor.textMain);
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+        // Thêm cột Thứ tự (Display Order) vào bảng theo đúng DB
+        String[] columns = { "ID Thể loại", "Tên thể loại", "Thứ tự", "Trạng thái" };
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
 
-        JPanel leftParams = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        leftParams.setOpaque(false);
-        leftParams.add(btnBack);
-        leftParams.add(lblTitle);
+        table = new JTable(tableModel);
+        table.setRowHeight(35);
+        rowSorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(rowSorter);
 
-        headerBar.add(leftParams, BorderLayout.WEST);
-        add(headerBar, BorderLayout.NORTH);
-
-        // 2. CONTAINER CHÍNH (CARD LAYOUT)
-        cardLayout = new CardLayout();
-        container = new JPanel(cardLayout);
-        container.setBackground(Color.WHITE);
-
-        // --- KHỞI TẠO CÁC PANEL CON ---
-
-        // A. Dashboard (Truyền listener xử lý khi click vào nút grid)
-        dashboard = new CategoryDashboard(e -> {
-            String command = e.getActionCommand();
-            switchPanel(command);
-        });
-
-        // B. Các panel quản lý
-        pnlAuthor = new AuthorPanel();
-        // pnlPublisher = new PublisherPanel();
-
-        // Add vào Card
-        container.add(dashboard, "DASHBOARD");
-        container.add(pnlAuthor, "AUTHOR");
-        // container.add(pnlPublisher, "PUBLISHER");
-
-        add(container, BorderLayout.CENTER);
+        tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        add(tablePanel, BorderLayout.CENTER);
     }
 
-    // --- LOGIC CHUYỂN ĐỔI ---
+    public void loadDataToTable() {
+        tableModel.setRowCount(0);
+        ArrayList<CategoryDTO> list = categoryBUS.getAll();
+        for (CategoryDTO cat : list) {
+            tableModel.addRow(new Object[] {
+                    cat.getId(),
+                    cat.getName(),
+                    cat.getDisplayOrder(), // Giả định bạn đã thêm field này vào DTO
+                    cat.getStatus()
+            });
+        }
+    }
 
-    public void switchPanel(String panelName) {
-        // 1. Chuyển Card
-        cardLayout.show(container, panelName);
+    @Override
+    public void onAdd() {
+        openDialog(null);
+    }
 
-        // 2. Cập nhật giao diện & Header Chính
-        if (panelName.equals("DASHBOARD")) {
-            headerBar.setVisible(false); // Ẩn nút Back
-            mainPanelContext.setHeaderVisible(false);
+    @Override
+    public void onEdit() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn thể loại cần sửa!");
+            return;
+        }
+        int id = (int) table.getValueAt(row, 0);
+        CategoryDTO cat = categoryBUS.getById(id);
+        openDialog(cat);
+    }
 
-        } else {
-            headerBar.setVisible(true); // Hiện nút Back
-            mainPanelContext.setHeaderVisible(true);
-            // Cập nhật tiêu đề tương ứng
-            if (panelName.equals("AUTHOR")) {
-                lblTitle.setText("Quản lý Tác giả");
-                // Quan trọng: Báo cho Header chính biết là đang dùng AuthorPanel
-                mainPanelContext.getHeader().setController(pnlAuthor);
-            } else if (panelName.equals("PUBLISHER")) {
-                lblTitle.setText("Quản lý Nhà xuất bản");
-                // mainPanelContext.getHeader().setController(pnlPublisher);
+    @Override
+    public void onDelete() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn thể loại cần xóa!");
+            return;
+        }
+        int id = (int) table.getValueAt(row, 0);
+        if (JOptionPane.showConfirmDialog(this, "Xác nhận xóa thể loại này?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (categoryBUS.delete(id)) {
+                loadDataToTable();
             }
         }
     }
 
-    private void backToDashboard() {
-        switchPanel("DASHBOARD");
+    private void openDialog(CategoryDTO cat) {
+        Window parent = SwingUtilities.getWindowAncestor(this);
+        if (parent instanceof Frame) {
+            CategoryDialog dialog = new CategoryDialog((Frame) parent, cat);
+            dialog.setVisible(true);
+            if (dialog.isSuccess()) {
+                loadDataToTable();
+            }
+        }
     }
 
-    // Hàm này được MainPanel gọi khi click vào sidebar "DANH MỤC"
-    public void resetToDashboard() {
-        backToDashboard();
+    @Override
+    public void onSearch(String text) {
+        if (text.trim().isEmpty()) {
+            rowSorter.setRowFilter(null);
+        } else {
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text, 1));
+        }
     }
+
+    @Override
+    public void onRefresh() {
+        categoryBUS.loadData();
+        loadDataToTable();
+    }
+
+    @Override
+    public void onExportExcel() {
+
+    }
+
+    @Override
+    public void onImportExcel() {
+
+    }
+
+    @Override
+    public boolean[] getButtonConfig() {
+        return new boolean[] { true, true, true, false, false, false };
+    }
+
+    @Override
+    public void onDetail() {
+
+    }
+
 }
