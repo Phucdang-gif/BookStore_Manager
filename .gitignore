@@ -1,7 +1,6 @@
 # --- Các file biên dịch của Java ---
 *.class
 *.log
-*.jar
 *.war
 
 # --- Maven (Nếu bạn dùng cấu trúc src/main/java) ---
