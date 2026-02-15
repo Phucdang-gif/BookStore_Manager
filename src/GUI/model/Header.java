@@ -10,6 +10,7 @@ import GUI.components.SearchTextField;
 import GUI.components.ToolBarPanel;
 import GUI.components.RoundedBorderButton;
 import GUI.util.ThemeColor;
+import java.awt.event.ActionListener;
 
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
@@ -49,29 +50,28 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
+        // listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg",
+        // "IMPORT"));
         listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg", "IMPORT"));
 
         toolBar = new ToolBarPanel(listButtons);
         btnRefresh = new RoundedBorderButton(
-                "LÀM MỚI",
+                null,
                 "GUI/icon/refresh.svg",
                 ThemeColor.textMain, // Màu accent chủ đạo
                 20 // Độ bo góc
         );
-
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
-        centerPanel.setOpaque(false);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 20));
+        rightPanel.setOpaque(false);
         txtSearch = new SearchTextField();
-        centerPanel.add(txtSearch);
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 20));
-        rightPanel.setOpaque(false); // Trong suốt
-
+        txtSearch.setPreferredSize(new Dimension(250, 40));
+        rightPanel.add(txtSearch);
         rightPanel.add(btnRefresh);
+
         add(toolBar, BorderLayout.WEST);
-        add(centerPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
 
-        setBorder(new EmptyBorder(0, 0, 0, 20)); // Padding 2 bên
+        setBorder(new EmptyBorder(0, 0, 0, 20));
     }
 
     private void initStyle() {

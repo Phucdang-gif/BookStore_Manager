@@ -15,7 +15,7 @@ public class BookDialogView extends JPanel {
             txtMinStock;
     public JComboBox<String> cbCategory, cbPublisher, cbStatus, cbCoverType;
 
-    // UI TÁC GIẢ MỚI
+    // UI TÁC GIẢ
     public JTextField txtAuthorSearch;
     public JButton btnAuthorAdd;
     public JPopupMenu popupAuthorSuggestions;
@@ -63,7 +63,7 @@ public class BookDialogView extends JPanel {
         p.setBorder(new MatteBorder(1, 0, 0, 0, BORDER_COLOR));
 
         btnCancel = new JButton("Đóng");
-        btnSave = new JButton("Lưu thông tin"); // Vẫn giữ UI nhưng sẽ ẩn đi
+        btnSave = new JButton("Lưu thông tin");
 
         btnCancel.setPreferredSize(new Dimension(100, 35));
         btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -178,7 +178,7 @@ public class BookDialogView extends JPanel {
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setOpaque(false);
 
-        // --- GIAO DIỆN TÁC GIẢ SEARCH & TAG ---
+        // --- GIAO DIỆN TÁC GIẢ ---
         JLabel lblAuth = new JLabel("Tác giả:");
         lblAuth.setFont(new Font("Segoe UI", Font.PLAIN, 13));
 
@@ -204,6 +204,7 @@ public class BookDialogView extends JPanel {
         lblAddNewAuthor = new JLabel("<html><u>Thêm tác giả mới...</u></html>");
         lblAddNewAuthor.setForeground(new Color(0, 102, 204));
         lblAddNewAuthor.setBorder(new EmptyBorder(5, 0, 5, 0));
+        lblAddNewAuthor.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JPanel pAuthContainer = new JPanel(new BorderLayout(5, 5));
         pAuthContainer.setOpaque(false);
@@ -217,7 +218,7 @@ public class BookDialogView extends JPanel {
         pAuthContainer.add(pAuthBody, BorderLayout.CENTER);
 
         p.add(pAuthContainer);
-        // -------------------------------------
+        // -------------------------
 
         p.add(Box.createVerticalStrut(12));
         txtYear = new JTextField();
@@ -266,7 +267,7 @@ public class BookDialogView extends JPanel {
         return p;
     }
 
-    // Helpers (giữ nguyên)
+    // --- HELPERS (Layout) ---
     private JPanel createSection(String title, Component content) {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(Color.WHITE);
@@ -318,5 +319,15 @@ public class BookDialogView extends JPanel {
         gbc.weightx = 0.5;
         p.add(c2, gbc);
         return p;
+    }
+
+    // --- HELPER (Validation Feedback) ---
+    public void setInputError(javax.swing.JComponent c, boolean isError) {
+        if (isError) {
+            c.setBorder(new javax.swing.border.LineBorder(java.awt.Color.RED, 1));
+        } else {
+            // Trả về màu mặc định (Giả sử trong BookDialogStyles là BORDER_COLOR)
+            c.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(180, 180, 180), 1));
+        }
     }
 }

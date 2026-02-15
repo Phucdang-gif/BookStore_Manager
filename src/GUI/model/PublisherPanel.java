@@ -68,7 +68,7 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
         // Giả sử BUS có hàm getById
         PublisherDTO pub = publisherBUS.getById(id);
         // Tạm thời lấy từ danh sách hiện tại hoặc gọi DB
-        openDialog(null); // Bạn nên bổ sung hàm getById vào BUS
+        openDialog(pub); // Bạn nên bổ sung hàm getById vào BUS
     }
 
     @Override
