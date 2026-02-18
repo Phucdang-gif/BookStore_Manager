@@ -10,7 +10,6 @@ import GUI.components.SearchTextField;
 import GUI.components.ToolBarPanel;
 import GUI.components.RoundedBorderButton;
 import GUI.util.ThemeColor;
-import java.awt.event.ActionListener;
 
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
@@ -51,8 +50,6 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
         // listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg",
-        // "IMPORT"));
-        listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg", "IMPORT"));
 
         toolBar = new ToolBarPanel(listButtons);
         btnRefresh = new RoundedBorderButton(

@@ -1,10 +1,6 @@
 {
-  "java.project.referencedLibraries": {
-    "include": [
-      "lib/**/*.jar"
-    ],
-    "exclude": [
-      "lib/flatlaf-3.4.jar"
-    ]
-  }
+  "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+  ]
+  
 }
