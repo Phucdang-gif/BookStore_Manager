@@ -13,6 +13,8 @@ public class MainPanel extends JPanel {
     // Các màn hình con
     private BookTablePanel pnlBook;
     private GroupPanel pnlGroup;
+    private AccountPanel pnlAccount;
+    private RolePanel pnlRole;
 
     private BookBUS bookBUS;
 
@@ -41,6 +43,8 @@ public class MainPanel extends JPanel {
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
+        pnlAccount = new AccountPanel();
+        centerPanel.add(pnlAccount, "ACCOUNT");
 
         add(centerPanel, BorderLayout.CENTER);
 
@@ -70,6 +74,14 @@ public class MainPanel extends JPanel {
             case "GROUP":
                 pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)
                 setHeaderVisible(false); // Ẩn Header chính của MainPanel vì GroupPanel có HeaderBar riêng
+                break;
+            case "ACCOUNT":
+                header.setController(pnlAccount);
+                setHeaderVisible(true);
+                break;
+            case "ROLE":
+                header.setController(pnlRole);
+                setHeaderVisible(true);
                 break;
             default:
                 // Nếu chưa có panel nào thì set null để vô hiệu hóa nút

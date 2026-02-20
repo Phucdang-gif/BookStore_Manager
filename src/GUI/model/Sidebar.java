@@ -49,6 +49,8 @@ public class Sidebar extends JPanel {
         ArrayList<SidebarModel> items = new ArrayList<>();
         items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
         items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
+        items.add(new SidebarModel("TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT")); 
+        items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/role.svg", "ROLE")); 
         // items.add(new SidebarItem("THỐNG KÊ", "GUI/icon/chart.svg", "STATS"));
 
         // Render ra giao diện

@@ -2,6 +2,7 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.Connection;
 
 import GUI.model.MainPanel;
 import GUI.model.Sidebar;
@@ -9,6 +10,7 @@ import GUI.model.Sidebar;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import GUI.util.ThemeColor;
+import config.DatabaseConnection;
 
 public class MainFrame extends JFrame {
     private MainPanel content;
@@ -71,4 +73,5 @@ public class MainFrame extends JFrame {
             frame.setVisible(true);
         });
     }
+    
 }
