@@ -11,14 +11,8 @@ import BUS.PublisherBUS;
 import BUS.AuthorBUS;
 
 import javax.swing.*;
-
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-// -------------------------------
-
+import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,13 +48,13 @@ public class BookDialogController {
         view.cbPublisher.addItem("-- Chọn NXB --");
 
         CategoryBUS catBUS = new CategoryBUS();
-        this.listCategories = catBUS.getAll(); // Lưu vào biến class
+        this.listCategories = catBUS.getAll();
         for (CategoryDTO cat : listCategories) {
             view.cbCategory.addItem(cat.getName());
         }
 
         PublisherBUS pubBUS = new PublisherBUS();
-        this.listPublishers = pubBUS.getAll(); // Lưu vào biến class
+        this.listPublishers = pubBUS.getAll();
         for (PublisherDTO pub : listPublishers) {
             view.cbPublisher.addItem(pub.getName());
         }
@@ -88,13 +82,14 @@ public class BookDialogController {
                 view.btnSave.setText("Cập nhật");
                 view.btnSave.setVisible(true);
                 setFormEditable(true);
-                view.txtIsbn.setEditable(false);
+                // Có thể cho phép sửa ISBN hoặc không tùy nghiệp vụ, ở đây tạm khóa để an toàn
+                // view.txtIsbn.setEditable(false);
                 break;
             case READ:
                 view.lblTitle.setText("Chi Tiết Sách");
                 view.btnSave.setVisible(false);
                 view.btnCancel.setText("Đóng");
-                setFormEditable(false); // Khóa toàn bộ
+                setFormEditable(false);
                 break;
         }
     }
@@ -114,13 +109,11 @@ public class BookDialogController {
         view.txtLanguage.setEditable(editable);
         view.txtMinStock.setEditable(editable);
 
-        // --- XỬ LÝ UI TÁC GIẢ ---
         view.txtAuthorSearch.setVisible(editable);
         view.btnAuthorAdd.setVisible(editable);
         view.lblAddNewAuthor.setVisible(editable);
 
         view.btnUpload.setEnabled(editable);
-        // Vẽ lại tags (để hiện hoặc ẩn nút xóa 'x')
         renderAuthorTags(editable);
     }
 
@@ -130,56 +123,43 @@ public class BookDialogController {
             view.cbCoverType.setSelectedItem("Bìa mềm");
             return;
         }
-        // ------------------------------
 
-        // (Đoạn code cũ bên dưới giữ nguyên)
         view.txtTitle.setText(bookDTO.getBookTitle());
+
+        // Format ISBN ngay khi hiển thị
         view.txtIsbn.setText(bookDTO.getIsbn());
-        // Đổ dữ liệu text
-        view.txtTitle.setText(bookDTO.getBookTitle());
-        view.txtIsbn.setText(bookDTO.getIsbn());
+
         view.txtYear.setText(String.valueOf(bookDTO.getPublicationYear()));
         view.txtPage.setText(String.valueOf(bookDTO.getPageCount()));
         view.txtPriceImport.setText(String.valueOf(bookDTO.getImportPrice()));
         view.txtPriceExport.setText(String.valueOf(bookDTO.getSellingPrice()));
         view.txtQuantity.setText(String.valueOf(bookDTO.getStockQuantity()));
-        view.txtLanguage.setText(bookDTO.getLanguage()); // Ngôn ngữ
-        view.txtMinStock.setText(String.valueOf(bookDTO.getMinimumStock())); // Tồn kho tối thiểu
+        view.txtLanguage.setText(bookDTO.getLanguage());
+        view.txtMinStock.setText(String.valueOf(bookDTO.getMinimumStock()));
 
-        // ComboBox (chỉ hiển thị text vì đã disable)
-        view.cbCategory.addItem(bookDTO.getCategoryName());
-        view.cbPublisher.addItem(bookDTO.getPublisherName());
         view.cbCategory.setSelectedItem(bookDTO.getCategoryName());
         view.cbPublisher.setSelectedItem(bookDTO.getPublisherName());
-
-        view.cbStatus.setSelectedItem(bookDTO.getStatus());
         view.cbCoverType.setSelectedItem(bookDTO.getCoverType());
 
         if (bookDTO.getImage() != null && !bookDTO.getImage().isEmpty()) {
             String imgName = bookDTO.getImage();
             String finalPath;
-
-            // Logic: Nếu chuỗi lưu trong DB có chứa dấu : (như C:\) hoặc dấu / đầu tiên
-            // thì coi là đường dẫn tuyệt đối (của dữ liệu cũ).
-            // Ngược lại thì coi là tên file và nối thêm "src/image/"
             if (imgName.contains(":") || imgName.startsWith("/") || imgName.contains("\\")) {
                 finalPath = imgName;
             } else {
-                finalPath = "src/image/" + imgName; // Đường dẫn tương đối gọn nhẹ
+                finalPath = "src/image/" + imgName;
             }
 
             File f = new File(finalPath);
             if (f.exists()) {
                 this.selectedImagePath = imgName;
-
                 ImageIcon icon = new ImageIcon(finalPath);
                 Image img = icon.getImage().getScaledInstance(250, 360, Image.SCALE_SMOOTH);
                 view.lblImagePreview.setIcon(new ImageIcon(img));
                 view.lblImagePreview.setText("");
             } else {
                 view.lblImagePreview.setIcon(null);
-                view.lblImagePreview.setText("Ảnh không tồn tại");
-                System.err.println("Không tìm thấy file ảnh: " + finalPath);
+                view.lblImagePreview.setText("Ảnh lỗi");
             }
         } else {
             view.lblImagePreview.setIcon(null);
@@ -188,15 +168,12 @@ public class BookDialogController {
 
         if (bookDTO.getAuthors() != null) {
             this.currentAuthors = new ArrayList<>(bookDTO.getAuthors());
-            renderAuthorTags(mode != DialogMode.READ); // Nếu không phải xem thì hiện nút xóa
+            renderAuthorTags(mode != DialogMode.READ);
         }
 
-        String statusEN = bookDTO.getStatus(); // DB trả về: IN_STOCK, OUT_OF_STOCK...
+        String statusEN = bookDTO.getStatus();
         if (statusEN != null) {
             switch (statusEN) {
-                case "in_stock":
-                    view.cbStatus.setSelectedItem("Còn hàng");
-                    break;
                 case "out_of_stock":
                     view.cbStatus.setSelectedItem("Hết hàng");
                     break;
@@ -219,19 +196,16 @@ public class BookDialogController {
             JLabel lblName = new JLabel(author.getAuthorName());
             tag.add(lblName);
 
-            // Chỉ thêm nút X khi đang ở chế độ sửa/thêm
             if (isEditable) {
                 JLabel lblX = new JLabel("x");
                 lblX.setForeground(Color.RED);
                 lblX.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 lblX.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-
-                // Sự kiện xóa tag
                 lblX.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         currentAuthors.remove(author);
-                        renderAuthorTags(true); // Vẽ lại
+                        renderAuthorTags(true);
                     }
                 });
                 tag.add(lblX);
@@ -247,8 +221,6 @@ public class BookDialogController {
             view.popupAuthorSuggestions.setVisible(false);
             return;
         }
-
-        // Lọc danh sách: Có tên chứa từ khóa VÀ chưa được chọn
         List<AuthorDTO> filtered = allAuthors.stream()
                 .filter(a -> a.getAuthorName().toLowerCase().contains(keyword.toLowerCase()))
                 .filter(a -> !currentAuthors.contains(a))
@@ -268,9 +240,9 @@ public class BookDialogController {
     private void addAuthorToSelection(AuthorDTO author) {
         if (!currentAuthors.contains(author)) {
             currentAuthors.add(author);
-            view.txtAuthorSearch.setText(""); // Xóa ô tìm kiếm
-            view.popupAuthorSuggestions.setVisible(false); // Ẩn popup
-            renderAuthorTags(true); // Vẽ lại tags
+            view.txtAuthorSearch.setText("");
+            view.popupAuthorSuggestions.setVisible(false);
+            renderAuthorTags(true);
         }
     }
 
@@ -283,6 +255,18 @@ public class BookDialogController {
             ((JDialog) SwingUtilities.getWindowAncestor(view)).dispose();
         });
 
+        // --- XỬ LÝ NHẬP LIỆU ISBN (FOCUS LISTENER & KEY LISTENER) ---
+        view.txtIsbn.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                char c = e.getKeyChar();
+                // Chỉ cho nhập số và các phím điều khiển
+                if (!Character.isDigit(c) && c != java.awt.event.KeyEvent.VK_BACK_SPACE
+                        && c != java.awt.event.KeyEvent.VK_DELETE) {
+                    e.consume();
+                }
+            }
+        });
+
         // --- SỰ KIỆN TÌM KIẾM TÁC GIẢ ---
         view.txtAuthorSearch.addKeyListener(new KeyAdapter() {
             @Override
@@ -291,7 +275,6 @@ public class BookDialogController {
             }
         });
 
-        // --- SỰ KIỆN CHỌN TỪ GỢI Ý ---
         view.listAuthorSuggestions.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -302,10 +285,7 @@ public class BookDialogController {
             }
         });
 
-        // --- SỰ KIỆN NÚT ADD (+) ---
         view.btnAuthorAdd.addActionListener(e -> {
-            // Logic: Nếu gõ tên đúng 100% với có sẵn thì add, không thì báo lỗi hoặc hỏi
-            // thêm mới
             String keyword = view.txtAuthorSearch.getText().trim();
             if (!keyword.isEmpty()) {
                 AuthorDTO match = allAuthors.stream()
@@ -319,31 +299,28 @@ public class BookDialogController {
             }
         });
 
-        // --- SỰ KIỆN LINK "THÊM TÁC GIẢ MỚI" ---
         view.lblAddNewAuthor.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 String name = JOptionPane.showInputDialog(view, "Nhập tên tác giả mới:");
                 if (name != null && !name.trim().isEmpty()) {
-                    AuthorDTO newAuth = new AuthorDTO(0, name); // ID 0 vì DB tự tăng
+                    AuthorDTO newAuth = new AuthorDTO(0, name);
                     if (authorBUS.addAuthor(newAuth)) {
-                        // Reload lại danh sách gốc
                         allAuthors = authorBUS.getAll();
-                        // Tìm lại ông vừa thêm để lấy ID chuẩn
                         AuthorDTO finalAuth = allAuthors.stream()
                                 .filter(a -> a.getAuthorName().equals(name))
                                 .findFirst().orElse(newAuth);
-                        addAuthorToSelection(finalAuth); // Tự động chọn luôn
+                        addAuthorToSelection(finalAuth);
                         JOptionPane.showMessageDialog(view, "Thêm tác giả thành công!");
                     }
                 }
             }
         });
 
-        // --- SỰ KIỆN NÚT LƯU (SAVE) ---
+        // --- SỰ KIỆN LƯU (SAVE) ---
         view.btnSave.addActionListener(e -> {
             if (!getFormInput())
-                return; // Validate
+                return;
 
             boolean result = false;
             if (mode == DialogMode.ADD) {
@@ -351,7 +328,7 @@ public class BookDialogController {
                 if (result)
                     JOptionPane.showMessageDialog(view, "Thêm thành công!");
             } else if (mode == DialogMode.EDIT) {
-                result = bookBUS.updateBook(this.bookDTO); // Hàm này chúng ta sẽ làm ở bước sau
+                result = bookBUS.updateBook(this.bookDTO);
                 if (result)
                     JOptionPane.showMessageDialog(view, "Cập nhật thành công!");
             }
@@ -364,7 +341,6 @@ public class BookDialogController {
             }
         });
 
-        // Sự kiện upload ảnh giữ nguyên
         view.btnUpload.addActionListener(e -> {
             JFileChooser fc = new JFileChooser();
             fc.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Image Files", "jpg", "png", "jpeg"));
@@ -384,82 +360,223 @@ public class BookDialogController {
     }
 
     private boolean getFormInput() {
-        // ... (đoạn validate tác giả, tên sách giữ nguyên) ...
+        // BƯỚC 1: Validate dữ liệu
+        String errors = validateData();
+        if (!errors.isEmpty()) {
+            JOptionPane.showMessageDialog(view, errors, "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
 
+        // BƯỚC 2: Gán dữ liệu vào DTO
         if (bookDTO == null)
             bookDTO = new BookDTO();
 
-        try {
-            // ... (đoạn set text giữ nguyên) ...
-            bookDTO.setBookTitle(view.txtTitle.getText().trim());
-            bookDTO.setIsbn(view.txtIsbn.getText().trim());
-            bookDTO.setPublicationYear(Integer.parseInt(view.txtYear.getText().trim()));
-            bookDTO.setPageCount(Integer.parseInt(view.txtPage.getText().trim()));
-            bookDTO.setImportPrice(Double.parseDouble(view.txtPriceImport.getText().trim()));
-            bookDTO.setSellingPrice(Double.parseDouble(view.txtPriceExport.getText().trim()));
-            bookDTO.setStockQuantity(Integer.parseInt(view.txtQuantity.getText().trim()));
-            bookDTO.setLanguage(view.txtLanguage.getText().trim());
-            if (view.txtMinStock.getText().trim().isEmpty()) {
-                bookDTO.setMinimumStock(0);
+        // XỬ LÝ ISBN: Lưu chuỗi sạch (không gạch) vào DTO
+        String rawIsbn = view.txtIsbn.getText().trim();
+        String cleanIsbn = rawIsbn.replace("-", "");
+        bookDTO.setIsbn(cleanIsbn);
+
+        bookDTO.setBookTitle(toTitleCase(view.txtTitle.getText()));
+        bookDTO.setLanguage(toTitleCase(view.txtLanguage.getText()));
+        bookDTO.setPublicationYear(parseInt(view.txtYear.getText()));
+        bookDTO.setPageCount(parseInt(view.txtPage.getText()));
+        bookDTO.setImportPrice(parseDouble(view.txtPriceImport.getText()));
+        bookDTO.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
+        bookDTO.setStockQuantity(parseInt(view.txtQuantity.getText()));
+
+        String minStock = view.txtMinStock.getText().trim();
+        bookDTO.setMinimumStock(minStock.isEmpty() ? 0 : parseInt(minStock));
+
+        bookDTO.setCoverType(view.cbCoverType.getSelectedItem().toString());
+
+        String statusVN = view.cbStatus.getSelectedItem().toString();
+        switch (statusVN) {
+            case "Hết hàng":
+                bookDTO.setStatus("out_of_stock");
+                break;
+            case "Ngừng kinh doanh":
+                bookDTO.setStatus("discontinued");
+                break;
+            default:
+                bookDTO.setStatus("in_stock");
+        }
+
+        String selectedCatName = view.cbCategory.getSelectedItem().toString();
+        for (CategoryDTO cat : listCategories) {
+            if (cat.getName().equals(selectedCatName)) {
+                bookDTO.setCategoryId(cat.getId());
+                bookDTO.setCategoryName(cat.getName());
+                break;
+            }
+        }
+
+        String selectedPubName = view.cbPublisher.getSelectedItem().toString();
+        for (PublisherDTO pub : listPublishers) {
+            if (pub.getName().equals(selectedPubName)) {
+                bookDTO.setPublisherId(pub.getId());
+                bookDTO.setPublisherName(pub.getName());
+                break;
+            }
+        }
+
+        bookDTO.setAuthors(currentAuthors);
+        bookDTO.setImage(this.selectedImagePath);
+
+        return true;
+    }
+
+    /**
+     * Hàm kiểm tra dữ liệu đầu vào.
+     */
+    private String validateData() {
+        StringBuilder sb = new StringBuilder();
+
+        // 1. Tên sách
+        if (view.txtTitle.getText().trim().isEmpty()) {
+            sb.append("- Tên sách không được để trống.\n");
+            view.setInputError(view.txtTitle, true);
+        } else {
+            view.setInputError(view.txtTitle, false);
+        }
+
+        // 2. Mã ISBN
+        String rawIsbn = view.txtIsbn.getText().trim();
+        String cleanIsbn = rawIsbn.replace("-", "");
+
+        if (rawIsbn.isEmpty()) {
+            sb.append("- Mã ISBN không được để trống.\n");
+            view.setInputError(view.txtIsbn, true);
+        } else if (!cleanIsbn.matches("\\d{10}|\\d{13}")) {
+            sb.append("- Mã ISBN không hợp lệ (phải có 10 hoặc 13 số).\n");
+            view.setInputError(view.txtIsbn, true);
+        } else {
+            // Kiểm tra trùng lặp
+            BookDTO existingBook = bookBUS.getByIsbn(cleanIsbn);
+            if (existingBook != null) {
+                boolean isDuplicate = false;
+                if (mode == DialogMode.ADD) {
+                    isDuplicate = true;
+                } else if (mode == DialogMode.EDIT) {
+                    if (existingBook.getBookId() != bookDTO.getBookId()) {
+                        isDuplicate = true;
+                    }
+                }
+
+                if (isDuplicate) {
+                    sb.append("- Mã ISBN này đã tồn tại (Sách: " + existingBook.getBookTitle() + ").\n");
+                    view.setInputError(view.txtIsbn, true);
+                } else {
+                    view.setInputError(view.txtIsbn, false);
+                }
             } else {
-                bookDTO.setMinimumStock(Integer.parseInt(view.txtMinStock.getText().trim()));
+                view.setInputError(view.txtIsbn, false);
             }
-            if (currentAuthors.isEmpty()) {
-                JOptionPane.showMessageDialog(view, "Vui lòng chọn ít nhất một tác giả!");
-                return false;
-            }
-            if (view.txtTitle.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(view, "Tên sách không được để trống!");
-                return false;
-            }
-            String statusVN = view.cbStatus.getSelectedItem().toString();
-            switch (statusVN) {
-                case "Còn hàng":
-                    bookDTO.setStatus("in_stock");
-                    break;
-                case "Hết hàng":
-                    bookDTO.setStatus("out_of_stock");
-                    break;
-                case "Ngừng kinh doanh":
-                    bookDTO.setStatus("discontinued");
-                    break;
-                default:
-                    bookDTO.setStatus("in_stock"); // Mặc định
-            }
-            bookDTO.setCoverType(view.cbCoverType.getSelectedItem().toString());
-            bookDTO.setAuthors(currentAuthors);
+        }
 
-            // --- ĐOẠN QUAN TRỌNG MỚI THÊM: MAP TÊN SANG ID ---
+        // 3. Năm xuất bản
+        String yearTxt = view.txtYear.getText().trim();
+        if (!yearTxt.matches("\\d{4}")) {
+            sb.append("- Năm xuất bản phải là 4 chữ số.\n");
+            view.setInputError(view.txtYear, true);
+        } else {
+            view.setInputError(view.txtYear, false);
+        }
 
-            // Xử lý Category
-            if (view.cbCategory.getSelectedIndex() > 0) {
-                String selectedCatName = view.cbCategory.getSelectedItem().toString();
-                // Tìm trong listCategories xem ông nào có tên trùng thì lấy ID ông đó
-                for (CategoryDTO cat : listCategories) {
-                    if (cat.getName().equals(selectedCatName)) {
-                        bookDTO.setCategoryId(cat.getId()); // Set ID để lưu DB
-                        bookDTO.setCategoryName(cat.getName()); // Set Tên để hiển thị
-                        break;
-                    }
-                }
-            }
+        // 4. Giá tiền
+        double importPrice = parseDouble(view.txtPriceImport.getText());
+        double exportPrice = parseDouble(view.txtPriceExport.getText());
 
-            // Xử lý Publisher
-            if (view.cbPublisher.getSelectedIndex() > 0) {
-                String selectedPubName = view.cbPublisher.getSelectedItem().toString();
-                for (PublisherDTO pub : listPublishers) {
-                    if (pub.getName().equals(selectedPubName)) {
-                        bookDTO.setPublisherId(pub.getId()); // Set ID để lưu DB
-                        bookDTO.setPublisherName(pub.getName()); // Set Tên để hiển thị
-                        break;
-                    }
-                }
-            }
-            bookDTO.setImage(this.selectedImagePath);
-            return true;
+        if (importPrice < 0) {
+            sb.append("- Giá nhập không hợp lệ.\n");
+            view.setInputError(view.txtPriceImport, true);
+        } else {
+            view.setInputError(view.txtPriceImport, false);
+        }
+
+        if (exportPrice < 0) {
+            sb.append("- Giá bán không hợp lệ.\n");
+            view.setInputError(view.txtPriceExport, true);
+        } else {
+            view.setInputError(view.txtPriceExport, false);
+        }
+
+        if (importPrice >= 0 && exportPrice >= 0 && exportPrice < importPrice) {
+            sb.append("- Cảnh báo: Giá bán thấp hơn giá nhập!\n");
+            view.setInputError(view.txtPriceExport, true);
+        }
+
+        // 5. Tồn kho
+        if (parseInt(view.txtQuantity.getText()) < 0) {
+            sb.append("- Tồn kho không được âm.\n");
+            view.setInputError(view.txtQuantity, true);
+        } else {
+            view.setInputError(view.txtQuantity, false);
+        }
+
+        if (!view.txtMinStock.getText().trim().isEmpty() && parseInt(view.txtMinStock.getText()) < 0) {
+            sb.append("- Tồn kho tối thiểu không được âm.\n");
+            view.setInputError(view.txtMinStock, true);
+        }
+
+        // 6. ComboBox & Tác giả
+        if (view.cbCategory.getSelectedIndex() <= 0) {
+            sb.append("- Vui lòng chọn Danh mục.\n");
+            view.setInputError(view.cbCategory, true);
+        } else {
+            view.setInputError(view.cbCategory, false);
+        }
+
+        if (view.cbPublisher.getSelectedIndex() <= 0) {
+            sb.append("- Vui lòng chọn Nhà xuất bản.\n");
+            view.setInputError(view.cbPublisher, true);
+        } else {
+            view.setInputError(view.cbPublisher, false);
+        }
+
+        if (currentAuthors.isEmpty()) {
+            sb.append("- Vui lòng chọn ít nhất một tác giả.\n");
+            view.setInputError(view.pnlAuthorTags, true);
+        } else {
+            view.setInputError(view.pnlAuthorTags, false);
+        }
+
+        return sb.toString();
+    }
+
+    // --- UTILS ---
+
+    private double parseDouble(String text) {
+        try {
+            String cleanText = text.replace(",", "").replace(".", "").trim();
+            return Double.parseDouble(cleanText);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(view, "Vui lòng nhập số hợp lệ!");
-            return false;
+            return -1;
         }
     }
+
+    private int parseInt(String text) {
+        try {
+            String cleanText = text.replace(",", "").replace(".", "").trim();
+            return Integer.parseInt(cleanText);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private String toTitleCase(String input) {
+        if (input == null || input.isEmpty())
+            return "";
+        String[] words = input.trim().split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            if (!w.isEmpty()) {
+                sb.append(Character.toUpperCase(w.charAt(0)));
+                if (w.length() > 1)
+                    sb.append(w.substring(1).toLowerCase());
+                sb.append(" ");
+            }
+        }
+        return sb.toString().trim();
+    }
+
 }

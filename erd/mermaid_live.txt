@@ -3,215 +3,250 @@ config:
   layout: elk
 ---
 erDiagram
-	direction TB
-	NHAN_VIEN {
-		int ma_nhan_vien PK ""  
-		string ho_ten  ""  
-		date ngay_sinh  ""  
-		string gioi_tinh  ""  
-		string sdt  ""  
-		string dia_chi  ""  
-		string chuc_vu  ""  
-		decimal luong  ""  
-		date ngay_vao_lam  ""  
-		date ngay_nghi_viec  ""  
-		string trang_thai  ""  
-		string hinh_anh  ""  
-	}
+    direction TB
 
-	HOA_DON {
-		int ma_hoa_don PK ""  
-		int ma_khach_hang FK ""  
-		int ma_nhan_vien FK ""  
-		datetime ngay_lap  ""  
-		decimal tong_tien_hang  ""  
-		decimal tong_giam_gia  ""  
-		decimal diem_su_dung  ""  
-		decimal gia_tri_diem_su_dung  ""  
-		decimal thanh_tien  ""  
-		string phuong_thuc_thanh_toan  ""  
-		string trang_thai  ""  
-		int diem_tich_luy_duoc  ""  
-	}
+    %% =============================================
+    %% 1. EMPLOYEE & ACCOUNT MANAGEMENT
+    %% =============================================
+    employees {
+        int employee_id PK
+        string full_name
+        date date_of_birth
+        enum gender
+        string phone
+        string address
+        string position
+        decimal salary
+        date hire_date
+        date termination_date
+        enum status
+        string avatar
+    }
 
-	PHIEU_NHAP {
-		int ma_phieu_nhap PK ""  
-		int ma_ncc FK ""  
-		int ma_nhan_vien FK ""  
-		datetime ngay_nhap  ""  
-		datetime ngay_lap_phieu  ""  
-		decimal tong_tien  ""  
-		string trang_thai  ""  
-		text ghi_chu  ""  
-	}
+    accounts {
+        int account_id PK
+        int employee_id FK
+        int permission_group_id FK
+        string username
+        string password
+        enum status
+        datetime created_at
+    }
 
-	TAI_KHOAN {
-		int ma_tai_khoan PK ""  
-		int ma_nhan_vien FK ""  
-		int ma_nhom_quyen FK ""  
-		string ten_dang_nhap  ""  
-		string mat_khau  ""  
-		string trang_thai  ""  
-		datetime ngay_tao  ""  
-	}
+    permission_groups {
+        int permission_group_id PK
+        string group_name
+        enum status
+        datetime created_at
+    }
 
-	NHOM_QUYEN {
-		int ma_nhom_quyen PK ""  
-		string ten_nhom_quyen  ""  
-		string trang_thai  ""  
-		datetime ngay_tao  ""  
-	}
+    functions {
+        int function_id PK
+        string function_name
+        string system_function_code
+        string function_group
+    }
 
-	CHI_TIET_NHOM_QUYEN {
-		int ma_chi_tiet PK ""  
-		int ma_nhom_quyen FK ""  
-		int ma_chuc_nang FK ""  
-		string hanhdong  ""  
-		datetime ngay_gan  ""  
-	}
+    permission_details {
+        int detail_id PK
+        int permission_group_id FK
+        int function_id FK
+        string actions
+        datetime assigned_at
+    }
 
-	CHUC_NANG {
-		int ma_chuc_nang PK ""  
-		string ten_chuc_nang  ""  
-		string ma_chuc_nang_he_thong  ""  
-		string nhom_chuc_nang  ""  
-	}
+    %% =============================================
+    %% 2. CUSTOMER MANAGEMENT
+    %% =============================================
+    customers {
+        int customer_id PK
+        string full_name
+        string phone
+        int loyalty_points
+        date registration_date
+    }
 
-	KHACH_HANG {
-		int ma_khach_hang PK ""  
-		string ho_ten  ""  
-		string sdt  ""  
-		int diem_tich_luy  ""  
-		date ngay_dang_ky  ""  
-	}
+    point_redemption_history {
+        int history_id PK
+        int customer_id FK
+        int points_redeemed
+        decimal value_received
+        datetime redemption_date
+        string redemption_type
+    }
 
-	LICH_SU_QUI_DOI_DIEM {
-		int ma_lich_su PK ""  
-		int ma_khach_hang FK ""  
-		int diem_qui_doi  ""  
-		decimal gia_tri_nhan_duoc  ""  
-		datetime ngay_qui_doi  ""  
-		string loai_qui_doi  ""  
-	}
+    %% =============================================
+    %% 3. BOOK MANAGEMENT
+    %% =============================================
+    publishers {
+        int publisher_id PK
+        string publisher_name
+        string phone
+        enum status
+    }
 
-	CHI_TIET_HOA_DON {
-		int ma_chi_tiet PK ""  
-		int ma_hoa_don FK ""  
-		int ma_sach FK ""  
-		int so_luong  ""  
-		decimal don_gia  ""  
-		decimal giam_gia  ""  
-		decimal thanh_tien  ""  
-	}
+    categories {
+        int category_id PK
+        string category_name
+        int display_order
+        enum status
+    }
 
-	SACH {
-		int ma_sach PK ""  
-		int ma_nxb FK ""  
-		int ma_the_loai FK ""  
-		string ma_hang(isbn)  ""  
-		string ten_sach  ""  
-		int so_trang  ""  
-		string ngon_ngu  ""  
-		int nam_xuat_ban  ""  
-		string loai_bia  ""  
-		decimal gia_nhap  ""  
-		decimal gia_ban  ""  
-		int so_luong_ton  ""  
-		int so_luong_toi_thieu  ""  
-		string hinh_anh  ""  
-		string trang_thai  ""  
-		datetime ngay_them  ""  
-	}
+    books {
+        int book_id PK
+        int publisher_id FK
+        int category_id FK
+        string isbn
+        string book_title
+        int page_count
+        string language
+        int publication_year
+        string cover_type
+        decimal import_price
+        decimal selling_price
+        int stock_quantity
+        int minimum_stock
+        string image
+        enum status
+        datetime added_at
+    }
 
-	DICH_VU_HOA_DON {
-		int ma_dich_vu_hoa_don PK ""  
-		int ma_hoa_don FK ""  
-		int ma_dich_vu_giam_gia FK ""  
-		string loai_dich_vu  ""  
-		decimal gia_tri_giam  ""  
-		text mo_ta  ""  
-	}
+    authors {
+        int author_id PK
+        string author_name
+    }
 
-	DICH_VU_GIAM_GIA {
-		int ma_dich_vu_giam_gia PK ""  
-		string ten_dich_vu  ""  
-		string loai_giam_gia  ""  
-		decimal gia_tri_giam  ""  
-		decimal gia_tri_toi_thieu  ""  
-		decimal giam_toi_da  ""  
-		datetime ngay_bat_dau  ""  
-		datetime ngay_ket_thuc  ""  
-		string trang_thai  ""  
-		text mo_ta  ""  
-	}
+    book_authors {
+        int book_author_id PK
+        int book_id FK
+        int author_id FK
+        int display_order
+    }
 
-	NHA_XUAT_BAN {
-		int ma_nxb PK ""  
-		string ten_nxb  ""  
-		string sdt  ""  
-		string trang_thai  ""  
-	}
+    %% =============================================
+    %% 4. SALES MANAGEMENT
+    %% =============================================
+    invoices {
+        int invoice_id PK
+        int customer_id FK
+        int employee_id FK
+        datetime created_at
+        decimal total_amount
+        decimal total_discount
+        decimal points_used
+        decimal points_value
+        decimal final_amount
+        string payment_method
+        string status
+        int points_earned
+    }
 
-	THE_LOAI {
-		int ma_the_loai PK ""  
-		string ten_the_loai  ""  
-		int thu_tu  ""  
-		string trang_thai  ""  
-	}
+    invoice_details {
+        int detail_id PK
+        int invoice_id FK
+        int book_id FK
+        int quantity
+        decimal unit_price
+        decimal discount
+        decimal subtotal
+    }
 
-	TAC_GIA {
-		int ma_tac_gia PK ""  
-		string ten_tac_gia  ""  
-		string hinh_anh  ""  
-	}
+    %% =============================================
+    %% 5. DISCOUNT SERVICE
+    %% =============================================
+    discount_services {
+        int service_id PK
+        string service_name
+        string discount_type
+        decimal discount_value
+        decimal minimum_value
+        decimal maximum_discount
+        datetime start_date
+        datetime end_date
+        enum status
+        text description
+    }
 
-	SACH_TAC_GIA {
-		int ma_sach_tac_gia PK ""  
-		int ma_sach FK ""  
-		int ma_tac_gia FK ""  
-		string vai_tro  ""  
-		int thu_tu  ""  
-	}
+    invoice_services {
+        int invoice_service_id PK
+        int invoice_id FK
+        int service_id FK
+        string service_type
+        decimal discount_value
+        text description
+    }
 
-	NHA_CUNG_CAP {
-		int ma_ncc PK ""  
-		string ten_ncc  ""  
-		string sdt  ""  
-		string trang_thai  ""  
-	}
+    %% =============================================
+    %% 6. SUPPLIER & IMPORT MANAGEMENT
+    %% =============================================
+    suppliers {
+        int supplier_id PK
+        string supplier_name
+        string phone
+        enum status
+    }
 
-	CHI_TIET_PHIEU_NHAP {
-		int ma_chi_tiet PK ""  
-		int ma_phieu_nhap FK ""  
-		int ma_sach FK ""  
-		int so_luong  ""  
-		decimal don_gia  ""  
-		decimal thanh_tien  ""  
-		date han_su_dung  ""  
-	}
+    import_receipts {
+        int receipt_id PK
+        int supplier_id FK
+        int employee_id FK
+        datetime import_date
+        datetime receipt_date
+        decimal total_amount
+        string status
+        text notes
+    }
 
-	THAM_SO_HE_THONG {
-		string ma_tham_so PK "Khóa chính là chuỗi ký tự"  
-		string gia_tri  "Lưu giá trị cấu hình"  
-		string mo_ta  "Giải thích tham số này làm gì"  
-	}
+    import_receipt_details {
+        int detail_id PK
+        int receipt_id FK
+        int book_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+        date expiry_date
+    }
 
-	NHAN_VIEN||--o{HOA_DON:"tạo"
-	NHAN_VIEN||--o{PHIEU_NHAP:"lập"
-	TAI_KHOAN||--||NHAN_VIEN:"thuộc về"
-	TAI_KHOAN}o--||NHOM_QUYEN:"có nhóm quyền"
-	NHOM_QUYEN||--|{CHI_TIET_NHOM_QUYEN:"có"
-	CHUC_NANG||--o{CHI_TIET_NHOM_QUYEN:"được gán"
-	KHACH_HANG||--o{HOA_DON:"mua"
-	KHACH_HANG||--o{LICH_SU_QUI_DOI_DIEM:"quy đổi điểm"
-	HOA_DON||--|{CHI_TIET_HOA_DON:"có"
-	SACH||--o{CHI_TIET_HOA_DON:"trong"
-	HOA_DON||--o{DICH_VU_HOA_DON:"áp dụng dịch vụ"
-	DICH_VU_GIAM_GIA||--o{DICH_VU_HOA_DON:"được sử dụng"
-	NHA_XUAT_BAN||--o{SACH:"xuất bản"
-	THE_LOAI||--o{SACH:"phân loại"
-	TAC_GIA||--o{SACH_TAC_GIA:"viết"
-	SACH||--o{SACH_TAC_GIA:"có"
-	NHA_CUNG_CAP||--o{PHIEU_NHAP:"cung cấp"
-	PHIEU_NHAP||--|{CHI_TIET_PHIEU_NHAP:"có"
-	SACH||--o{CHI_TIET_PHIEU_NHAP:"được nhập"
+    %% =============================================
+    %% SYSTEM PARAMETERS
+    %% =============================================
+    system_parameters {
+        string parameter_code PK
+        string parameter_value
+        string description
+    }
+
+    %% =============================================
+    %% RELATIONSHIPS
+    %% =============================================
+
+    %% Employee & Auth
+    employees ||--o| accounts : "has"
+    permission_groups ||--o{ accounts : "assigned_to"
+    permission_groups ||--o{ permission_details : "has"
+    functions ||--o{ permission_details : "defined_in"
+
+    %% Customer
+    customers ||--o{ point_redemption_history : "redeems"
+    customers |o--o{ invoices : "purchases"
+
+    %% Books
+    publishers ||--o{ books : "publishes"
+    categories ||--o{ books : "categorizes"
+    books ||--o{ book_authors : "has"
+    authors ||--o{ book_authors : "writes"
+
+    %% Sales
+    employees ||--o{ invoices : "processes"
+    invoices ||--|{ invoice_details : "contains"
+    books ||--o{ invoice_details : "listed_in"
+    
+    %% Services/Discounts
+    invoices ||--o{ invoice_services : "applies"
+    discount_services ||--o{ invoice_services : "used_in"
+
+    %% Imports
+    suppliers ||--o{ import_receipts : "supplies"
+    employees ||--o{ import_receipts : "manages"
+    import_receipts ||--|{ import_receipt_details : "contains"
+    books ||--o{ import_receipt_details : "imported_in"

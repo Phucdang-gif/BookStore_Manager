@@ -9,18 +9,33 @@ public class RoundedBorderButton extends ActionButton {
     private Color borderColor;
     private int radius;
 
+    // --- CONSTRUCTOR 1: Có Icon (Giữ nguyên cũ) ---
     public RoundedBorderButton(String text, String iconPath, Color color, int radius) {
-        // Gọi constructor của cha (ActionButton) với icon size 24 (vừa vặn)
+        // Gọi constructor của cha có icon
         super(text, iconPath, 24);
         this.borderColor = color;
         this.radius = radius;
         initStyle();
     }
 
+    // --- CONSTRUCTOR 2: Chỉ có Text (Mới thêm) ---
+    public RoundedBorderButton(String text, Color color, int radius) {
+        super(text);
+        this.borderColor = color;
+        this.radius = radius;
+        initStyle();
+    }
+
     private void initStyle() {
-        // 1. Chỉnh text nằm ngang bên phải icon
-        setHorizontalTextPosition(SwingConstants.RIGHT);
+        // 1. Chỉnh text nằm giữa (quan trọng cho button không icon)
+        setHorizontalTextPosition(SwingConstants.CENTER);
         setVerticalTextPosition(SwingConstants.CENTER);
+
+        // Nếu có icon (kiểm tra gián tiếp qua icon gap hoặc logic cũ),
+        // muốn icon bên trái text thì dùng:
+        if (getIcon() != null) {
+            setHorizontalTextPosition(SwingConstants.RIGHT);
+        }
 
         // 2. Chỉnh màu chữ trùng với màu viền
         setForeground(borderColor);
@@ -33,11 +48,11 @@ public class RoundedBorderButton extends ActionButton {
         setContentAreaFilled(false);
         setFocusPainted(false);
 
-        // 5. Tạo viền bo tròn (Logic cũ chuyển vào đây)
+        // 5. Tạo viền bo tròn
         setBorder(new RoundedBorder());
     }
 
-    // Class nội bộ để vẽ viền
+    // Class nội bộ để vẽ viền (Giữ nguyên)
     private class RoundedBorder implements Border {
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
@@ -45,7 +60,6 @@ public class RoundedBorderButton extends ActionButton {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             g2.setColor(borderColor);
-            // width-1 và height-1 để viền nằm trọn trong khung
             g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
 
             g2.dispose();

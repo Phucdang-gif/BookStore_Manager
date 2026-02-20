@@ -14,7 +14,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.io.File;
 import java.util.ArrayList;
 
 public class BookTablePanel extends JPanel implements FeatureControllerInterface {
@@ -368,12 +367,12 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
 
     @Override
     public void onImportExcel() {
-        File file = ExcelHelper.selectExcelFile(this);
-        if (file == null)
-            return;
-        String resultMessage = bookBUS.importBooksFromExcel(file);
-        JOptionPane.showMessageDialog(this, resultMessage);
-        refreshTable();
+        // File file = ExcelHelper.selectExcelFile(this);
+        // if (file == null)
+        // return;
+        // String resultMessage = bookBUS.importBooksFromExcel(file);
+        // JOptionPane.showMessageDialog(this, resultMessage);
+        // refreshTable();
     }
 
     @Override

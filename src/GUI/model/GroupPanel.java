@@ -87,7 +87,7 @@ public class GroupPanel extends JPanel {
 
             // ---> CẬP NHẬT: Load lại số liệu mới nhất khi về Dashboard <---
             dashboard.refreshData();
-
+            dashboard.resetFilters();
         } else {
             headerBar.setVisible(true);
             mainPanelContext.setHeaderVisible(true);

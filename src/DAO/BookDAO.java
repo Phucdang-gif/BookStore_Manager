@@ -128,6 +128,33 @@ public class BookDAO {
         return null;
     }
 
+    public BookDTO selectByIsbn(String isbn) throws SQLException {
+        // Câu lệnh SQL tương tự selectById nhưng WHERE theo isbn
+        String sql = "SELECT b.*, p.publisher_name, c.category_name " +
+                "FROM books b " +
+                "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "WHERE b.isbn = ?";
+
+        if (conn == null)
+            return null;
+
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, isbn); // Tham số là String
+
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    BookDTO book = mapResultSetToBook(rs);
+                    // Lấy thêm danh sách tác giả để đầy đủ thông tin (quan trọng để hiển thị tên
+                    // sách nếu trùng)
+                    book.setAuthors(getAuthorsByBookId(book.getBookId()));
+                    return book;
+                }
+            }
+        }
+        return null;
+    }
+
     private List<AuthorDTO> getAuthorsByBookId(int bookId) throws SQLException {
         List<AuthorDTO> authors = new ArrayList<>();
 
@@ -150,6 +177,56 @@ public class BookDAO {
             }
         }
         return authors;
+    }
+
+    public ArrayList<BookDTO> selectByCategoryId(int categoryId) throws SQLException {
+        String sql = "SELECT b.*, p.publisher_name, c.category_name " +
+                "FROM books b " +
+                "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "WHERE b.category_id = ? ORDER BY b.book_id DESC";
+        return getBooksByQuery(sql, categoryId);
+    }
+
+    // 2. Lấy sách theo Nhà xuất bản
+    public ArrayList<BookDTO> selectByPublisherId(int publisherId) throws SQLException {
+        String sql = "SELECT b.*, p.publisher_name, c.category_name " +
+                "FROM books b " +
+                "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "WHERE b.publisher_id = ? ORDER BY b.book_id DESC";
+        return getBooksByQuery(sql, publisherId);
+    }
+
+    // 3. Lấy sách theo Tác giả (Phức tạp hơn vì quan hệ nhiều-nhiều)
+    public ArrayList<BookDTO> selectByAuthorId(int authorId) throws SQLException {
+        String sql = "SELECT b.*, p.publisher_name, c.category_name " +
+                "FROM books b " +
+                "JOIN book_authors ba ON b.book_id = ba.book_id " + // Join bảng trung gian
+                "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
+                "LEFT JOIN categories c ON b.category_id = c.category_id " +
+                "WHERE ba.author_id = ? ORDER BY b.book_id DESC";
+        return getBooksByQuery(sql, authorId);
+    }
+
+    // Hàm phụ trợ để tránh lặp code (Private helper)
+    private ArrayList<BookDTO> getBooksByQuery(String sql, int paramId) throws SQLException {
+        ArrayList<BookDTO> list = new ArrayList<>();
+        try (PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setInt(1, paramId);
+            try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    BookDTO book = mapResultSetToBook(rs); // Gọi hàm map có sẵn trong code cũ của bạn
+                    // Vì danh sách này để hiển thị grid, có thể chưa cần load full author names
+                    // ngay nếu sợ nặng,
+                    // nhưng để hiển thị đẹp thì nên load author name (hoặc dùng hàm selectAll đã
+                    // tối ưu GROUP_CONCAT)
+                    // Ở đây tôi gọi hàm map cơ bản.
+                    list.add(book);
+                }
+            }
+        }
+        return list;
     }
     // --- CHỨC NĂNG CẬP NHẬT (UPDATE) ---
 

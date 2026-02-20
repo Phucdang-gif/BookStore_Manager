@@ -1,8 +1,8 @@
-CREATE DATABASE bookstore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS bookstore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE bookstore_db;
 
 -- =============================================
--- 1. EMPLOYEE & ACCOUNT MANAGEMENT
+-- 1. QUẢN LÝ NHÂN VIÊN & TÀI KHOẢN
 -- =============================================
 
 CREATE TABLE employees (
@@ -18,7 +18,7 @@ CREATE TABLE employees (
     termination_date DATE,
     status ENUM('active', 'inactive') DEFAULT 'active',
     avatar VARCHAR(255)
-) ENGINE=InnoDB AUTO_INCREMENT=1;
+) ENGINE=InnoDB;
 
 CREATE TABLE permission_groups (
     permission_group_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,7 +37,7 @@ CREATE TABLE accounts (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
     FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id)
-) ENGINE=InnoDB AUTO_INCREMENT=301;
+) ENGINE=InnoDB;
 
 CREATE TABLE functions (
     function_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -54,10 +54,10 @@ CREATE TABLE permission_details (
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id),
     FOREIGN KEY (function_id) REFERENCES functions(function_id)
-) ENGINE=InnoDB AUTO_INCREMENT=601;
+) ENGINE=InnoDB;
 
 -- =============================================
--- 2. CUSTOMER MANAGEMENT
+-- 2. QUẢN LÝ KHÁCH HÀNG
 -- =============================================
 
 CREATE TABLE customers (
@@ -76,10 +76,10 @@ CREATE TABLE point_redemption_history (
     redemption_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     redemption_type VARCHAR(50),
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
-) ENGINE=InnoDB AUTO_INCREMENT=901;
+) ENGINE=InnoDB;
 
 -- =============================================
--- 3. BOOK MANAGEMENT
+-- 3. QUẢN LÝ SÁCH
 -- =============================================
 
 CREATE TABLE publishers (
@@ -129,10 +129,10 @@ CREATE TABLE book_authors (
     display_order INT,
     FOREIGN KEY (book_id) REFERENCES books(book_id),
     FOREIGN KEY (author_id) REFERENCES authors(author_id)
-) ENGINE=InnoDB AUTO_INCREMENT=1651;
+) ENGINE=InnoDB;
 
 -- =============================================
--- 4. SALES MANAGEMENT
+-- 4. QUẢN LÝ BÁN HÀNG
 -- =============================================
 
 CREATE TABLE invoices (
@@ -162,10 +162,10 @@ CREATE TABLE invoice_details (
     subtotal DECIMAL(15,2),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
     FOREIGN KEY (book_id) REFERENCES books(book_id)
-) ENGINE=InnoDB AUTO_INCREMENT=1951;
+) ENGINE=InnoDB;
 
 -- =============================================
--- 5. DISCOUNT SERVICE
+-- 5. KHUYẾN MÃI & DỊCH VỤ
 -- =============================================
 
 CREATE TABLE discount_services (
@@ -179,7 +179,7 @@ CREATE TABLE discount_services (
     end_date DATETIME,
     status ENUM('active', 'inactive') DEFAULT 'active',
     description TEXT
-) ENGINE=InnoDB AUTO_INCREMENT=2251;
+) ENGINE=InnoDB;
 
 CREATE TABLE invoice_services (
     invoice_service_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -190,10 +190,10 @@ CREATE TABLE invoice_services (
     description TEXT,
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
     FOREIGN KEY (service_id) REFERENCES discount_services(service_id)
-) ENGINE=InnoDB AUTO_INCREMENT=2401;
+) ENGINE=InnoDB;
 
 -- =============================================
--- 6. SUPPLIER & IMPORT MANAGEMENT
+-- 6. NHÀ CUNG CẤP & NHẬP HÀNG
 -- =============================================
 
 CREATE TABLE suppliers (
@@ -214,7 +214,7 @@ CREATE TABLE import_receipts (
     notes TEXT,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
-) ENGINE=InnoDB AUTO_INCREMENT=2851;
+) ENGINE=InnoDB;
 
 CREATE TABLE import_receipt_details (
     detail_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -226,10 +226,10 @@ CREATE TABLE import_receipt_details (
     expiry_date DATE,
     FOREIGN KEY (receipt_id) REFERENCES import_receipts(receipt_id),
     FOREIGN KEY (book_id) REFERENCES books(book_id)
-) ENGINE=InnoDB AUTO_INCREMENT=3001;
+) ENGINE=InnoDB;
 
 -- =============================================
--- SYSTEM PARAMETERS
+-- THAM SỐ HỆ THỐNG
 -- =============================================
 
 CREATE TABLE system_parameters (
@@ -300,14 +300,11 @@ INSERT INTO point_redemption_history (customer_id, points_redeemed, value_receiv
 (754, 200, 20000, 'Giảm giá hóa đơn');
 
 -- 8. NHÀ XUẤT BẢN
--- Dữ liệu cũ
 INSERT INTO publishers (publisher_name, phone, status) VALUES
 ('Nhà xuất bản Trẻ', '0283822711', 'active'),
 ('Nhà xuất bản Kim Đồng', '0283943344', 'active'),
 ('Nhà xuất bản Văn học', '0283822211', 'active'),
-('Nhà xuất bản Thế giới', '0283825252', 'active');
--- Dữ liệu mới thêm (ID tự tăng từ 1055)
-INSERT INTO publishers (publisher_name, phone, status) VALUES
+('Nhà xuất bản Thế giới', '0283825252', 'active'),
 ('Nhà xuất bản Nhã Nam', '0283517898', 'active'),
 ('Nhà xuất bản Phụ Nữ', '0243825993', 'active'),
 ('Nhà xuất bản Lao Động', '0243851538', 'active'),
@@ -320,14 +317,11 @@ INSERT INTO publishers (publisher_name, phone, status) VALUES
 ('Nhà xuất bản Công Thương', '0243934168', 'active');
 
 -- 9. THỂ LOẠI / DANH MỤC
--- Dữ liệu cũ
 INSERT INTO categories (category_name, display_order, status) VALUES
 ('Văn học Việt Nam', 1, 'active'),
 ('Văn học nước ngoài', 2, 'active'),
 ('Sách thiếu nhi', 3, 'active'),
-('Sách kỹ năng sống', 4, 'active');
--- Dữ liệu mới thêm (ID tự tăng từ 1205)
-INSERT INTO categories (category_name, display_order, status) VALUES
+('Sách kỹ năng sống', 4, 'active'),
 ('Sách Kinh tế', 5, 'active'),
 ('Sách Lịch sử', 6, 'active'),
 ('Truyện Trinh thám - Kinh dị', 7, 'active'),
@@ -339,35 +333,29 @@ INSERT INTO categories (category_name, display_order, status) VALUES
 ('Y học - Sức khỏe', 13, 'active'),
 ('Truyện Tranh (Manga/Comic)', 14, 'active');
 
--- 10. SÁCH
--- Dữ liệu cũ
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock,image,status) VALUES
-(1051, 1201, '978-604-1-00234-5', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh', 368, 'Tiếng Việt', 2018, 'Bìa mềm', 65000, 95000, 50, 10,'hoa_vang.jpg','in_stock'),
-(1052, 1203, '978-604-2-13456-7', 'Doraemon - Nobita Và Hành Tinh Màu Tím', 196, 'Tiếng Việt', 2023, 'Bìa mềm', 15000, 25000, 100, 20,'doraemon.jpg','in_stock'),
-(1053, 1202, '978-604-3-24567-8', 'Nhà Giả Kim', 227, 'Tiếng Việt', 2020, 'Bìa cứng', 45000, 79000, 35, 10,'nha_gia_kim.jpg','in_stock'),
-(1054, 1204, '978-604-4-35678-9', 'Đắc Nhân Tâm', 320, 'Tiếng Việt', 2021, 'Bìa mềm', 50000, 86000, 8, 10,'dac_nhan_tam','in_stock');
--- Dữ liệu mới thêm (ID tự tăng từ 1355)
+-- 10. SÁCH (TOÀN BỘ ISBN ĐÃ ĐƯỢC BỎ DẤU GẠCH NGANG)
 INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status) VALUES
-(1058, 1202, '978-604-9-87654-1', 'Rừng Na Uy', 500, 'Tiếng Việt', 2021, 'Bìa mềm', 90000, 150000, 40, 5, 'rung_na_uy.jpg', 'in_stock'),
-(1051, 1203, '978-604-1-12345-6', 'Harry Potter và Hòn đá Phù thủy', 350, 'Tiếng Việt', 2022, 'Bìa mềm', 110000, 185000, 100, 10, 'harry_potter_1.jpg', 'in_stock'),
-(1053, 1201, '978-604-8-23456-7', 'Gió Lạnh Đầu Mùa', 180, 'Tiếng Việt', 2019, 'Bìa mềm', 30000, 55000, 25, 5, 'gio_lanh_dau_mua.jpg', 'in_stock'),
-(1053, 1201, '978-604-8-34567-8', 'Chí Phèo', 200, 'Tiếng Việt', 2020, 'Bìa mềm', 35000, 60000, 30, 5, 'chi_pheo.jpg', 'in_stock'),
-(1053, 1201, '978-604-8-45678-9', 'Số Đỏ', 240, 'Tiếng Việt', 2021, 'Bìa mềm', 40000, 75000, 20, 5, 'so_do.jpg', 'in_stock'),
-(1058, 1207, '978-604-9-56789-0', 'The Shining - Ngôi Nhà Ma', 600, 'Tiếng Việt', 2022, 'Bìa mềm', 120000, 199000, 15, 3, 'the_shining.jpg', 'in_stock'),
-(1057, 1207, '978-604-7-67890-1', 'Mật Mã Da Vinci', 550, 'Tiếng Việt', 2018, 'Bìa mềm', 100000, 169000, 45, 8, 'mat_ma_da_vinci.jpg', 'in_stock'),
-(1055, 1204, '978-604-5-78901-2', 'Tuổi Trẻ Đáng Giá Bao Nhiêu', 280, 'Tiếng Việt', 2018, 'Bìa mềm', 45000, 80000, 200, 20, 'tuoi_tre_dang_gia.jpg', 'in_stock'),
-(1058, 1208, '978-604-9-89012-3', 'Đại Dương Đen', 320, 'Tiếng Việt', 2023, 'Bìa mềm', 95000, 165000, 60, 10, 'dai_duong_den.jpg', 'in_stock'),
-(1060, 1208, '978-604-6-90123-4', 'Phép Lạ Của Sự Tỉnh Thức', 150, 'Tiếng Việt', 2020, 'Bìa mềm', 30000, 59000, 80, 15, 'phep_la_tinh_thuc.jpg', 'in_stock');
+(1051, 1201, '9786041002345', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh', 368, 'Tiếng Việt', 2018, 'Bìa mềm', 65000, 95000, 50, 10,'hoa_vang.jpg','in_stock'),
+(1052, 1203, '9786042134567', 'Doraemon - Nobita Và Hành Tinh Màu Tím', 196, 'Tiếng Việt', 2023, 'Bìa mềm', 15000, 25000, 100, 20,'doraemon.jpg','in_stock'),
+(1053, 1202, '9786043245678', 'Nhà Giả Kim', 227, 'Tiếng Việt', 2020, 'Bìa cứng', 45000, 79000, 35, 10,'nha_gia_kim.jpg','in_stock'),
+(1054, 1204, '9786044356789', 'Đắc Nhân Tâm', 320, 'Tiếng Việt', 2021, 'Bìa mềm', 50000, 86000, 8, 10,'dac_nhan_tam','in_stock'),
+(1058, 1202, '9786049876541', 'Rừng Na Uy', 500, 'Tiếng Việt', 2021, 'Bìa mềm', 90000, 150000, 40, 5, 'rung_na_uy.jpg', 'in_stock'),
+(1051, 1203, '9786041123456', 'Harry Potter và Hòn đá Phù thủy', 350, 'Tiếng Việt', 2022, 'Bìa mềm', 110000, 185000, 100, 10, 'harry_potter_1.jpg', 'in_stock'),
+(1053, 1201, '9786048234567', 'Gió Lạnh Đầu Mùa', 180, 'Tiếng Việt', 2019, 'Bìa mềm', 30000, 55000, 25, 5, 'gio_lanh_dau_mua.jpg', 'in_stock'),
+(1053, 1201, '9786048345678', 'Chí Phèo', 200, 'Tiếng Việt', 2020, 'Bìa mềm', 35000, 60000, 30, 5, 'chi_pheo.jpg', 'in_stock'),
+(1053, 1201, '9786048456789', 'Số Đỏ', 240, 'Tiếng Việt', 2021, 'Bìa mềm', 40000, 75000, 20, 5, 'so_do.jpg', 'in_stock'),
+(1058, 1207, '9786049567890', 'The Shining - Ngôi Nhà Ma', 600, 'Tiếng Việt', 2022, 'Bìa mềm', 120000, 199000, 15, 3, 'the_shining.jpg', 'in_stock'),
+(1057, 1207, '9786047678901', 'Mật Mã Da Vinci', 550, 'Tiếng Việt', 2018, 'Bìa mềm', 100000, 169000, 45, 8, 'mat_ma_da_vinci.jpg', 'in_stock'),
+(1055, 1204, '9786045789012', 'Tuổi Trẻ Đáng Giá Bao Nhiêu', 280, 'Tiếng Việt', 2018, 'Bìa mềm', 45000, 80000, 200, 20, 'tuoi_tre_dang_gia.jpg', 'in_stock'),
+(1058, 1208, '9786049890123', 'Đại Dương Đen', 320, 'Tiếng Việt', 2023, 'Bìa mềm', 95000, 165000, 60, 10, 'dai_duong_den.jpg', 'in_stock'),
+(1060, 1208, '9786046901234', 'Phép Lạ Của Sự Tỉnh Thức', 150, 'Tiếng Việt', 2020, 'Bìa mềm', 30000, 59000, 80, 15, 'phep_la_tinh_thuc.jpg', 'in_stock');
 
 -- 11. TÁC GIẢ
--- Dữ liệu cũ
 INSERT INTO authors (author_name) VALUES
 ('Nguyễn Nhật Ánh'),
 ('Fujiko F. Fujio'),
 ('Paulo Coelho'),
-('Dale Carnegie');
--- Dữ liệu mới thêm (ID tự tăng từ 1505)
-INSERT INTO authors (author_name) VALUES
+('Dale Carnegie'),
 ('Haruki Murakami'),
 ('J.K. Rowling'),
 ('Thạch Lam'),
@@ -380,24 +368,21 @@ INSERT INTO authors (author_name) VALUES
 ('Thiền sư Thích Nhất Hạnh');
 
 -- 12. SÁCH - TÁC GIẢ
--- Dữ liệu cũ
 INSERT INTO book_authors (book_id, author_id, display_order) VALUES
 (1351, 1501, 1),
 (1352, 1502, 1),
 (1353, 1503, 1),
-(1354, 1504, 1);
--- Dữ liệu mới thêm (ID tự tăng từ 1655)
-INSERT INTO book_authors (book_id, author_id, display_order) VALUES
-(1355, 1505, 1), -- Rừng Na Uy - Haruki Murakami
-(1356, 1506, 1), -- Harry Potter - J.K. Rowling
-(1357, 1507, 1), -- Gió Lạnh - Thạch Lam
-(1358, 1508, 1), -- Chí Phèo - Nam Cao
-(1359, 1509, 1), -- Số Đỏ - Vũ Trọng Phụng
-(1360, 1510, 1), -- The Shining - Stephen King
-(1361, 1511, 1), -- Da Vinci - Dan Brown
-(1362, 1512, 1), -- Tuổi Trẻ - Rosie Nguyễn
-(1363, 1513, 1), -- Đại Dương Đen - Đặng Hoàng Giang
-(1364, 1514, 1); -- Tỉnh Thức - Thích Nhất Hạnh
+(1354, 1504, 1),
+(1355, 1505, 1),
+(1356, 1506, 1),
+(1357, 1507, 1),
+(1358, 1508, 1),
+(1359, 1509, 1),
+(1360, 1510, 1),
+(1361, 1511, 1),
+(1362, 1512, 1),
+(1363, 1513, 1),
+(1364, 1514, 1);
 
 -- 13. HÓA ĐƠN
 INSERT INTO invoices (customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status) VALUES

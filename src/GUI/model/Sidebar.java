@@ -18,6 +18,7 @@ public class Sidebar extends JPanel {
     private JPanel menuContainer;
     private ArrayList<JButton> listButtons = new ArrayList<>(); // Lưu để reset style
     private JButton btnSelected; // Nút đang active
+    private JButton btnToggle; // nút ẩn hiện
 
     public Sidebar() {
         initStyle();
@@ -36,8 +37,18 @@ public class Sidebar extends JPanel {
     }
 
     private void initComponents() {
-        // A. USER PROFILE
+        JPanel pnlHeader = new JPanel(new BorderLayout());
+        pnlHeader.setOpaque(false);
+        pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
         UserProfilePanel userPanel = new UserProfilePanel("Đặng Hoàng Phúc", "Quản lý kho");
+        btnToggle = new JButton();
+        IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
+        btnToggle.setPreferredSize(new Dimension(40, 40));
+        btnToggle.setBorder(new EmptyBorder(5, 5, 5, 5));
+        btnToggle.setBackground(ThemeColor.bgWhite);
+        // Add vào Header Panel
+        pnlHeader.add(userPanel, BorderLayout.CENTER);
+        pnlHeader.add(btnToggle, BorderLayout.EAST);
 
         // B. MENU LIST (Dùng mảng để render)
         menuContainer = new JPanel();
@@ -66,8 +77,12 @@ public class Sidebar extends JPanel {
             }
         }
 
-        add(userPanel, BorderLayout.NORTH);
+        add(pnlHeader, BorderLayout.NORTH);
         add(menuContainer, BorderLayout.CENTER);
+    }
+
+    public void addToggleEvent(ActionListener event) {
+        btnToggle.addActionListener(event);
     }
 
     private JButton createSidebarButton(SidebarModel item) {
@@ -124,5 +139,20 @@ public class Sidebar extends JPanel {
         btnSelected.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 5, 0, 0, ThemeColor.btnActiveText),
                 new EmptyBorder(12, 20, 12, 20)));
+    }
+
+    public boolean isOpen() {
+        return this.isVisible();
+    }
+
+    public void toggle() {
+        // Đảo ngược trạng thái hiển thị
+        boolean isShow = !this.isVisible();
+        this.setVisible(isShow);
+
+        // Nếu muốn mượt hơn thì dùng Timer để thay đổi width (nâng cao),
+        // nhưng setVisible là cách nhanh và ổn định nhất cho BorderLayout.
+        this.revalidate();
+        this.repaint();
     }
 }

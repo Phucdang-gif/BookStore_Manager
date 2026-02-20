@@ -9,6 +9,7 @@ import GUI.util.ExcelHelper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BookBUS {
     private BookDAO bookDAO = new BookDAO();
@@ -66,7 +67,52 @@ public class BookBUS {
         return false;
     }
 
-    // 4. CẬP NHẬT (Update)
+    public ArrayList<BookDTO> getBooksByCategory(int catId) {
+        try {
+            if (catId == 0)
+                return getAll(); // 0 là tất cả
+            return bookDAO.selectByCategoryId(catId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<BookDTO> getBooksByPublisher(int pubId) {
+        try {
+            if (pubId == 0)
+                return getAll();
+            return bookDAO.selectByPublisherId(pubId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public ArrayList<BookDTO> getBooksByAuthor(int authorId) {
+        try {
+            if (authorId == 0)
+                return getAll();
+            return bookDAO.selectByAuthorId(authorId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    // Hàm tìm kiếm chung (Search Bar)
+    public ArrayList<BookDTO> searchBooks(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty())
+            return getAll();
+        String key = keyword.toLowerCase();
+
+        return (ArrayList<BookDTO>) listBook.stream()
+                .filter(b -> b.getBookTitle().toLowerCase().contains(key) ||
+                        b.getIsbn().contains(key))
+                .collect(Collectors.toList());
+    }
+
+    // CẬP NHẬT (Update)
     public boolean updateBook(BookDTO book) {
         try {
             boolean isUpdated = bookDAO.updateBook(book);
@@ -232,6 +278,16 @@ public class BookBUS {
         }
         if (countFixed > 0) {
             System.out.println("Auto Fix completed " + countFixed + " books.");
+        }
+    }
+
+    public BookDTO getByIsbn(String isbn) {
+        try {
+            // Gọi xuống DAO để tìm sách
+            return bookDAO.selectByIsbn(isbn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

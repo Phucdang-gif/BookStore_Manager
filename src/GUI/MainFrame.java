@@ -43,6 +43,16 @@ public class MainFrame extends JFrame {
             String command = e.getActionCommand();
             content.showPanel(command);
         });
+        sidebar.addToggleEvent(e -> {
+            int currentWidth = sidebar.getWidth();
+            if (currentWidth > 100) {
+                sidebar.setPreferredSize(new Dimension(60, sidebar.getHeight()));
+            } else {
+                sidebar.setPreferredSize(new Dimension(240, sidebar.getHeight()));
+            }
+            sidebar.revalidate();
+            sidebar.repaint();
+        });
     }
 
     public void setTheme(boolean isDark) {
