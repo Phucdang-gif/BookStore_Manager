@@ -14,7 +14,11 @@ public class MainPanel extends JPanel {
     private BookTablePanel pnlBook;
     private GroupPanel pnlGroup;
     private AccountPanel pnlAccount;
-    private RolePanel pnlRole;
+    private PermissionGroupPanel pnlPermissionGroup;
+    private ImportReceiptPanel pnlImport; 
+    private EmployeePanel pnlEmployee;
+    private InvoicePanel pnlInvoice;
+    private CustomerPanel pnlCustomer;
 
     private BookBUS bookBUS;
 
@@ -35,17 +39,25 @@ public class MainPanel extends JPanel {
         centerPanel = new JPanel(cardLayout);
         centerPanel.setOpaque(true);
         centerPanel.setBackground(ThemeColor.bgPanel);
-
+        pnlInvoice = new InvoicePanel();
+        centerPanel.add(pnlInvoice, "INVOICE");
+        pnlCustomer = new CustomerPanel();
+        centerPanel.add(pnlCustomer, "CUSTOMER");
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
         pnlGroup = new GroupPanel(this);
+        pnlImport = new ImportReceiptPanel();
+        pnlEmployee = new EmployeePanel();
 
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
+        centerPanel.add(pnlImport, "IMPORT");
+        centerPanel.add(pnlEmployee, "EMPLOYEE");
         pnlAccount = new AccountPanel();
         centerPanel.add(pnlAccount, "ACCOUNT");
-
+        pnlPermissionGroup = new PermissionGroupPanel();
+        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");  
         add(centerPanel, BorderLayout.CENTER);
 
         // Mặc định ban đầu Header điều khiển bảng Sách
@@ -79,8 +91,24 @@ public class MainPanel extends JPanel {
                 header.setController(pnlAccount);
                 setHeaderVisible(true);
                 break;
-            case "ROLE":
-                header.setController(pnlRole);
+            case "PERMISSION_GROUP":
+                header.setController(pnlPermissionGroup);
+                setHeaderVisible(true);
+                break;
+            case "IMPORT":
+                header.setController(pnlImport);
+                setHeaderVisible(true);
+                break;
+            case "EMPLOYEE":
+                header.setController(pnlEmployee);
+                setHeaderVisible(true);
+                break;
+            case "INVOICE":
+                header.setController(pnlInvoice);
+                setHeaderVisible(true);
+                break;
+            case "CUSTOMER":
+                header.setController(pnlCustomer);
                 setHeaderVisible(true);
                 break;
             default:

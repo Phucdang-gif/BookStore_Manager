@@ -1,51 +1,47 @@
 package DTO;
 
-import java.sql.Date; // Dùng Date vì trong DB là kiểu 'date' (không có giờ phút)
+import java.sql.Date;
 
 public class EmployeeDTO {
-    // 1. Các thuộc tính chuẩn (Khớp 100% với ảnh bảng NHAN_VIEN)
-    private int employeeId;      // ma_nhan_vien
-    private String fullName;     // ho_ten
-    private Date birthDate;      // ngay_sinh
-    private String gender;       // gioi_tinh
-    private String phone;        // sdt
-    private String address;      // dia_chi
-    private String position;     // chuc_vu
-    private double salary;       // luong (decimal -> double)
-    private Date startDate;      // ngay_vao_lam
-    private Date resignDate;     // ngay_nghi_viec (Có thể null)
-    private String status;       // trang_thai
-    private String image;        // hinh_anh
+    private int employeeId;
+    private String fullName;
+    private Date dateOfBirth;
+    private String gender; // 'male' hoặc 'female'
+    private String phone;
+    private String address;
+    private String position;
+    private double salary;
+    private Date hireDate;
+    private Date terminationDate;
+    private String status; // 'active' hoặc 'inactive'
+    private String avatar;
 
-    // 2. Constructor
     public EmployeeDTO() {}
 
-    public EmployeeDTO(int employeeId, String fullName, Date birthDate, String gender, String phone, 
-                       String address, String position, double salary, Date startDate, Date resignDate, 
-                       String status, String image) {
+    public EmployeeDTO(int employeeId, String fullName, Date dateOfBirth, String gender, String phone, String address, String position, double salary, Date hireDate, Date terminationDate, String status, String avatar) {
         this.employeeId = employeeId;
         this.fullName = fullName;
-        this.birthDate = birthDate;
+        this.dateOfBirth = dateOfBirth;
         this.gender = gender;
         this.phone = phone;
         this.address = address;
         this.position = position;
         this.salary = salary;
-        this.startDate = startDate;
-        this.resignDate = resignDate;
+        this.hireDate = hireDate;
+        this.terminationDate = terminationDate;
         this.status = status;
-        this.image = image;
+        this.avatar = avatar;
     }
 
-    // 3. Getter & Setter
+    // --- GETTER & SETTER ---
     public int getEmployeeId() { return employeeId; }
     public void setEmployeeId(int employeeId) { this.employeeId = employeeId; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public Date getBirthDate() { return birthDate; }
-    public void setBirthDate(Date birthDate) { this.birthDate = birthDate; }
+    public Date getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(Date dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
@@ -62,21 +58,15 @@ public class EmployeeDTO {
     public double getSalary() { return salary; }
     public void setSalary(double salary) { this.salary = salary; }
 
-    public Date getStartDate() { return startDate; }
-    public void setStartDate(Date startDate) { this.startDate = startDate; }
+    public Date getHireDate() { return hireDate; }
+    public void setHireDate(Date hireDate) { this.hireDate = hireDate; }
 
-    public Date getResignDate() { return resignDate; }
-    public void setResignDate(Date resignDate) { this.resignDate = resignDate; }
+    public Date getTerminationDate() { return terminationDate; }
+    public void setTerminationDate(Date terminationDate) { this.terminationDate = terminationDate; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getImage() { return image; }
-    public void setImage(String image) { this.image = image; }
-    
-    // toString để debug
-    @Override
-    public String toString() {
-        return fullName + " - " + position;
-    }
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

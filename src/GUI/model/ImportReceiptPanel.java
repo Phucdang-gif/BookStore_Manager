@@ -1,0 +1,148 @@
+package GUI.model;
+
+import BUS.ImportReceiptBUS;
+import DTO.ImportReceiptDTO;
+import GUI.dialog.ImportDetailDialog;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.text.DecimalFormat;
+
+public class ImportReceiptPanel extends JPanel implements FeatureControllerInterface {
+
+    private ImportReceiptBUS importBUS = new ImportReceiptBUS();
+    private JTable table;
+    private DefaultTableModel tableModel;
+    private DecimalFormat df = new DecimalFormat("#,###.## VNĐ");
+
+    public ImportReceiptPanel() {
+        initUI();
+        loadDataToTable(importBUS.getAll());
+    }
+
+    private void initUI() {
+        this.setLayout(new BorderLayout());
+        this.setBackground(Color.WHITE);
+        this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Tạm thời hiển thị Mã NCC và Mã NV. (Sau này em có thể dùng SupplierBUS và EmployeeBUS để dịch mã thành Tên)
+        String[] columns = {"Mã Phiếu", "Mã NCC", "Mã NV", "Ngày Nhập", "Tổng Tiền", "Trạng Thái"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        };
+        table = new JTable(tableModel);
+        table.setRowHeight(35);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(Color.WHITE);
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        
+        this.add(scrollPane, BorderLayout.CENTER);
+    }
+
+    private void loadDataToTable(ArrayList<ImportReceiptDTO> list) {
+        tableModel.setRowCount(0); 
+        if (list != null) {
+            for (ImportReceiptDTO dto : list) {
+                String statusStr = dto.getStatus().equals("cancelled") ? "Đã Hủy" : "Hoàn Thành";
+                tableModel.addRow(new Object[]{
+                    dto.getReceiptId(), 
+                    dto.getSupplierId(), 
+                    dto.getEmployeeId(), 
+                    dto.getReceiptDate(), 
+                    df.format(dto.getTotalAmount()), 
+                    statusStr
+                });
+            }
+        }
+    }
+
+    // ==========================================
+    // CÁC LỆNH TỪ HEADER TRUYỀN XUỐNG
+    // ==========================================
+
+    @Override
+    public void onAdd() {
+        // Form nhập hàng thường rất to và phức tạp (chọn NCC, chọn Sách, tính tiền)
+        JOptionPane.showMessageDialog(this, "Chức năng tạo Phiếu Nhập Mới sẽ mở ra ở đây!");
+        // ImportDialog dialog = new ImportDialog(null, true);
+        // dialog.setVisible(true);
+        // onRefresh();
+    }
+
+    @Override
+    public void onEdit() {
+        // Không cho phép sửa phiếu nhập
+    }
+
+    @Override
+    public void onDelete() {
+        int row = table.getSelectedRow();
+        if(row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Phiếu nhập cần hủy!");
+            return;
+        }
+        
+        String currentStatus = (String) table.getValueAt(row, 5);
+        if (currentStatus.equals("Đã Hủy")) {
+            JOptionPane.showMessageDialog(this, "Phiếu này đã bị hủy từ trước!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn HỦY phiếu nhập này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int receiptId = (int) table.getValueAt(row, 0);
+            boolean isSuccess = importBUS.cancelReceipt(receiptId);
+            if (isSuccess) {
+                JOptionPane.showMessageDialog(this, "Hủy phiếu nhập thành công!");
+                onRefresh();
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi: Không thể hủy phiếu nhập!");
+            }
+        }
+    }
+
+    @Override
+    public void onDetail() {
+        int row = table.getSelectedRow();
+        if(row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Phiếu nhập để xem chi tiết!");
+            return;
+        }
+        int receiptId = (int) table.getValueAt(row, 0);
+        
+        // Gọi Dialog xem chi tiết
+        ImportDetailDialog dialog = new ImportDetailDialog(null, true, receiptId);
+        dialog.setVisible(true);
+    }
+
+    @Override
+    public void onSearch(String text) {
+        JOptionPane.showMessageDialog(this, "Tìm kiếm phiếu nhập: " + text);
+    }
+
+    @Override
+    public void onRefresh() {
+        loadDataToTable(importBUS.getAll());
+    }
+
+    @Override
+    public void onExportExcel() { }
+
+    @Override
+    public void onImportExcel() { }
+
+    @Override
+    public boolean[] getButtonConfig() {
+        // Mở Add, Delete (Hủy), Detail. TẮT Edit (Sửa).
+        return new boolean[]{true, false, true, true, false, false}; 
+    }
+}

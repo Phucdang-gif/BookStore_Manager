@@ -1,8 +1,8 @@
 package GUI.model;
 
-import BUS.RoleBUS;
-import DTO.RoleDTO;
-import GUI.dialog.RoleDialog;
+import BUS.PermissionGroupBUS;
+import DTO.PermissionGroupDTO;
+import GUI.dialog.PermissionGroupDialog;
 import GUI.dialog.PermissionDialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-public class RolePanel extends JPanel implements FeatureControllerInterface {
+public class PermissionGroupPanel extends JPanel implements FeatureControllerInterface {
 
-    private RoleBUS roleBUS = new RoleBUS(); 
+    private PermissionGroupBUS permissionGroupBUS = new PermissionGroupBUS(); 
     private JTable table;
     private DefaultTableModel tableModel;
 
-    public RolePanel() {
+    public PermissionGroupPanel() {
         initUI();
-        loadDataToTable(roleBUS.getAll());
+        loadDataToTable(permissionGroupBUS.getAll());
     }
 
     private void initUI() {
@@ -27,7 +27,8 @@ public class RolePanel extends JPanel implements FeatureControllerInterface {
         this.setBackground(Color.WHITE);
         this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] columns = {"ID Nhóm Quyền", "Tên Nhóm Quyền", "Mô Tả"};
+        // Đã xóa cột Mô tả, thay bằng Trạng thái cho khớp DB
+        String[] columns = {"ID Nhóm Quyền", "Tên Nhóm Quyền", "Trạng Thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -46,26 +47,23 @@ public class RolePanel extends JPanel implements FeatureControllerInterface {
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
-    private void loadDataToTable(ArrayList<RoleDTO> list) {
+    private void loadDataToTable(ArrayList<PermissionGroupDTO> list) {
         tableModel.setRowCount(0); 
         if (list != null) {
-            for (RoleDTO role : list) {
+            for (PermissionGroupDTO group : list) {
+                String statusStr = (group.getStatus() != null && group.getStatus().equals("active")) ? "Hoạt động" : "Bị khóa";
                 tableModel.addRow(new Object[]{
-                    role.getRoleId(), role.getRoleName(), role.getDescription()
+                    group.getPermissionGroupId(), group.getGroupName(), statusStr
                 });
             }
         }
     }
 
-    // ==========================================
-    // CÁC LỆNH TỪ HEADER TRUYỀN XUỐNG
-    // ==========================================
-
     @Override
     public void onAdd() {
-        RoleDialog dialog = new RoleDialog(null, true, "add", null);
+        PermissionGroupDialog dialog = new PermissionGroupDialog(null, true, "add", null);
         dialog.setVisible(true);
-        onRefresh(); // Refresh sau khi đóng dialog
+        onRefresh(); 
     }
 
     @Override
@@ -76,68 +74,70 @@ public class RolePanel extends JPanel implements FeatureControllerInterface {
             return;
         }
 
-        // 1. Chỉ lấy đúng cái ID từ bảng
-        int roleId = (int) table.getValueAt(row, 0);
+        int groupId = (int) table.getValueAt(row, 0);
+        PermissionGroupDTO selectedGroup = permissionGroupBUS.getPermissionGroupDTO(groupId);
 
-        // 2. Gọi BUS chọc xuống DB lấy FULL cục DTO lên (đảm bảo không rớt mất chữ nào)
-        // (Hàm getRoleDTO này em đã tạo trong RoleBUS ở các bước trước rồi)
-        RoleDTO selectedRole = roleBUS.getRoleDTO(roleId);
-
-        if (selectedRole == null) {
+        if (selectedGroup == null) {
             JOptionPane.showMessageDialog(this, "Lỗi: Không tìm thấy dữ liệu nhóm quyền này trong CSDL!");
             return;
         }
 
-        // 3. Ném cục DTO đầy đủ 5 tham số này sang Dialog
-        RoleDialog dialog = new RoleDialog(null, true, "update", selectedRole);
+        PermissionGroupDialog dialog = new PermissionGroupDialog(null, true, "update", selectedGroup);
         dialog.setVisible(true);
-        
-        // 4. Refresh bảng sau khi tắt Dialog
         onRefresh();
     }
 
-    @Override
+   @Override
     public void onDelete() {
         int row = table.getSelectedRow();
         if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần xóa!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần khóa!");
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Chắc chắn muốn xóa nhóm quyền này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Chắc chắn muốn khóa (ẩn) nhóm quyền này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        
         if (confirm == JOptionPane.YES_OPTION) {
-            int roleId = (int) table.getValueAt(row, 0);
-            // Giả sử có hàm delete trong RoleBUS
-            // String msg = roleBUS.deleteRole(roleId); 
-            // JOptionPane.showMessageDialog(this, msg);
-            JOptionPane.showMessageDialog(this, "Đã gọi hàm Xóa cho ID: " + roleId);
-            onRefresh();
+            int groupId = (int) table.getValueAt(row, 0);
+            
+            // GỌI XUỐNG BUS ĐỂ XÓA THẬT
+            boolean isSuccess = permissionGroupBUS.deleteGroup(groupId); 
+            
+            if (isSuccess) {
+                JOptionPane.showMessageDialog(this, "Đã khóa nhóm quyền thành công!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi: Không thể thực hiện thao tác này!");
+            }
+            onRefresh(); // Load lại bảng
         }
     }
 
     @Override
     public void onDetail() {
-        // NÚT CHI TIẾT SẼ DÙNG ĐỂ MỞ BẢNG TÍCH XANH QUYỀN HẠN
         int row = table.getSelectedRow();
         if(row == -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền để cấu hình chi tiết!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int roleId = (int) table.getValueAt(row, 0);
-        String roleName = (String) table.getValueAt(row, 1);
+        int groupId = (int) table.getValueAt(row, 0);
+        String groupName = (String) table.getValueAt(row, 1);
         
-        PermissionDialog pDialog = new PermissionDialog(null, true, roleId, roleName);
+        PermissionDialog pDialog = new PermissionDialog(null, true, groupId, groupName);
         pDialog.setVisible(true);
     }
 
     @Override
     public void onSearch(String text) {
-        // Gọi hàm search của RoleBUS (Tạm thời anh để trống, em tự gắn hàm BUS nhé)
-        JOptionPane.showMessageDialog(this, "Tìm kiếm nhóm quyền: " + text);
+        // Xóa dòng hiển thị JOptionPane cũ đi
+        // Gọi hàm search từ BUS để lấy danh sách đã lọc
+        ArrayList<PermissionGroupDTO> result = permissionGroupBUS.search(text);
+        
+        // Đẩy danh sách kết quả lên bảng
+        loadDataToTable(result);
     }
 
     @Override
     public void onRefresh() {
-        loadDataToTable(roleBUS.getAll());
+        loadDataToTable(permissionGroupBUS.getAll());
     }
 
     @Override
@@ -148,7 +148,6 @@ public class RolePanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public boolean[] getButtonConfig() {
-        // Mở Add, Edit, Delete, Detail. Tắt Export, Import
         return new boolean[]{true, true, true, true, false, false}; 
     }
 }

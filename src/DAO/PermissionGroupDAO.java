@@ -1,18 +1,17 @@
 package DAO;
 
 import config.DatabaseConnection;
-import DTO.RoleDTO;
+import DTO.PermissionGroupDTO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class RoleDAO {
+public class PermissionGroupDAO {
 
-    // 1. Lấy danh sách tất cả nhóm quyền (chỉ lấy loại đang hoạt động)
-    public ArrayList<RoleDTO> getAll() {
-        ArrayList<RoleDTO> list = new ArrayList<>();
+    public ArrayList<PermissionGroupDTO> getAll() {
+        ArrayList<PermissionGroupDTO> list = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM permission_groups WHERE status = 'active'";
 
@@ -20,12 +19,12 @@ public class RoleDAO {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                RoleDTO role = new RoleDTO();
-                role.setRoleId(rs.getInt("permission_group_id"));
-                role.setRoleName(rs.getString("group_name"));
-                role.setStatus(rs.getString("status"));
-                // role.setCreatedAt(rs.getTimestamp("created_at")); // Nếu cần
-                list.add(role);
+                PermissionGroupDTO group = new PermissionGroupDTO();
+                group.setPermissionGroupId(rs.getInt("permission_group_id"));
+                group.setGroupName(rs.getString("group_name"));
+                group.setStatus(rs.getString("status"));
+                group.setCreatedAt(rs.getTimestamp("created_at")); 
+                list.add(group);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -33,8 +32,7 @@ public class RoleDAO {
         return list;
     }
 
-    // 2. Lấy chi tiết 1 nhóm quyền theo ID
-    public RoleDTO getById(int id) {
+    public PermissionGroupDTO getById(int id) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM permission_groups WHERE permission_group_id = ?";
         
@@ -43,11 +41,11 @@ public class RoleDAO {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                RoleDTO role = new RoleDTO();
-                role.setRoleId(rs.getInt("permission_group_id"));
-                role.setRoleName(rs.getString("group_name"));
-                role.setStatus(rs.getString("status"));
-                return role;
+                PermissionGroupDTO group = new PermissionGroupDTO();
+                group.setPermissionGroupId(rs.getInt("permission_group_id"));
+                group.setGroupName(rs.getString("group_name"));
+                group.setStatus(rs.getString("status"));
+                return group;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,14 +53,13 @@ public class RoleDAO {
         return null;
     }
 
-    // 3. Thêm mới nhóm quyền
-    public boolean add(RoleDTO role) {
+    public boolean add(PermissionGroupDTO group) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "INSERT INTO permission_groups (group_name, status, created_at) VALUES (?, 'active', NOW())";
         
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, role.getRoleName());
+            ps.setString(1, group.getGroupName());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -70,15 +67,14 @@ public class RoleDAO {
         return false;
     }
 
-    // 4. Cập nhật tên nhóm quyền
-    public boolean update(RoleDTO role) {
+    public boolean update(PermissionGroupDTO group) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE permission_groups SET group_name = ? WHERE permission_group_id = ?";
         
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, role.getRoleName());
-            ps.setInt(2, role.getRoleId());
+            ps.setString(1, group.getGroupName());
+            ps.setInt(2, group.getPermissionGroupId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -86,7 +82,6 @@ public class RoleDAO {
         return false;
     }
 
-    // 5. Xóa nhóm quyền (Chuyển status thành inactive chứ không xóa thật)
     public boolean delete(int id) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE permission_groups SET status = 'inactive' WHERE permission_group_id = ?";

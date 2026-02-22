@@ -24,7 +24,7 @@ public class FunctionDAO {
                 FunctionDTO func = new FunctionDTO();
                 func.setFunctionId(rs.getInt("function_id"));
                 func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
+                func.setSystemFunctionCode(rs.getString("system_function_code"));
                 func.setFunctionGroup(rs.getString("function_group"));
                 list.add(func);
             }
@@ -45,7 +45,7 @@ public class FunctionDAO {
                 FunctionDTO func = new FunctionDTO();
                 func.setFunctionId(rs.getInt("function_id"));
                 func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
+                func.setSystemFunctionCode(rs.getString("system_function_code"));
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }
@@ -54,7 +54,7 @@ public class FunctionDAO {
         }
         return null;
     }
-    public FunctionDTO getBySystemCode(String code) {
+    public FunctionDTO getBySystemFunctionCode(String code) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE system_function_code = ?";
         
@@ -66,7 +66,7 @@ public class FunctionDAO {
                 FunctionDTO func = new FunctionDTO();
                 func.setFunctionId(rs.getInt("function_id"));
                 func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
+                func.setSystemFunctionCode(rs.getString("system_function_code"));
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }
@@ -87,7 +87,7 @@ public class FunctionDAO {
                 FunctionDTO func = new FunctionDTO();
                 func.setFunctionId(rs.getInt("function_id"));
                 func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
+                func.setSystemFunctionCode(rs.getString("system_function_code"));
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }
@@ -98,27 +98,7 @@ public class FunctionDAO {
             return null;
             
     }
-    public FunctionDTO getByCode(String code) {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "SELECT * FROM functions WHERE system_function_code = ?";
-        
-        try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, code);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                FunctionDTO func = new FunctionDTO();
-                func.setFunctionId(rs.getInt("function_id"));
-                func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
-                func.setFunctionGroup(rs.getString("function_group"));
-                return func;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
     public FunctionDTO getByGroup(String group) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE function_group = ?";
@@ -131,7 +111,7 @@ public class FunctionDAO {
                 FunctionDTO func = new FunctionDTO();
                 func.setFunctionId(rs.getInt("function_id"));
                 func.setFunctionName(rs.getString("function_name"));
-                func.setSystemCode(rs.getString("system_function_code"));
+                func.setSystemFunctionCode(rs.getString("system_function_code"));
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }

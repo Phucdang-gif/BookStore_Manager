@@ -36,7 +36,7 @@ public class AccountDAO {
                 // Mapping dữ liệu từ DB sang DTO
                 account.setAccountId(rs.getInt("account_id"));
                 account.setEmployeeId(rs.getInt("employee_id"));
-                account.setRoleId(rs.getInt("permission_group_id")); // Quan trọng nhất: ID nhóm quyền
+                account.setPermissionGroupId(rs.getInt("permission_group_id")); // Quan trọng nhất: ID nhóm quyền
                 account.setUsername(rs.getString("username"));
                 // account.setPassword(rs.getString("password")); // Không nên lưu pass vào session
                 account.setStatus(rs.getString("status"));
@@ -114,7 +114,7 @@ public class AccountDAO {
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, account.getEmployeeId());
-            ps.setInt(2, account.getRoleId());
+            ps.setInt(2, account.getPermissionGroupId());
             ps.setString(3, account.getUsername());
             ps.setString(4, account.getPassword());
             
@@ -132,7 +132,7 @@ public class AccountDAO {
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, account.getEmployeeId());
-            ps.setInt(2, account.getRoleId());
+            ps.setInt(2, account.getPermissionGroupId());
             ps.setString(3, account.getUsername());
             ps.setString(4, account.getPassword());
             ps.setString(5, account.getStatus());
@@ -161,7 +161,7 @@ public class AccountDAO {
                 AccountDTO account = new AccountDTO();
                 account.setAccountId(rs.getInt("account_id"));
                 account.setEmployeeId(rs.getInt("employee_id"));
-                account.setRoleId(rs.getInt("permission_group_id"));
+                account.setPermissionGroupId(rs.getInt("permission_group_id"));
                 account.setUsername(rs.getString("username"));
                 account.setStatus(rs.getString("status"));
                 // account.setFullName(rs.getString("full_name"));
