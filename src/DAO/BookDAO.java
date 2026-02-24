@@ -368,4 +368,26 @@ public class BookDAO {
         pst.setString(13, book.getImage());
         pst.setString(14, book.getStatus());
     }
+    // --- HÀM TÍNH TOÁN TRUNG BÌNH GIÁ VỐN KHI NHẬP HÀNG ---
+    public boolean updateStockAndPrice(int bookId, int addedQty, double newImportPrice) {
+        try {
+            Connection con = config.DatabaseConnection.getInstance().getConnection();
+            // Công thức: Giá nhập mới = ((Tồn kho cũ * Giá nhập cũ) + (SL nhập mới * Giá nhập mới)) / (Tồn kho cũ + SL nhập mới)
+            String sql = "UPDATE books SET " +
+                         "import_price = ((stock_quantity * import_price) + (? * ?)) / (stock_quantity + ?), " +
+                         "stock_quantity = stock_quantity + ? " +
+                         "WHERE book_id = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, addedQty);
+            ps.setDouble(2, newImportPrice);
+            ps.setInt(3, addedQty);
+            ps.setInt(4, addedQty);
+            ps.setInt(5, bookId);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

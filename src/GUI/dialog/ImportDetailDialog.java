@@ -1,6 +1,8 @@
 package GUI.dialog;
 
+import BUS.BookBUS;
 import BUS.ImportReceiptDetailBUS;
+import DTO.BookDTO;
 import DTO.ImportReceiptDetailDTO;
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,17 +14,18 @@ public class ImportDetailDialog extends JDialog {
 
     private int receiptId;
     private ImportReceiptDetailBUS detailBUS = new ImportReceiptDetailBUS(); 
+    private BookBUS bookBUS = new BookBUS(); // Thêm BookBUS để lấy Tên Sách
     
     private JTable table;
     private DefaultTableModel tableModel;
-    private DecimalFormat df = new DecimalFormat("#,###.## VNĐ");
+    private DecimalFormat df = new DecimalFormat("#,### VNĐ");
 
     public ImportDetailDialog(Frame owner, boolean modal, int receiptId) {
         super(owner, modal);
         this.receiptId = receiptId;
 
         setTitle("Chi Tiết Phiếu Nhập #" + receiptId);
-        setSize(600, 400);
+        setSize(750, 450); // Mở rộng Form để hiển thị tên sách thoải mái hơn
         setLocationRelativeTo(null);
         initUI();
         loadDetails();
@@ -36,7 +39,8 @@ public class ImportDetailDialog extends JDialog {
         lblHeader.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(lblHeader, BorderLayout.NORTH);
 
-        String[] columns = {"Mã Sách", "Số Lượng", "Đơn Giá", "Thành Tiền"};
+        // Bổ sung thêm cột "Tên Sách" vào JTable
+        String[] columns = {"Mã Sách", "Tên Sách", "Số Lượng", "Giá Nhập", "Thành Tiền"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -45,6 +49,13 @@ public class ImportDetailDialog extends JDialog {
         };
         table = new JTable(tableModel);
         table.setRowHeight(30);
+        
+        // Căn chỉnh độ rộng từng cột cho cân đối
+        table.getColumnModel().getColumn(0).setPreferredWidth(80);
+        table.getColumnModel().getColumn(1).setPreferredWidth(250); // Cột tên sách rộng nhất
+        table.getColumnModel().getColumn(2).setPreferredWidth(80);
+        table.getColumnModel().getColumn(3).setPreferredWidth(120);
+        table.getColumnModel().getColumn(4).setPreferredWidth(150);
         
         add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -60,10 +71,20 @@ public class ImportDetailDialog extends JDialog {
         ArrayList<ImportReceiptDetailDTO> list = detailBUS.getDetailsByReceiptId(receiptId);
         if (list != null) {
             for (ImportReceiptDetailDTO dto : list) {
+                // 1. Dùng BookBUS để tìm Tên Sách dựa vào Mã Sách
+                String bookTitle = "Không xác định";
+                BookDTO book = bookBUS.getBookDetails(dto.getBookId());
+                if (book != null) {
+                    bookTitle = book.getBookTitle();
+                }
+
+                // 2. Đẩy dữ liệu lên bảng
                 tableModel.addRow(new Object[]{
-                    dto.getBookId(), // Sau này có thể dùng BookBUS để đổi thành Tên Sách
+                    dto.getBookId(), 
+                    bookTitle,       // Hiển thị tên sách thực tế cực kỳ trực quan
                     dto.getQuantity(),
-                    df.format(dto.getUnitPrice()),
+                    // Lưu ý: Nếu DTO của em dùng hàm getUnitPrice() thay vì getImportPrice(), hãy đổi lại cho khớp nhé!
+                    df.format(dto.getUnitPrice()), 
                     df.format(dto.getSubtotal())
                 });
             }

@@ -3,6 +3,7 @@ package GUI.model;
 import BUS.InvoiceBUS;
 import DTO.InvoiceDTO;
 import GUI.dialog.InvoiceDetailDialog;
+import GUI.dialog.CreateInvoiceDialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -72,8 +73,12 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onAdd() {
-        // Nút Thêm ở đây sẽ dùng để mở giao diện Bán Hàng (POS - Point of Sale)
-        JOptionPane.showMessageDialog(this, "Chức năng mở giao diện BÁN HÀNG sẽ được tích hợp tại đây!");
+        // Mở form tạo hóa đơn mới (CreateInvoiceDialog)
+        CreateInvoiceDialog dialog = new CreateInvoiceDialog(null, true);
+        dialog.setVisible(true);
+        
+        // Sau khi đóng dialog, refresh lại bảng dữ liệu
+        onRefresh();
     }
 
     @Override

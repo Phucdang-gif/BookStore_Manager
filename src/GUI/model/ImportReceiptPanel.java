@@ -2,7 +2,9 @@ package GUI.model;
 
 import BUS.ImportReceiptBUS;
 import DTO.ImportReceiptDTO;
+import GUI.dialog.CreateImportDialog; // SỬA LỖI 1: Thêm dòng import này
 import GUI.dialog.ImportDetailDialog;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -10,13 +12,15 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat; // SỬA LỖI 3: Import công cụ định dạng ngày
 
 public class ImportReceiptPanel extends JPanel implements FeatureControllerInterface {
 
     private ImportReceiptBUS importBUS = new ImportReceiptBUS();
     private JTable table;
     private DefaultTableModel tableModel;
-    private DecimalFormat df = new DecimalFormat("#,###.## VNĐ");
+    private DecimalFormat df = new DecimalFormat("#,### VNĐ");
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); // Định dạng ngày
 
     public ImportReceiptPanel() {
         initUI();
@@ -28,7 +32,6 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         this.setBackground(Color.WHITE);
         this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Tạm thời hiển thị Mã NCC và Mã NV. (Sau này em có thể dùng SupplierBUS và EmployeeBUS để dịch mã thành Tên)
         String[] columns = {"Mã Phiếu", "Mã NCC", "Mã NV", "Ngày Nhập", "Tổng Tiền", "Trạng Thái"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -52,12 +55,17 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         tableModel.setRowCount(0); 
         if (list != null) {
             for (ImportReceiptDTO dto : list) {
-                String statusStr = dto.getStatus().equals("cancelled") ? "Đã Hủy" : "Hoàn Thành";
+                // SỬA LỖI 4: Viết ngược lại để chống lỗi NULL
+                String statusStr = "Cancelled".equalsIgnoreCase(dto.getStatus()) ? "Đã Hủy" : "Hoàn Thành";
+                
+                // SỬA LỖI 3: Format ngày tháng
+                String dateStr = (dto.getReceiptDate() != null) ? sdf.format(dto.getReceiptDate()) : "";
+
                 tableModel.addRow(new Object[]{
-                    dto.getReceiptId(), 
+                    dto.getReceiptId(),    
                     dto.getSupplierId(), 
                     dto.getEmployeeId(), 
-                    dto.getReceiptDate(), 
+                    dateStr,              // Dùng chuỗi ngày đã format
                     df.format(dto.getTotalAmount()), 
                     statusStr
                 });
@@ -71,16 +79,18 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
     @Override
     public void onAdd() {
-        // Form nhập hàng thường rất to và phức tạp (chọn NCC, chọn Sách, tính tiền)
-        JOptionPane.showMessageDialog(this, "Chức năng tạo Phiếu Nhập Mới sẽ mở ra ở đây!");
-        // ImportDialog dialog = new ImportDialog(null, true);
-        // dialog.setVisible(true);
-        // onRefresh();
+        // Mở cửa sổ Lập Phiếu Nhập
+        CreateImportDialog dialog = new CreateImportDialog(null, true);
+        dialog.setVisible(true);
+        
+        // Làm mới lại bảng danh sách phiếu nhập
+        onRefresh(); 
     }
 
     @Override
     public void onEdit() {
         // Không cho phép sửa phiếu nhập
+        JOptionPane.showMessageDialog(this, "Nghiệp vụ không cho phép sửa phiếu nhập đã lưu!");
     }
 
     @Override
@@ -99,8 +109,8 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn HỦY phiếu nhập này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
-            int receiptId = (int) table.getValueAt(row, 0);
-            boolean isSuccess = importBUS.cancelReceipt(receiptId);
+            int importId = (int) table.getValueAt(row, 0);
+            boolean isSuccess = importBUS.cancelReceipt(importId); // Đảm bảo BUS có hàm này
             if (isSuccess) {
                 JOptionPane.showMessageDialog(this, "Hủy phiếu nhập thành công!");
                 onRefresh();
@@ -117,15 +127,18 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Phiếu nhập để xem chi tiết!");
             return;
         }
-        int receiptId = (int) table.getValueAt(row, 0);
+        int importId = (int) table.getValueAt(row, 0); // Sửa biến receiptId thành importId cho đồng bộ
         
         // Gọi Dialog xem chi tiết
-        ImportDetailDialog dialog = new ImportDetailDialog(null, true, receiptId);
+        ImportDetailDialog dialog = new ImportDetailDialog(null, true, importId);
         dialog.setVisible(true);
     }
 
     @Override
     public void onSearch(String text) {
+        // Có thể gọi hàm search của BUS ở đây
+        // ArrayList<ImportReceiptDTO> result = importBUS.search(text);
+        // loadDataToTable(result);
         JOptionPane.showMessageDialog(this, "Tìm kiếm phiếu nhập: " + text);
     }
 
@@ -142,7 +155,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
     @Override
     public boolean[] getButtonConfig() {
-        // Mở Add, Delete (Hủy), Detail. TẮT Edit (Sửa).
+        // Mở Add, Delete (Hủy), Detail. TẮT Edit (Sửa), Export, Import
         return new boolean[]{true, false, true, true, false, false}; 
     }
 }

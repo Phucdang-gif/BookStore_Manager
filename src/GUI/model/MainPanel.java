@@ -19,6 +19,7 @@ public class MainPanel extends JPanel {
     private EmployeePanel pnlEmployee;
     private InvoicePanel pnlInvoice;
     private CustomerPanel pnlCustomer;
+    private DiscountPanel pnlDiscount;
 
     private BookBUS bookBUS;
 
@@ -43,6 +44,8 @@ public class MainPanel extends JPanel {
         centerPanel.add(pnlInvoice, "INVOICE");
         pnlCustomer = new CustomerPanel();
         centerPanel.add(pnlCustomer, "CUSTOMER");
+        pnlDiscount = new DiscountPanel();
+centerPanel.add(pnlDiscount, "DISCOUNT");
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
         pnlGroup = new GroupPanel(this);
@@ -109,6 +112,10 @@ public class MainPanel extends JPanel {
                 break;
             case "CUSTOMER":
                 header.setController(pnlCustomer);
+                setHeaderVisible(true);
+                break;
+            case "DISCOUNT":
+                header.setController(pnlDiscount);
                 setHeaderVisible(true);
                 break;
             default:

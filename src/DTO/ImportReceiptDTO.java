@@ -9,18 +9,18 @@ public class ImportReceiptDTO {
     private Timestamp receiptDate; // receipt_date
     private double totalAmount; // total_amount
     private String status;      // status
-    private String note;        // note
+   
 
     public ImportReceiptDTO() {}
 
-    public ImportReceiptDTO(int receiptId, int supplierId, int employeeId, Timestamp receiptDate, double totalAmount, String status, String note) {
+    public ImportReceiptDTO(int receiptId, int supplierId, int employeeId, Timestamp receiptDate, double totalAmount, String status) {
         this.receiptId = receiptId;
         this.supplierId = supplierId;
         this.employeeId = employeeId;
         this.receiptDate = receiptDate;
         this.totalAmount = totalAmount;
         this.status = status;
-        this.note = note;
+       
     }
 
     // GETTERS & SETTERS
@@ -42,6 +42,4 @@ public class ImportReceiptDTO {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
 }

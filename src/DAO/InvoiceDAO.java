@@ -37,14 +37,16 @@ public class InvoiceDAO {
         return list;
     }
 
-    // Dùng khi thanh toán xong tạo hóa đơn mới
-    public boolean insert(InvoiceDTO dto) {
+  // LƯU Ý: Hàm này phải trả về INT (Mã hóa đơn tự tăng)
+    public int insert(InvoiceDTO dto) {
+        int generatedId = -1;
         Connection con = DatabaseConnection.getInstance().getConnection();
         String sql = "INSERT INTO invoices (customer_id, employee_id, created_at, total_amount, total_discount, points_used, points_value, final_amount, payment_method, status, points_earned) " +
                      "VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, 'Completed', ?)";
         
         try {
-            PreparedStatement ps = con.prepareStatement(sql);
+            // Statement.RETURN_GENERATED_KEYS là chìa khóa để xin lại ID vừa tạo
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, dto.getCustomerId());
             ps.setInt(2, dto.getEmployeeId());
             ps.setDouble(3, dto.getTotalAmount());
@@ -55,11 +57,19 @@ public class InvoiceDAO {
             ps.setString(8, dto.getPaymentMethod());
             ps.setInt(9, dto.getPointsEarned());
             
-            return ps.executeUpdate() > 0;
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    generatedId = rs.getInt(1); // Lấy ID hóa đơn tự tăng từ MySQL
+                }
+            }
         } catch (SQLException e) {
+            System.out.println("========== LỖI SQL LƯU INVOICES ==========");
+            System.out.println("Nguyên nhân: " + e.getMessage());
             e.printStackTrace();
         }
-        return false;
+        return generatedId; 
     }
 
     // Hủy hóa đơn (Không xóa khỏi DB, chỉ đổi trạng thái)

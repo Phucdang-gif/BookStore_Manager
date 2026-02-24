@@ -12,7 +12,7 @@ public class ImportReceiptBUS {
         return dao.getAll();
     }
 
-    public boolean addReceipt(ImportReceiptDTO receipt) {
+    public int addReceipt(ImportReceiptDTO receipt) {
         return dao.insert(receipt);
     }
 

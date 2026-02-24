@@ -17,9 +17,9 @@ public class InvoiceBUS {
         return this.listInvoice;
     }
 
-    public boolean addInvoice(InvoiceDTO dto) {
-        boolean success = invoiceDAO.insert(dto);
-        if (success) {
+    public int addInvoice(InvoiceDTO dto) {
+        int success = invoiceDAO.insert(dto);
+        if (success > 0) {
             this.listInvoice = invoiceDAO.getAll(); // Làm mới RAM
         }
         return success;

@@ -34,4 +34,13 @@ public class CustomerDTO {
 
     public Date getRegistrationDate() { return registrationDate; }
     public void setRegistrationDate(Date registrationDate) { this.registrationDate = registrationDate; }
+    @Override
+    public String toString() {
+        // Nếu không có số điện thoại (ví dụ: Khách vãng lai), chỉ hiện tên
+        if (this.phone == null || this.phone.isEmpty()) {
+            return this.fullName; 
+        }
+        // Nếu là khách hàng bình thường, hiện "Tên - Số điện thoại" cho dễ chọn
+        return this.fullName + " - " + this.phone;
+    }
 }

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.sql.Statement;
 
 public class ImportReceiptDAO {
 
@@ -25,7 +26,7 @@ public class ImportReceiptDAO {
                 dto.setReceiptDate(rs.getTimestamp("receipt_date"));
                 dto.setTotalAmount(rs.getDouble("total_amount"));
                 dto.setStatus(rs.getString("status"));
-                dto.setNote(rs.getString("note"));
+               
                 list.add(dto);
             }
         } catch (Exception e) {
@@ -34,22 +35,33 @@ public class ImportReceiptDAO {
         return list;
     }
 
-    public boolean insert(ImportReceiptDTO dto) {
+    // Thay thế hàm insert cũ bằng hàm này
+    public int insert(ImportReceiptDTO dto) {
+        int generatedId = -1;
         Connection con = DatabaseConnection.getInstance().getConnection();
+        // Dùng đúng tên cột receipt_date như trong CSDL của em
         String sql = "INSERT INTO import_receipts (supplier_id, employee_id, receipt_date, total_amount, status, note) VALUES (?, ?, NOW(), ?, ?, ?)";
         
         try {
-            PreparedStatement ps = con.prepareStatement(sql);
+            // QUAN TRỌNG: Thêm Statement.RETURN_GENERATED_KEYS
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, dto.getSupplierId());
             ps.setInt(2, dto.getEmployeeId());
             ps.setDouble(3, dto.getTotalAmount());
-            ps.setString(4, dto.getStatus());
-            ps.setString(5, dto.getNote());
-            return ps.executeUpdate() > 0;
+            // Trạng thái mặc định là Completed nếu chưa có
+            ps.setString(4, dto.getStatus() != null ? dto.getStatus() : "Completed"); 
+           
+            
+            if (ps.executeUpdate() > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    generatedId = rs.getInt(1); // Lấy ID phiếu nhập vừa tạo
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return generatedId;
     }
 
     public boolean delete(int id) {
