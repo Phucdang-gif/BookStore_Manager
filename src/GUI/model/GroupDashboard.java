@@ -48,14 +48,15 @@ public class GroupDashboard extends JPanel {
     // Biến cờ để tránh sự kiện khi đang load dữ liệu
     private boolean isLoadingFilter = false;
 
-    public GroupDashboard(ActionListener onItemSelected) {
+    public GroupDashboard(BookBUS bookBUS, AuthorBUS authorBUS, CategoryBUS categoryBUS, PublisherBUS publisherBUS,
+            ActionListener onItemSelected) {
         this.onItemSelected = onItemSelected;
 
         // 1. Khởi tạo BUS
-        bookBUS = new BookBUS();
-        authorBUS = new AuthorBUS();
-        categoryBUS = new CategoryBUS();
-        publisherBUS = new PublisherBUS();
+        this.bookBUS = bookBUS;
+        this.authorBUS = authorBUS;
+        this.categoryBUS = categoryBUS;
+        this.publisherBUS = publisherBUS;
 
         initStyle();
         initComponents();
@@ -181,8 +182,9 @@ public class GroupDashboard extends JPanel {
             p.add(lblEmpty);
             pnlListContent.add(p);
         } else {
+
             for (BookDTO book : books) {
-                // Xử lý ảnh
+
                 String imgPath = "src/image/default_book.png";
                 if (book.getImage() != null && !book.getImage().isEmpty()) {
                     if (book.getImage().contains(":") || book.getImage().startsWith("/"))
@@ -191,11 +193,8 @@ public class GroupDashboard extends JPanel {
                         imgPath = "src/image/" + book.getImage();
                 }
 
-                String priceStr = String.format("%,.0f đ", book.getSellingPrice());
-
                 ProductCard pCard = new ProductCard(
                         book.getBookTitle(),
-                        priceStr,
                         imgPath,
                         () -> showBookDetails(book));
                 pnlListContent.add(pCard);

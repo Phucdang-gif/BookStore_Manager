@@ -19,8 +19,8 @@ public class CategoryPanel extends JPanel implements FeatureControllerInterface 
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
 
-    public CategoryPanel() {
-        this.categoryBUS = new CategoryBUS();
+    public CategoryPanel(CategoryBUS categoryBUS) {
+        this.categoryBUS = categoryBUS;
         initComponents();
         loadDataToTable();
     }

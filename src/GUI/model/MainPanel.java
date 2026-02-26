@@ -3,6 +3,9 @@ package GUI.model;
 import javax.swing.*;
 import java.awt.*;
 import BUS.BookBUS;
+import BUS.AuthorBUS;
+import BUS.CategoryBUS;
+import BUS.PublisherBUS;
 import GUI.util.ThemeColor;
 
 public class MainPanel extends JPanel {
@@ -22,9 +25,15 @@ public class MainPanel extends JPanel {
     private DiscountPanel pnlDiscount;
 
     private BookBUS bookBUS;
+    private AuthorBUS authorBUS;
+    private CategoryBUS categoryBUS;
+    private PublisherBUS publisherBUS;
 
     public MainPanel() {
         bookBUS = new BookBUS();
+        authorBUS = new AuthorBUS();
+        categoryBUS = new CategoryBUS();
+        publisherBUS = new PublisherBUS();
         setLayout(new BorderLayout());
         setOpaque(true);
         setBackground(ThemeColor.bgPanel);
@@ -43,7 +52,7 @@ public class MainPanel extends JPanel {
 
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
-        pnlGroup = new GroupPanel(this);
+        pnlGroup = new GroupPanel(this, bookBUS, authorBUS, categoryBUS, publisherBUS);
         pnlImport = new ImportReceiptPanel();
         pnlEmployee = new EmployeePanel();
         pnlAccount = new AccountPanel();

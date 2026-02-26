@@ -62,11 +62,11 @@ public class Sidebar extends JPanel {
         items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
         items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
         items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
-        items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
+        items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/export.svg", "INVOICE"));
         items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
         items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
-        items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT")); 
-        items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/role.svg", "PERMISSION_GROUP")); 
+        items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT"));
+        items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/permission.svg", "PERMISSION_GROUP"));
         // items.add(new SidebarItem("THỐNG KÊ", "GUI/icon/chart.svg", "STATS"));
 
         // Render ra giao diện
