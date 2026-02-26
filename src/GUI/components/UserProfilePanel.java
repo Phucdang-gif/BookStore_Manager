@@ -42,32 +42,13 @@ public class UserProfilePanel extends JPanel {
         add(textPanel, BorderLayout.CENTER);
     }
 
-    @Override
     public void updateUI() {
         super.updateUI();
-        // Kiểm tra null để tránh lỗi khi khởi tạo lần đầu
         if (ThemeColor.bgPanel != null) {
-            setBackground(ThemeColor.bgPanel);
-            // Cập nhật lại border với màu mới
+            setBackground(ThemeColor.bgWhite); // Sidebar thường dùng nền trắng hoặc panel nhạt
             setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColor.borderColor),
                     new EmptyBorder(10, 20, 10, 10)));
-        }
-        // Cập nhật màu chữ cho các label con
-        for (Component comp : getComponents()) {
-            if (comp instanceof JPanel) {
-                for (Component innerComp : ((JPanel) comp).getComponents()) {
-                    if (innerComp instanceof JLabel) {
-                        JLabel lbl = (JLabel) innerComp;
-                        // Mẹo nhỏ: Phân biệt title và subtitle dựa vào font hoặc text
-                        if (lbl.getFont().isBold()) {
-                            lbl.setForeground(ThemeColor.textMain);
-                        } else {
-                            lbl.setForeground(ThemeColor.textSecondary);
-                        }
-                    }
-                }
-            }
         }
     }
 }

@@ -15,7 +15,7 @@ public class MainPanel extends JPanel {
     private GroupPanel pnlGroup;
     private AccountPanel pnlAccount;
     private PermissionGroupPanel pnlPermissionGroup;
-    private ImportReceiptPanel pnlImport; 
+    private ImportReceiptPanel pnlImport;
     private EmployeePanel pnlEmployee;
     private InvoicePanel pnlInvoice;
     private CustomerPanel pnlCustomer;
@@ -40,27 +40,27 @@ public class MainPanel extends JPanel {
         centerPanel = new JPanel(cardLayout);
         centerPanel.setOpaque(true);
         centerPanel.setBackground(ThemeColor.bgPanel);
-        pnlInvoice = new InvoicePanel();
-        centerPanel.add(pnlInvoice, "INVOICE");
-        pnlCustomer = new CustomerPanel();
-        centerPanel.add(pnlCustomer, "CUSTOMER");
-        pnlDiscount = new DiscountPanel();
-centerPanel.add(pnlDiscount, "DISCOUNT");
+
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
         pnlGroup = new GroupPanel(this);
         pnlImport = new ImportReceiptPanel();
         pnlEmployee = new EmployeePanel();
-
+        pnlAccount = new AccountPanel();
+        pnlPermissionGroup = new PermissionGroupPanel();
+        pnlInvoice = new InvoicePanel();
+        pnlCustomer = new CustomerPanel();
+        pnlDiscount = new DiscountPanel();
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
         centerPanel.add(pnlImport, "IMPORT");
         centerPanel.add(pnlEmployee, "EMPLOYEE");
-        pnlAccount = new AccountPanel();
         centerPanel.add(pnlAccount, "ACCOUNT");
-        pnlPermissionGroup = new PermissionGroupPanel();
-        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");  
+        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");
+        centerPanel.add(pnlDiscount, "DISCOUNT");
+        centerPanel.add(pnlCustomer, "CUSTOMER");
+        centerPanel.add(pnlInvoice, "INVOICE");
         add(centerPanel, BorderLayout.CENTER);
 
         // Mặc định ban đầu Header điều khiển bảng Sách

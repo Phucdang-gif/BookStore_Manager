@@ -6,7 +6,8 @@ import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
 import GUI.util.ExcelHelper;
 import GUI.util.ThemeColor;
-import GUI.util.UIConstants;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -166,7 +167,7 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
 
     // ================================================================
     private void styleTable() {
-        bookTable.setRowHeight(UIConstants.ROW_HEIGHT);
+        bookTable.setRowHeight(40);
         bookTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bookTable.setShowVerticalLines(true);
         bookTable.setShowHorizontalLines(true);
@@ -258,17 +259,25 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
             return;
         }
 
-        String key = UIConstants.removeAccent(keyword);
+        String key = removeAccent(keyword);
         ArrayList<BookDTO> listFiltered = new ArrayList<>();
 
         for (BookDTO book : listOriginal) {
-            String name = UIConstants.removeAccent(book.getBookTitle());
-            String isbn = UIConstants.removeAccent(book.getIsbn());
+            String name = removeAccent(book.getBookTitle());
+            String isbn = removeAccent(book.getIsbn());
             if (name.contains(key) || isbn.contains(key)) {
                 listFiltered.add(book);
             }
         }
         setTableData(listFiltered);
+    }
+
+    public static String removeAccent(String s) {
+        if (s == null)
+            return "";
+        String temp = Normalizer.normalize(s, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(temp).replaceAll("").toLowerCase().replace("đ", "d");
     }
 
     public JTable getBookTable() {
