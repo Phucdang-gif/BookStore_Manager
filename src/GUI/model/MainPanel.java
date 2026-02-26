@@ -3,6 +3,9 @@ package GUI.model;
 import javax.swing.*;
 import java.awt.*;
 import BUS.BookBUS;
+import BUS.AuthorBUS;
+import BUS.CategoryBUS;
+import BUS.PublisherBUS;
 import GUI.util.ThemeColor;
 
 public class MainPanel extends JPanel {
@@ -15,16 +18,22 @@ public class MainPanel extends JPanel {
     private GroupPanel pnlGroup;
     private AccountPanel pnlAccount;
     private PermissionGroupPanel pnlPermissionGroup;
-    private ImportReceiptPanel pnlImport; 
+    private ImportReceiptPanel pnlImport;
     private EmployeePanel pnlEmployee;
     private InvoicePanel pnlInvoice;
     private CustomerPanel pnlCustomer;
     private DiscountPanel pnlDiscount;
 
     private BookBUS bookBUS;
+    private AuthorBUS authorBUS;
+    private CategoryBUS categoryBUS;
+    private PublisherBUS publisherBUS;
 
     public MainPanel() {
         bookBUS = new BookBUS();
+        authorBUS = new AuthorBUS();
+        categoryBUS = new CategoryBUS();
+        publisherBUS = new PublisherBUS();
         setLayout(new BorderLayout());
         setOpaque(true);
         setBackground(ThemeColor.bgPanel);
@@ -40,27 +49,27 @@ public class MainPanel extends JPanel {
         centerPanel = new JPanel(cardLayout);
         centerPanel.setOpaque(true);
         centerPanel.setBackground(ThemeColor.bgPanel);
-        pnlInvoice = new InvoicePanel();
-        centerPanel.add(pnlInvoice, "INVOICE");
-        pnlCustomer = new CustomerPanel();
-        centerPanel.add(pnlCustomer, "CUSTOMER");
-        pnlDiscount = new DiscountPanel();
-centerPanel.add(pnlDiscount, "DISCOUNT");
+
         // Khởi tạo các màn hình con
         pnlBook = new BookTablePanel(bookBUS);
-        pnlGroup = new GroupPanel(this);
+        pnlGroup = new GroupPanel(this, bookBUS, authorBUS, categoryBUS, publisherBUS);
         pnlImport = new ImportReceiptPanel();
         pnlEmployee = new EmployeePanel();
-
+        pnlAccount = new AccountPanel();
+        pnlPermissionGroup = new PermissionGroupPanel();
+        pnlInvoice = new InvoicePanel();
+        pnlCustomer = new CustomerPanel();
+        pnlDiscount = new DiscountPanel();
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
         centerPanel.add(pnlImport, "IMPORT");
         centerPanel.add(pnlEmployee, "EMPLOYEE");
-        pnlAccount = new AccountPanel();
         centerPanel.add(pnlAccount, "ACCOUNT");
-        pnlPermissionGroup = new PermissionGroupPanel();
-        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");  
+        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");
+        centerPanel.add(pnlDiscount, "DISCOUNT");
+        centerPanel.add(pnlCustomer, "CUSTOMER");
+        centerPanel.add(pnlInvoice, "INVOICE");
         add(centerPanel, BorderLayout.CENTER);
 
         // Mặc định ban đầu Header điều khiển bảng Sách

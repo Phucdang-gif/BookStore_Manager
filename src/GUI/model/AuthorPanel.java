@@ -19,8 +19,8 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
 
-    public AuthorPanel() {
-        this.authorBUS = new AuthorBUS(); // Khởi tạo BUS để load dữ liệu từ DB
+    public AuthorPanel(AuthorBUS authorBUS) {
+        this.authorBUS = authorBUS;
         initComponents();
         loadDataToTable(); // Nạp dữ liệu vào bảng ngay khi mở panel
     }

@@ -2,15 +2,10 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-
 import GUI.model.MainPanel;
 import GUI.model.Sidebar;
-
-import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import GUI.util.ThemeColor;
-import config.DatabaseConnection;
 
 public class MainFrame extends JFrame {
     private MainPanel content;
@@ -21,7 +16,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 600);
         setLocationRelativeTo(null);
-        setTheme(false); // true: dark theme, false: light theme
+        applyLightSettings();
         initComponents();
         setupLayout();
         initEvents();
@@ -30,6 +25,7 @@ public class MainFrame extends JFrame {
     private void initComponents() {
         content = new MainPanel();
         sidebar = new Sidebar();
+        getContentPane().setBackground(ThemeColor.bgPanel);
     }
 
     private void setupLayout() {
@@ -55,23 +51,13 @@ public class MainFrame extends JFrame {
         });
     }
 
-    public void setTheme(boolean isDark) {
+    private void applyLightSettings() {
         try {
-            ThemeColor.applyTheme(isDark);
-            if (isDark) {
-                UIManager.setLookAndFeel(new FlatDarkLaf());
-            } else {
-                UIManager.setLookAndFeel(new FlatLightLaf());
-            }
+            ThemeColor.applyTheme(false); // Luôn gọi theme sáng
+            UIManager.setLookAndFeel(new FlatLightLaf());
 
-            // 3. Nền JFrame
-            ((JPanel) getContentPane()).setBackground(ThemeColor.bgMain);
-
-            // 4. Vẽ lại toàn cây
+            // Cập nhật giao diện hệ thống
             SwingUtilities.updateComponentTreeUI(this);
-            this.revalidate();
-            this.repaint();
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }

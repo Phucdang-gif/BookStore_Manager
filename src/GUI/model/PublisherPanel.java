@@ -16,8 +16,8 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
 
-    public PublisherPanel() {
-        this.publisherBUS = new PublisherBUS();
+    public PublisherPanel(PublisherBUS publisherBUS) {
+        this.publisherBUS = publisherBUS;
         initComponents();
         loadDataToTable();
     }

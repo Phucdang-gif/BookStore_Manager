@@ -4,6 +4,12 @@ import GUI.components.RoundedBorderButton;
 import GUI.util.ThemeColor;
 
 import javax.swing.*;
+
+import BUS.AuthorBUS;
+import BUS.BookBUS;
+import BUS.CategoryBUS;
+import BUS.PublisherBUS;
+
 import java.awt.*;
 
 public class GroupPanel extends JPanel {
@@ -22,15 +28,17 @@ public class GroupPanel extends JPanel {
 
     private MainPanel mainPanelContext;
 
-    public GroupPanel(MainPanel mainPanel) {
+    public GroupPanel(MainPanel mainPanel, BookBUS bookBUS, AuthorBUS authorBUS, CategoryBUS categoryBUS,
+            PublisherBUS publisherBUS) {
         this.mainPanelContext = mainPanel;
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        initComponents();
+        initComponents(bookBUS, authorBUS, categoryBUS, publisherBUS);
     }
 
-    private void initComponents() {
+    private void initComponents(BookBUS bookBUS, AuthorBUS authorBUS, CategoryBUS categoryBUS,
+            PublisherBUS publisherBUS) {
         // --- GIỮ NGUYÊN PHẦN HEADER BAR ---
         headerBar = new JPanel(new BorderLayout());
         headerBar.setBackground(Color.WHITE);
@@ -60,15 +68,15 @@ public class GroupPanel extends JPanel {
         container.setBackground(Color.WHITE);
 
         // A. Dashboard
-        dashboard = new GroupDashboard(e -> {
+        dashboard = new GroupDashboard(bookBUS, authorBUS, categoryBUS, publisherBUS, e -> {
             String command = e.getActionCommand();
             switchPanel(command);
         });
 
         // B. Các panel quản lý
-        pnlAuthor = new AuthorPanel();
-        pnlCategory = new CategoryPanel();
-        pnlPublisher = new PublisherPanel();
+        pnlAuthor = new AuthorPanel(authorBUS);
+        pnlCategory = new CategoryPanel(categoryBUS);
+        pnlPublisher = new PublisherPanel(publisherBUS);
 
         container.add(dashboard, "DASHBOARD");
         container.add(pnlAuthor, "AUTHOR");
@@ -85,8 +93,6 @@ public class GroupPanel extends JPanel {
             headerBar.setVisible(false);
             mainPanelContext.setHeaderVisible(false);
 
-            // ---> CẬP NHẬT: Load lại số liệu mới nhất khi về Dashboard <---
-            dashboard.refreshData();
             dashboard.resetFilters();
         } else {
             headerBar.setVisible(true);
