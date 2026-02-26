@@ -122,4 +122,14 @@ public class AccountBUS {
         }
         return result;
     }
+    public boolean checkDuplicateUsername(String username) {
+    return accountDAO.isUsernameExists(username);
+}
+
+    public AccountDTO checkLogin(String username, String password) {
+        if (username.trim().isEmpty() || password.trim().isEmpty()) {
+            return null;
+        }
+        return accountDAO.checkLogin(username, password);
+    }
 }

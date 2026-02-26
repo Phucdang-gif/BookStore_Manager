@@ -290,6 +290,15 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public boolean[] getButtonConfig() {
-        return new boolean[]{true, true, true, true, true, true}; 
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[]{false, false, false, false, false, false}; 
+        }
+
+        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
+        boolean canAdd = config.SessionManager.hasPermission(458, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(458, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(458, "Xóa");
+
+        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }
 }

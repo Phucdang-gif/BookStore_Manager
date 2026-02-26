@@ -97,7 +97,17 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
     @Override public void onExportExcel() {}
     @Override public void onImportExcel() {}
     
-    @Override public boolean[] getButtonConfig() { 
-        return new boolean[]{true, true, true, false, false, false}; // Tắt detail, export, import
+    @Override
+    public boolean[] getButtonConfig() {
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[]{false, false, false, false, false, false}; 
+        }
+
+        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
+        boolean canAdd = config.SessionManager.hasPermission(456, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(456, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(456, "Xóa");
+
+        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }
 }

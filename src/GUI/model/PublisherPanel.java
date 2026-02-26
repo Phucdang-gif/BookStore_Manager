@@ -108,8 +108,15 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
         loadDataToTable();
     }
 
-    @Override
+   @Override
     public boolean[] getButtonConfig() {
-        return new boolean[] { true, true, true, false, false, false };
+        // 1. Lấy thông tin người đang đăng nhập
+        DTO.AccountDTO currentAcc = config.SessionManager.getCurrentAccount();
+        if (currentAcc == null) {
+            return new boolean[]{false, false, false, false, false, false}; // Khóa hết nếu chưa đăng nhập
+        }
+        
+        
+        return new boolean[]{true, true, true, true, false, false}; 
     }
 }

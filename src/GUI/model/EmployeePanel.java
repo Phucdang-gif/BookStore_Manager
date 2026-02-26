@@ -98,5 +98,17 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
     @Override public void onRefresh() { loadDataToTable(employeeBUS.getAll()); }
     @Override public void onExportExcel() {}
     @Override public void onImportExcel() {}
-    @Override public boolean[] getButtonConfig() { return new boolean[]{true, true, true, false, false, false}; }
+   @Override
+    public boolean[] getButtonConfig() {
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[]{false, false, false, false, false, false}; 
+        }
+
+        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
+        boolean canAdd = config.SessionManager.hasPermission(452, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(452, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(452, "Xóa");
+
+        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
+    }
 }

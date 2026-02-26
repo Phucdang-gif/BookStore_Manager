@@ -143,10 +143,17 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
     @Override
     public void onImportExcel() { }
 
-    @Override
+   @Override
     public boolean[] getButtonConfig() {
-        // Bật nút: Add (Bán hàng), Delete (Hủy HĐ), Detail (Xem chi tiết)
-        // Tắt nút: Edit, Export, Import
-        return new boolean[]{true, false, true, true, false, false}; 
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[]{false, false, false, false, false, false}; 
+        }
+
+        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
+        boolean canAdd = config.SessionManager.hasPermission(453, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(453, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(453, "Xóa");
+
+        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }
 }

@@ -37,10 +37,17 @@ public class Sidebar extends JPanel {
     }
 
     private void initComponents() {
+        // --- ĐỔI TÊN ĐỘNG THEO TÀI KHOẢN ĐĂNG NHẬP ---
+        DTO.AccountDTO currentUser = config.SessionManager.getCurrentAccount();
+        String displayName = (currentUser != null) ? currentUser.getUsername() : "Chưa đăng nhập";
+
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
         pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
-        UserProfilePanel userPanel = new UserProfilePanel("Đặng Hoàng Phúc", "Quản lý kho");
+        
+        // Hiển thị tên thật lên Sidebar
+        UserProfilePanel userPanel = new UserProfilePanel(displayName, "Nhân Viên");
+        
         btnToggle = new JButton();
         IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
         btnToggle.setPreferredSize(new Dimension(40, 40));
@@ -56,18 +63,38 @@ public class Sidebar extends JPanel {
         menuContainer.setOpaque(false);
         menuContainer.setBorder(new EmptyBorder(10, 0, 0, 0));
 
-        // --- DANH SÁCH CHỨC NĂNG (SAU NÀY LOAD TỪ DB HOẶC CHECK QUYỀN Ở ĐÂY) ---
+        // --- DANH SÁCH CHỨC NĂNG (ĐÃ TÍCH HỢP PHÂN QUYỀN RAM) ---
         ArrayList<SidebarModel> items = new ArrayList<>();
-        items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
-        items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
-        items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
-        items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
-        items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
-        items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
-        items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
-        items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT")); 
-        items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/role.svg", "PERMISSION_GROUP")); 
-        // items.add(new SidebarItem("THỐNG KÊ", "GUI/icon/chart.svg", "STATS"));
+        
+        
+
+        if (config.SessionManager.hasPermission(451, "Xem")) {
+            items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
+        }
+        if (config.SessionManager.hasPermission(455, "Xem")) {
+            items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
+        }
+        if (config.SessionManager.hasPermission(456, "Xem")) {
+            items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
+        }
+        if (config.SessionManager.hasPermission(454, "Xem")) {
+            items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
+        }
+        if (config.SessionManager.hasPermission(453, "Xem")) {
+            items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
+        }
+        if (config.SessionManager.hasPermission(457, "Xem")) {
+            items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
+        }
+        if (config.SessionManager.hasPermission(452, "Xem")) {
+            items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
+        }
+        if (config.SessionManager.hasPermission(458, "Xem")) {
+            items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT")); 
+        }
+        if (config.SessionManager.hasPermission(459, "Xem")) {
+            items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/role.svg", "PERMISSION_GROUP")); 
+        }
 
         // Render ra giao diện
         for (SidebarModel item : items) {
@@ -76,7 +103,7 @@ public class Sidebar extends JPanel {
             menuContainer.add(Box.createVerticalStrut(5)); // Khoảng cách
             listButtons.add(btn);
 
-            // Mặc định chọn nút đầu tiên
+            // Mặc định chọn nút đầu tiên xuất hiện
             if (btnSelected == null) {
                 setActiveButton(btn);
             }

@@ -175,4 +175,47 @@ public class AccountDAO {
         }
         return list;
     }
+    // Kiểm tra xem username đã tồn tại trong hệ thống chưa
+    public boolean isUsernameExists(String username) {
+        Connection con = config.DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT 1 FROM accounts WHERE username = ? LIMIT 1";
+        
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            return rs.next(); // Trả về true nếu đã có người dùng tên này
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    // Thêm vào AccountDAO.java
+    public AccountDTO checkLogin(String username, String password) {
+        Connection con = config.DatabaseConnection.getInstance().getConnection();
+        // Kiểm tra đúng User, Pass và trạng thái tài khoản phải đang mở
+        String sql = "SELECT * FROM accounts WHERE username = ? AND password = ? AND status = 'Active'";
+        
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, password);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                AccountDTO acc = new AccountDTO();
+                // (Tên cột tùy thuộc vào thiết kế DB của em, thầy đang lấy theo chuẩn chung)
+                acc.setAccountId(rs.getInt("account_id"));
+                acc.setEmployeeId(rs.getInt("employee_id"));
+                acc.setPermissionGroupId(rs.getInt("permission_group_id")); // Cột mang ý nghĩa phân quyền cực quan trọng
+                acc.setUsername(rs.getString("username"));
+                acc.setPassword(rs.getString("password"));
+                acc.setStatus(rs.getString("status"));
+                return acc; // Đăng nhập thành công trả về thông tin người dùng
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // Sai mật khẩu hoặc bị khóa sẽ trả về null
+    }
 }

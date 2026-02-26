@@ -58,4 +58,15 @@ public class EmployeeBUS {
         }
         return result;
     }
+    public ArrayList<EmployeeDTO> getUnassignedEmployees() {
+    return employeeDAO.getEmployeesWithoutAccount();
+}
+public EmployeeDTO getById(int employeeId) {
+    for (EmployeeDTO emp : listEmployee) {
+        if (emp.getEmployeeId() == employeeId) {
+            return emp;
+        }
+    }
+    return null; // Nếu không tìm thấy
+}
 }

@@ -90,4 +90,58 @@ public class EmployeeDAO {
             return false;
         }
     }
+    // Lấy danh sách nhân viên CHƯA được cấp tài khoản
+    public ArrayList<EmployeeDTO> getEmployeesWithoutAccount() {
+        ArrayList<EmployeeDTO> list = new ArrayList<>();
+        Connection con = config.DatabaseConnection.getInstance().getConnection();
+        
+        // Truy vấn: Lấy nhân viên mà khi JOIN sang bảng accounts, không tìm thấy ID tài khoản
+        String sql = "SELECT e.* FROM employees e " +
+                     "LEFT JOIN accounts a ON e.employee_id = a.employee_id " +
+                     "WHERE a.account_id IS NULL AND e.status = 'Active'"; 
+                     // Chỉ cấp tài khoản cho nhân viên còn đang làm việc
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                EmployeeDTO emp = new EmployeeDTO();
+                emp.setEmployeeId(rs.getInt("employee_id"));
+                emp.setFullName(rs.getString("full_name"));
+                emp.setPhone(rs.getString("phone"));
+                // ... map các trường khác nếu cần ...
+                list.add(emp);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    public EmployeeDTO getById(int employeeId) {
+        EmployeeDTO emp = null;
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM employees WHERE employee_id=?";
+        try {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, employeeId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                emp = new EmployeeDTO();
+                emp.setEmployeeId(rs.getInt("employee_id"));
+                emp.setFullName(rs.getString("full_name"));
+                emp.setDateOfBirth(rs.getDate("date_of_birth"));
+                emp.setGender(rs.getString("gender"));
+                emp.setPhone(rs.getString("phone"));
+                emp.setAddress(rs.getString("address"));
+                emp.setPosition(rs.getString("position"));
+                emp.setSalary(rs.getDouble("salary"));
+                emp.setHireDate(rs.getDate("hire_date"));
+                emp.setStatus(rs.getString("status"));
+                emp.setTerminationDate(rs.getDate("termination_date"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return emp;
+    
+    }
 }

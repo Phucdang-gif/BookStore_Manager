@@ -89,4 +89,26 @@ public class PermissionDetailDAO {
             }
         }
     }
+    // Hàm kiểm tra quyền đa năng. 
+    // Biến actionColumn sẽ nhận các chuỗi như: "can_add", "can_edit", "can_delete"
+    public boolean checkActionPermission(int groupId, String moduleCode, String actionColumn) {
+        Connection con = config.DatabaseConnection.getInstance().getConnection();
+        
+        // Nối trực tiếp actionColumn vào câu SQL
+        String sql = "SELECT " + actionColumn + " FROM permission_details WHERE group_id = ? AND module_code = ?";
+        
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, groupId);
+            ps.setString(2, moduleCode);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getBoolean(1); // Trả về true nếu được cấp quyền, false nếu bị cấm
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false; 
+    }
 }

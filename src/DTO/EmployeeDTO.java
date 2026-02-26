@@ -69,4 +69,10 @@ public class EmployeeDTO {
 
     public String getAvatar() { return avatar; }
     public void setAvatar(String avatar) { this.avatar = avatar; }
+    @Override
+    public String toString() {
+        // Trả về Tên nhân viên. Nếu thích em có thể nối thêm SĐT cho dễ phân biệt người trùng tên
+        // Ví dụ: return this.fullName + " - " + this.phone;
+        return this.fullName+" - "+this.employeeId; // Hiển thị tên và chức vụ để dễ phân biệt khi có nhiều nhân viên trùng tên
+    }
 }

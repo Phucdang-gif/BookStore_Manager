@@ -146,8 +146,17 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
     @Override
     public void onImportExcel() { }
 
-    @Override
+   @Override
     public boolean[] getButtonConfig() {
-        return new boolean[]{true, true, true, true, false, false}; 
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[]{false, false, false, false, false, false}; 
+        }
+
+        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
+        boolean canAdd = config.SessionManager.hasPermission(459, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(459, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(459, "Xóa");
+
+        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }
 }

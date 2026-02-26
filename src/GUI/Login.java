@@ -2,6 +2,7 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 
 public class Login extends JFrame {
     private Image backgroundImage;
@@ -102,6 +103,9 @@ public class Login extends JFrame {
         gbc.gridy = 6;
         gbc.insets = new Insets(30, 40, 40, 40);
         loginCard.add(loginBtn, gbc);
+        
+
+        
 
         // Đưa Login Card vào container bên phải
         GridBagConstraints centerGbc = new GridBagConstraints();
@@ -112,6 +116,38 @@ public class Login extends JFrame {
         rightContainer.add(loginCard, centerGbc);
 
         mainBackgroundPanel.add(rightContainer, BorderLayout.CENTER);
+        // THÊM ĐOẠN XỬ LÝ SỰ KIỆN NÀY
+        loginBtn.addActionListener(e -> {
+            String username = userField.getText().trim();
+            String password = new String(passField.getPassword()).trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng nhập Tên đăng nhập và Mật khẩu!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // Gọi BUS để kiểm tra
+            BUS.AccountBUS accountBUS = new BUS.AccountBUS();
+            // Bên trong loginBtn.addActionListener của file Login.java
+            DTO.AccountDTO loggedInAcc = accountBUS.checkLogin(username, password);
+
+            if (loggedInAcc != null) {
+                // LẤY TRỌN BỘ QUYỀN TỪ CSDL CHỈ 1 LẦN DUY NHẤT
+                BUS.PermissionDetailBUS permBUS = new BUS.PermissionDetailBUS();
+                HashMap<Integer, String> userPerms = permBUS.getAllPermissionsByGroupId(loggedInAcc.getPermissionGroupId());
+                
+                // Lưu thẳng vào SessionManager
+                config.SessionManager.login(loggedInAcc, userPerms);
+                
+                this.dispose(); 
+                SwingUtilities.invokeLater(() -> new GUI.MainFrame().setVisible(true)); 
+            }
+
+            else {
+                // Đăng nhập thất bại
+                JOptionPane.showMessageDialog(this, "Sai tài khoản, mật khẩu hoặc tài khoản đã bị khóa!", "Lỗi Đăng Nhập", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     // Hàm phụ để trang trí Text Field cho hiện đại
