@@ -45,7 +45,6 @@ public class PublisherDialog extends JDialog {
 
         JButton btnSave = new JButton("Lưu");
         btnSave.addActionListener(e -> {
-            // Logic lưu tương tự Category/Author
             isSuccess = true;
             dispose();
         });

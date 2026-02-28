@@ -30,6 +30,7 @@ public class ThemeColor {
     private static final Color LIGHT_SELECTION_TEXT = Color.decode("#FFFFFF");
 
     public static final Color ACCENT_COLOR = Color.decode("#2563EB");
+    public static final Color ACCENT_COLOR_DARK = Color.decode("#1E40AF");
 
     // --- CÁC BIẾN MÀU ĐỘNG (Bây giờ cố định theo Light) ---
     public static Color bgMain = LIGHT_BG_MAIN;
