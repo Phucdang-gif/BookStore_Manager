@@ -5,7 +5,6 @@ import javax.swing.border.EmptyBorder;
 
 import java.awt.*;
 import java.util.ArrayList;
-import GUI.components.ActionButton;
 import GUI.components.SearchTextField;
 import GUI.components.ToolBarPanel;
 import GUI.components.RoundedBorderButton;
@@ -14,7 +13,7 @@ import GUI.util.ThemeColor;
 public class Header extends JPanel {
     private ToolBarPanel toolBar;
     private SearchTextField txtSearch;
-    private ActionButton btnRefresh;
+    private RoundedBorderButton btnRefresh;
     private FeatureControllerInterface currentController;
 
     public Header() {
@@ -55,7 +54,7 @@ public class Header extends JPanel {
         btnRefresh = new RoundedBorderButton(
                 null,
                 "GUI/icon/refresh.svg",
-                ThemeColor.textMain, // Màu accent chủ đạo
+                Color.black, // viền đen
                 20 // Độ bo góc
         );
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 20));
