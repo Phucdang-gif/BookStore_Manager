@@ -11,10 +11,10 @@ public class InvoiceDAO {
         ArrayList<InvoiceDTO> list = new ArrayList<>();
         Connection con = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM invoices ORDER BY created_at DESC";
-        
+
         try {
             PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery(); // su dung cho cau lenh SELECT
             while (rs.next()) {
                 InvoiceDTO dto = new InvoiceDTO();
                 dto.setInvoiceId(rs.getInt("invoice_id"));
@@ -37,13 +37,14 @@ public class InvoiceDAO {
         return list;
     }
 
-  // LƯU Ý: Hàm này phải trả về INT (Mã hóa đơn tự tăng)
+    // LƯU Ý: Hàm này phải trả về INT (Mã hóa đơn tự tăng)
     public int insert(InvoiceDTO dto) {
         int generatedId = -1;
         Connection con = DatabaseConnection.getInstance().getConnection();
-        String sql = "INSERT INTO invoices (customer_id, employee_id, created_at, total_amount, total_discount, points_used, points_value, final_amount, payment_method, status, points_earned) " +
-                     "VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, 'Completed', ?)";
-        
+        String sql = "INSERT INTO invoices (customer_id, employee_id, created_at, total_amount, total_discount, points_used, points_value, final_amount, payment_method, status, points_earned) "
+                +
+                "VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, 'Completed', ?)";
+
         try {
             // Statement.RETURN_GENERATED_KEYS là chìa khóa để xin lại ID vừa tạo
             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -56,7 +57,7 @@ public class InvoiceDAO {
             ps.setDouble(7, dto.getFinalAmount());
             ps.setString(8, dto.getPaymentMethod());
             ps.setInt(9, dto.getPointsEarned());
-            
+
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
@@ -69,7 +70,7 @@ public class InvoiceDAO {
             System.out.println("Nguyên nhân: " + e.getMessage());
             e.printStackTrace();
         }
-        return generatedId; 
+        return generatedId;
     }
 
     // Hủy hóa đơn (Không xóa khỏi DB, chỉ đổi trạng thái)

@@ -66,7 +66,7 @@ public class MainPanel extends JPanel {
         centerPanel.add(pnlImport, "IMPORT");
         centerPanel.add(pnlEmployee, "EMPLOYEE");
         centerPanel.add(pnlAccount, "ACCOUNT");
-        centerPanel.add(pnlPermissionGroup, "PERMISSION_GROUP");
+        centerPanel.add(pnlPermissionGroup, "PERMISSION");
         centerPanel.add(pnlDiscount, "DISCOUNT");
         centerPanel.add(pnlCustomer, "CUSTOMER");
         centerPanel.add(pnlInvoice, "INVOICE");
@@ -103,7 +103,7 @@ public class MainPanel extends JPanel {
                 header.setController(pnlAccount);
                 setHeaderVisible(true);
                 break;
-            case "PERMISSION_GROUP":
+            case "PERMISSION":
                 header.setController(pnlPermissionGroup);
                 setHeaderVisible(true);
                 break;

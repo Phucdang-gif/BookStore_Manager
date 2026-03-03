@@ -65,20 +65,20 @@ public class AuthorDAO {
         return false;
     }
 
-    public int update(AuthorDTO author) throws SQLException {
+    public boolean update(AuthorDTO author) throws SQLException {
         String sql = "UPDATE authors SET author_name = ? WHERE author_id = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setString(1, author.getAuthorName());
             pst.setInt(2, author.getAuthorId());
-            return pst.executeUpdate(); // Trả về số dòng bị ảnh hưởng
+            return pst.executeUpdate() > 0; // Trả về số dòng bị ảnh hưởng
         }
     }
 
-    public int delete(int id) throws SQLException {
+    public boolean delete(int id) throws SQLException {
         String sql = "DELETE FROM authors WHERE author_id = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setInt(1, id);
-            return pst.executeUpdate();
+            return pst.executeUpdate() > 0;
         }
     }
 

@@ -6,6 +6,9 @@ import GUI.util.ThemeColor;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import org.apache.poi.hslf.blip.DIB;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -19,10 +22,12 @@ public class Sidebar extends JPanel {
     private ArrayList<JButton> listButtons = new ArrayList<>(); // Lưu để reset style
     private JButton btnSelected; // Nút đang active
     private JButton btnToggle; // nút ẩn hiện
+    private JButton btnLogout; // nút đăng xuất
 
     public Sidebar() {
         initStyle();
         initComponents();
+        initEvent();
     }
 
     private void initStyle() {
@@ -44,10 +49,10 @@ public class Sidebar extends JPanel {
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
         pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
-        
+
         // Hiển thị tên thật lên Sidebar
         UserProfilePanel userPanel = new UserProfilePanel(displayName, "Nhân Viên");
-        
+
         btnToggle = new JButton();
         IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
         btnToggle.setPreferredSize(new Dimension(40, 40));
@@ -65,8 +70,6 @@ public class Sidebar extends JPanel {
 
         // --- DANH SÁCH CHỨC NĂNG (ĐÃ TÍCH HỢP PHÂN QUYỀN RAM) ---
         ArrayList<SidebarModel> items = new ArrayList<>();
-        
-        
 
         if (config.SessionManager.hasPermission(451, "Xem")) {
             items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
@@ -90,10 +93,10 @@ public class Sidebar extends JPanel {
             items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
         }
         if (config.SessionManager.hasPermission(458, "Xem")) {
-            items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT")); 
+            items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT"));
         }
         if (config.SessionManager.hasPermission(459, "Xem")) {
-            items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/role.svg", "PERMISSION_GROUP")); 
+            items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/permission.svg", "PERMISSION"));
         }
 
         // Render ra giao diện
@@ -108,9 +111,35 @@ public class Sidebar extends JPanel {
                 setActiveButton(btn);
             }
         }
+        JPanel pnlFooter = new JPanel(new BorderLayout());
+        pnlFooter.setOpaque(false);
+        pnlFooter.setBorder(new EmptyBorder(10, 10, 10, 10)); // Padding
 
+        btnLogout = new JButton("Đăng xuất");
+        IconHelper.setIcon(btnLogout, "GUI/icon/logout.svg", 20, 20);
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogout.setBackground(ThemeColor.bgWhite);
+        btnLogout.setForeground(ThemeColor.textMain);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setPreferredSize(new Dimension(200, 30));
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        pnlFooter.add(btnLogout, BorderLayout.CENTER);
+
+        JScrollPane scrollPane = new JScrollPane(menuContainer);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // Chỉ cuộn dọc
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setPreferredSize(new Dimension(8, 0));
+        // // Làm trong suốt nền để không bị lệch màu
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setOpaque(false);
+        // Tăng tốc độ cuộn chuột (Mặc định Swing cuộn rất chậm)
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        add(pnlFooter, BorderLayout.SOUTH);
         add(pnlHeader, BorderLayout.NORTH);
-        add(menuContainer, BorderLayout.CENTER);
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     public void addToggleEvent(ActionListener event) {
@@ -186,5 +215,46 @@ public class Sidebar extends JPanel {
         // nhưng setVisible là cách nhanh và ổn định nhất cho BorderLayout.
         this.revalidate();
         this.repaint();
+    }
+
+    private void initEvent() {
+        // Xử lý sự kiện ĐĂNG XUẤT
+        btnLogout.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    SwingUtilities.getWindowAncestor(this),
+                    "Bạn có chắc chắn muốn đăng xuất?",
+                    "Xác nhận",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                // 1. Xóa session
+                config.SessionManager.logout();
+
+                // 2. Đóng cửa sổ Main hiện tại
+                Window window = SwingUtilities.getWindowAncestor(this);
+                if (window != null) {
+                    window.dispose();
+                }
+
+                // 3. Mở lại màn hình Login
+                SwingUtilities.invokeLater(() -> {
+                    new GUI.Login().setVisible(true);
+                });
+            }
+        });
+
+        // Hiệu ứng Hover cho nút Logout
+        btnLogout.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btnLogout.setBackground(new Color(240, 240, 240));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btnLogout.setBackground(ThemeColor.bgPanel);
+            }
+        });
     }
 }
