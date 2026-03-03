@@ -2,13 +2,14 @@ package GUI.model;
 
 import BUS.PublisherBUS;
 import DTO.PublisherDTO;
+import DTO.ValidationResult;
 import GUI.dialog.group.PublisherDialog;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.util.ArrayList;
 
 public class PublisherPanel extends JPanel implements FeatureControllerInterface {
     private PublisherBUS publisherBUS;
@@ -28,8 +29,7 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
 
         String[] columns = { "ID", "Tên NXB", "Số điện thoại", "Trạng thái" };
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int row, int col) {
                 return false;
             }
         };
@@ -46,11 +46,12 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
 
     public void loadDataToTable() {
         tableModel.setRowCount(0);
-        ArrayList<PublisherDTO> list = publisherBUS.getAll();
-        for (PublisherDTO pub : list) {
+        for (PublisherDTO pub : publisherBUS.getAll()) {
             tableModel.addRow(new Object[] { pub.getId(), pub.getName(), pub.getPhone(), pub.getStatus() });
         }
     }
+
+    // ===================== ACTIONS =====================
 
     @Override
     public void onAdd() {
@@ -59,24 +60,51 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
 
     @Override
     public void onEdit() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
+        PublisherDTO selected = getSelected();
+        if (selected == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn NXB cần sửa!");
             return;
         }
-        int id = (int) table.getValueAt(row, 0);
-        // Giả sử BUS có hàm getById
-        PublisherDTO pub = publisherBUS.getById(id);
-        // Tạm thời lấy từ danh sách hiện tại hoặc gọi DB
-        openDialog(pub); // Bạn nên bổ sung hàm getById vào BUS
+        openDialog(selected);
     }
 
     @Override
     public void onDelete() {
+        PublisherDTO selected = getSelected();
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn NXB cần xóa!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Xác nhận xóa NXB \"" + selected.getName() + "\"?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
+
+        ValidationResult vr = publisherBUS.delete(selected.getId());
+        if (vr.isValid()) {
+            JOptionPane.showMessageDialog(this, "Xóa thành công!");
+            loadDataToTable();
+        } else {
+            JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
     public void onDetail() {
+        onEdit();
+    }
+
+    @Override
+    public void onSearch(String text) {
+        rowSorter.setRowFilter(text.trim().isEmpty() ? null : RowFilter.regexFilter("(?i)" + text, 1));
+    }
+
+    @Override
+    public void onRefresh() {
+        publisherBUS.loadDataFromDB();
+        loadDataToTable();
+        JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu!");
     }
 
     @Override
@@ -87,36 +115,31 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
     public void onImportExcel() {
     }
 
+    @Override
+    public boolean[] getButtonConfig() {
+        DTO.AccountDTO currentAcc = config.SessionManager.getCurrentAccount();
+        if (currentAcc == null)
+            return new boolean[] { false, false, false, false, false, false };
+        return new boolean[] { true, true, true, true, false, false };
+    }
+
+    // ===================== UTILS =====================
+
+    private PublisherDTO getSelected() {
+        int row = table.getSelectedRow();
+        if (row < 0)
+            return null;
+        int id = (int) table.getValueAt(row, 0);
+        return publisherBUS.getById(id);
+    }
+
     private void openDialog(PublisherDTO pub) {
         Window parent = SwingUtilities.getWindowAncestor(this);
-        if (parent instanceof Frame) {
-            PublisherDialog dialog = new PublisherDialog((Frame) parent, pub);
-            dialog.setVisible(true);
-            if (dialog.isSuccess())
-                loadDataToTable();
-        }
-    }
-
-    @Override
-    public void onSearch(String text) {
-        rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text, 1));
-    }
-
-    @Override
-    public void onRefresh() {
-        publisherBUS.loadData();
-        loadDataToTable();
-    }
-
-   @Override
-    public boolean[] getButtonConfig() {
-        // 1. Lấy thông tin người đang đăng nhập
-        DTO.AccountDTO currentAcc = config.SessionManager.getCurrentAccount();
-        if (currentAcc == null) {
-            return new boolean[]{false, false, false, false, false, false}; // Khóa hết nếu chưa đăng nhập
-        }
-        
-        
-        return new boolean[]{true, true, true, true, false, false}; 
+        if (!(parent instanceof Frame))
+            return;
+        PublisherDialog dialog = new PublisherDialog((Frame) parent, pub);
+        dialog.setVisible(true);
+        if (dialog.isSuccess())
+            loadDataToTable();
     }
 }

@@ -2,87 +2,123 @@ package BUS;
 
 import DAO.AuthorDAO;
 import DTO.AuthorDTO;
-import java.sql.SQLException;
+import DTO.ValidationResult;
+
 import java.util.ArrayList;
 
 public class AuthorBUS {
-    private AuthorDAO authorDAO;
-    private ArrayList<AuthorDTO> authorList;
+    private AuthorDAO authorDAO = new AuthorDAO();
+    private static ArrayList<AuthorDTO> listAuthor = new ArrayList<>();
 
     public AuthorBUS() {
-        this.authorDAO = new AuthorDAO();
-        loadData();
+        if (listAuthor.isEmpty()) {
+            loadDataFromDB();
+        }
     }
 
-    public void loadData() {
+    public boolean loadDataFromDB() {
         try {
-            this.authorList = authorDAO.selectAll();
-        } catch (SQLException e) {
+            listAuthor = authorDAO.selectAll();
+            return listAuthor != null;
+        } catch (Exception e) {
             e.printStackTrace();
-            this.authorList = new ArrayList<>();
+            return false;
         }
     }
 
     public ArrayList<AuthorDTO> getAll() {
-        if (authorList == null)
-            loadData();
-        return this.authorList;
+        return listAuthor;
     }
 
     public AuthorDTO getById(int id) {
-        for (AuthorDTO a : authorList) {
-            if (a.getAuthorId() == id)
-                return a;
+        try {
+            return authorDAO.selectById(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
-    // --- XỬ LÝ NGHIỆP VỤ ---
+    // ===================== THÊM MỚI =====================
 
-    public boolean addAuthor(AuthorDTO author) {
+    public ValidationResult addAuthor(AuthorDTO author) {
+        ValidationResult vr = Validator.validateAuthor(author);
+        if (!vr.isValid())
+            return vr;
+
         try {
             if (authorDAO.isNameExists(author.getAuthorName())) {
-                System.out.println("Tên tác giả đã tồn tại!");
-                return false;
+                vr.addError("authorName", "Tên tác giả \"" + author.getAuthorName() + "\" đã tồn tại");
+                return vr;
             }
-            if (authorDAO.insert(author)) {
-                loadData(); // Reload lại list để cập nhật ID mới nhất và thứ tự
-                return true;
+
+            boolean inserted = authorDAO.insert(author);
+            if (inserted) {
+                listAuthor.add(0, author);
+                return vr; // isValid() == true
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi thêm tác giả!");
+        return vr;
     }
 
-    public boolean updateAuthor(AuthorDTO author) {
-        try {
-            // Kiểm tra trùng tên nếu tên mới khác tên cũ (Optional: tùy logic nghiệp vụ)
-            // Ở đây tạm bỏ qua check trùng khi update để đơn giản
+    // ===================== CẬP NHẬT =====================
 
-            int result = authorDAO.update(author);
-            if (result > 0) {
-                loadData(); // Reload cache
-                return true;
+    public ValidationResult updateAuthor(AuthorDTO author) {
+        ValidationResult vr = Validator.validateAuthor(author);
+        if (!vr.isValid())
+            return vr;
+
+        // Kiểm tra trùng tên (trừ chính nó)
+        boolean isDuplicate = listAuthor.stream()
+                .anyMatch(a -> a.getAuthorName().equalsIgnoreCase(author.getAuthorName())
+                        && a.getAuthorId() != author.getAuthorId());
+        if (isDuplicate) {
+            vr.addError("authorName", "Tên tác giả \"" + author.getAuthorName() + "\" đã tồn tại");
+            return vr;
+        }
+
+        try {
+            boolean updated = authorDAO.update(author);
+            if (updated) {
+                for (int i = 0; i < listAuthor.size(); i++) {
+                    if (listAuthor.get(i).getAuthorId() == author.getAuthorId()) {
+                        listAuthor.set(i, author);
+                        break;
+                    }
+                }
+                return vr; // isValid() == true
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi cập nhật tác giả!");
+        return vr;
     }
 
-    public boolean deleteAuthor(int id) {
+    // ===================== XÓA =====================
+
+    public ValidationResult deleteAuthor(int authorId) {
+        ValidationResult vr = new ValidationResult();
         try {
-            int result = authorDAO.delete(id);
-            if (result > 0) {
-                loadData(); // Reload cache
-                return true;
+            boolean deleted = authorDAO.delete(authorId);
+            if (deleted) {
+                listAuthor.removeIf(a -> a.getAuthorId() == authorId);
+                return vr; // isValid() == true
             }
-        } catch (SQLException e) {
-            // Có thể lỗi do ràng buộc khóa ngoại (đang có sách thuộc tác giả này)
-            System.err.println("Không thể xóa tác giả ID " + id + " vì ràng buộc dữ liệu.");
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("foreign key")) {
+                vr.addError("system", "Không thể xóa! Tác giả này đang liên kết với một hoặc nhiều sách.");
+                return vr;
+            }
             e.printStackTrace();
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi xóa tác giả!");
+        return vr;
     }
 }

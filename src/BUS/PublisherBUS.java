@@ -2,6 +2,7 @@ package BUS;
 
 import DAO.PublisherDAO;
 import DTO.PublisherDTO;
+import DTO.ValidationResult;
 import java.util.ArrayList;
 
 public class PublisherBUS {
@@ -10,11 +11,13 @@ public class PublisherBUS {
 
     public PublisherBUS() {
         this.publisherDAO = new PublisherDAO();
-        loadData();
+        loadDataFromDB();
     }
 
-    public void loadData() {
+    public void loadDataFromDB() {
         this.publisherList = publisherDAO.selectAll();
+        if (this.publisherList == null)
+            this.publisherList = new ArrayList<>();
     }
 
     public ArrayList<PublisherDTO> getAll() {
@@ -22,50 +25,74 @@ public class PublisherBUS {
     }
 
     public PublisherDTO getById(int id) {
-        for (PublisherDTO pub : publisherList) {
-            if (pub.getId() == id)
-                return pub;
-        }
-        return null;
+        return publisherList.stream().filter(p -> p.getId() == id).findFirst().orElse(null);
     }
 
-    public boolean add(PublisherDTO pub) {
-        // Logic kiểm tra dữ liệu cơ bản
-        if (pub.getName() == null || pub.getName().trim().isEmpty())
-            return false;
+    public String getNameById(int id) {
+        PublisherDTO pub = getById(id);
+        return pub != null ? pub.getName() : "";
+    }
+
+    // ===================== THÊM MỚI =====================
+
+    public ValidationResult add(PublisherDTO pub) {
+        ValidationResult vr = Validator.validatePublisher(pub);
+        if (!vr.isValid())
+            return vr;
 
         int id = publisherDAO.insert(pub);
         if (id > 0) {
-            loadData(); // Cập nhật lại danh sách cache
-            return true;
+            loadDataFromDB();
+            return vr; // isValid() == true
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi thêm nhà xuất bản!");
+        return vr;
     }
 
-    public boolean update(PublisherDTO pub) {
+    // ===================== CẬP NHẬT =====================
+
+    public ValidationResult update(PublisherDTO pub) {
+        ValidationResult vr = Validator.validatePublisher(pub);
+        if (!vr.isValid())
+            return vr;
+
         if (publisherDAO.update(pub) > 0) {
-            loadData();
-            return true;
+            loadDataFromDB();
+            return vr; // isValid() == true
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi cập nhật nhà xuất bản!");
+        return vr;
     }
 
-    public boolean delete(int id) {
-        if (publisherDAO.delete(id) > 0) {
-            loadData();
-            return true;
+    // ===================== XÓA =====================
+
+    public ValidationResult delete(int id) {
+        ValidationResult vr = new ValidationResult();
+        try {
+            if (publisherDAO.delete(id) > 0) {
+                loadDataFromDB();
+                return vr; // isValid() == true
+            }
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("foreign key")) {
+                vr.addError("system", "Không thể xóa! NXB này đang được sử dụng bởi một hoặc nhiều sách.");
+                return vr;
+            }
+            e.printStackTrace();
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi xóa nhà xuất bản!");
+        return vr;
     }
 
     public ArrayList<PublisherDTO> search(String keyword) {
         ArrayList<PublisherDTO> result = new ArrayList<>();
-        keyword = keyword.toLowerCase();
+        String key = keyword.toLowerCase();
         for (PublisherDTO pub : publisherList) {
-            if (pub.getName().toLowerCase().contains(keyword) ||
-                    pub.getPhone().contains(keyword)) {
+            if (pub.getName().toLowerCase().contains(key) || pub.getPhone().contains(key))
                 result.add(pub);
-            }
         }
         return result;
     }

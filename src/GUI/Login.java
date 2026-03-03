@@ -11,11 +11,13 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import GUI.components.RoundedBorderButton;
 import GUI.util.ThemeColor;
+import GUI.util.IconHelper;
 
 public class Login extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
+    private JToggleButton btnShowHide;
     private RoundedBorderButton btnLogin;
 
     // Ảnh bên trái
@@ -99,11 +101,37 @@ public class Login extends JFrame {
         gbc.insets = new Insets(0, 40, 5, 40);
         rightPanel.add(lblPass, gbc);
 
+        JPanel passPanel = new JPanel(new BorderLayout());
+        passPanel.setPreferredSize(new Dimension(0, 40)); // Chiều cao cố định cho khung
+
         txtPassword = new JPasswordField();
+        txtPassword.setFont(new Font("Segoe UI", Font.PLAIN, 14));// Padding trái 10px, phải 0
+        txtPassword.setBackground(Color.WHITE);
         styleTextField(txtPassword);
+
+        btnShowHide = new JToggleButton();
+        IconHelper.setIcon(btnShowHide, "GUI/icon/eye2.svg", 20, 20);
+        btnShowHide.setContentAreaFilled(false); // Xóa nền
+        btnShowHide.setFocusPainted(false); // Xóa viền focus
+        btnShowHide.setBorderPainted(false); // Xóa viền nút
+        btnShowHide.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Đổi con trỏ chuột
+
+        // Sự kiện click vào mắt
+        btnShowHide.addActionListener(e -> {
+            if (btnShowHide.isSelected()) {
+                txtPassword.setEchoChar((char) 0); // Hiện mật khẩu (ký tự rỗng)
+            } else {
+                txtPassword.setEchoChar('•'); // Ẩn mật khẩu (dấu chấm tròn)
+            }
+        });
+
+        // Đặt layout cho JPasswordField để nhét nút vào bên trong
+        passPanel.add(txtPassword, BorderLayout.CENTER);
+        passPanel.add(btnShowHide, BorderLayout.EAST);
+
         gbc.gridy = 6;
         gbc.insets = new Insets(0, 40, 30, 40);
-        rightPanel.add(txtPassword, gbc);
+        rightPanel.add(passPanel, gbc);
 
         // Button
         btnLogin = new RoundedBorderButton("LOGIN", ThemeColor.ACCENT_COLOR, 30);

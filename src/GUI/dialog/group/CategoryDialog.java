@@ -2,7 +2,9 @@ package GUI.dialog.group;
 
 import BUS.CategoryBUS;
 import DTO.CategoryDTO;
+import DTO.ValidationResult;
 import GUI.util.ThemeColor;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -29,6 +31,7 @@ public class CategoryDialog extends JDialog {
 
     private void initComponents() {
         setLayout(new BorderLayout());
+
         JPanel body = new JPanel(new GridLayout(3, 2, 10, 10));
         body.setBorder(new EmptyBorder(20, 20, 20, 20));
         body.setBackground(Color.WHITE);
@@ -58,35 +61,47 @@ public class CategoryDialog extends JDialog {
     }
 
     private void handleSave() {
+        String name = txtName.getText().trim();
+        String status = cbStatus.getSelectedItem().toString();
+        int order = parseOrder(txtOrder.getText().trim());
+
+        CategoryDTO dto = (category == null)
+                ? new CategoryDTO(0, name, order, status)
+                : new CategoryDTO(category.getId(), name, order, status);
+
+        ValidationResult vr = (category == null)
+                ? categoryBUS.add(dto)
+                : categoryBUS.update(dto);
+
+        if (vr.isValid()) {
+            isSuccess = true;
+            JOptionPane.showMessageDialog(this, category == null ? "Thêm thành công!" : "Cập nhật thành công!");
+            dispose();
+        } else {
+            resetBorders();
+            if (vr.getError("name") != null)
+                setError(txtName);
+            if (vr.getError("displayOrder") != null)
+                setError(txtOrder);
+            JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void setError(JTextField field) {
+        field.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+    }
+
+    private void resetBorders() {
+        javax.swing.border.Border def = UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border");
+        txtName.setBorder(def);
+        txtOrder.setBorder(def);
+    }
+
+    private int parseOrder(String text) {
         try {
-            String name = txtName.getText().trim();
-            int order = Integer.parseInt(txtOrder.getText().trim());
-            String status = cbStatus.getSelectedItem().toString();
-
-            if (name.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Tên không được để trống!");
-                return;
-            }
-
-            if (category == null) {
-                CategoryDTO newCat = new CategoryDTO(0, name, order, status);
-                if (categoryBUS.add(newCat)) {
-                    isSuccess = true;
-                    dispose();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Tên thể loại đã tồn tại!");
-                }
-            } else {
-                category.setName(name);
-                category.setDisplayOrder(order);
-                category.setStatus(status);
-                if (categoryBUS.update(category)) {
-                    isSuccess = true;
-                    dispose();
-                }
-            }
+            return Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Thứ tự phải là số!");
+            return -1;
         }
     }
 

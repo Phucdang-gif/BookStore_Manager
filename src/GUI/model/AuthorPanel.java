@@ -2,19 +2,17 @@ package GUI.model;
 
 import BUS.AuthorBUS;
 import DTO.AuthorDTO;
+import DTO.ValidationResult;
 import GUI.dialog.group.AuthorDialog;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
-
 import java.awt.*;
-import java.util.ArrayList;
 
 public class AuthorPanel extends JPanel implements FeatureControllerInterface {
-
-    private AuthorBUS authorBUS; // Tái sử dụng lớp xử lý nghiệp vụ
+    private AuthorBUS authorBUS;
     private JTable table;
     private DefaultTableModel tableModel;
     private TableRowSorter<DefaultTableModel> rowSorter;
@@ -22,27 +20,22 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
     public AuthorPanel(AuthorBUS authorBUS) {
         this.authorBUS = authorBUS;
         initComponents();
-        loadDataToTable(); // Nạp dữ liệu vào bảng ngay khi mở panel
+        loadDataToTable();
     }
 
     private void initComponents() {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
-        // --- 2. TABLE DỮ LIỆU ---
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setOpaque(false);
-        tablePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         String[] columns = { "ID Tác giả", "Tên tác giả" };
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Chỉ cho xem, không cho sửa trực tiếp trên ô
+            public boolean isCellEditable(int row, int col) {
+                return false;
             }
         };
 
         table = new JTable(tableModel);
-        table.setRowHeight(35); // Độ cao dòng cho thoáng
+        table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -50,66 +43,57 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
         rowSorter = new TableRowSorter<>(tableModel);
         table.setRowSorter(rowSorter);
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        tablePanel.add(scrollPane, BorderLayout.CENTER);
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setOpaque(false);
+        tablePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
         add(tablePanel, BorderLayout.CENTER);
     }
 
-    /**
-     * Đổ dữ liệu từ danh sách cache của BUS vào bảng
-     */
     public void loadDataToTable() {
         tableModel.setRowCount(0);
-        ArrayList<AuthorDTO> list = authorBUS.getAll(); // Lấy list từ BUS
-        for (AuthorDTO author : list) {
-            tableModel.addRow(new Object[] {
-                    author.getAuthorId(),
-                    author.getAuthorName()
-            });
-        }
+        for (AuthorDTO a : authorBUS.getAll())
+            tableModel.addRow(new Object[] { a.getAuthorId(), a.getAuthorName() });
     }
+
+    // ===================== ACTIONS =====================
 
     @Override
     public void onAdd() {
-        openDialog(null); // Null hiểu là thêm mới
+        openDialog(null);
     }
 
     @Override
     public void onEdit() {
-        int row = table.getSelectedRow();
-        if (row == -1) {
+        AuthorDTO selected = getSelectedAuthor();
+        if (selected == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn tác giả cần sửa!");
             return;
         }
-        // Lấy ID từ dòng đã chọn (cột 0)
-        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
-
-        // Tìm DTO tương ứng
-        AuthorDTO selected = null;
-        for (AuthorDTO a : authorBUS.getAll()) {
-            if (a.getAuthorId() == id) {
-                selected = a;
-                break;
-            }
-        }
-
-        if (selected != null) {
-            openDialog(selected);
-        }
+        openDialog(selected);
     }
 
     @Override
     public void onDelete() {
-        int row = table.getSelectedRow();
-        if (row == -1) {
+        AuthorDTO selected = getSelectedAuthor();
+        if (selected == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn tác giả để xóa!");
             return;
         }
 
-        JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc chắn muốn xóa tác giả này?",
-                "Xác nhận",
-                JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa \"" + selected.getAuthorName() + "\"?",
+                "Xác nhận", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION)
+            return;
+
+        ValidationResult vr = authorBUS.deleteAuthor(selected.getAuthorId());
+        if (vr.isValid()) {
+            JOptionPane.showMessageDialog(this, "Xóa thành công!");
+            loadDataToTable();
+        } else {
+            JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
@@ -119,18 +103,13 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onSearch(String text) {
-        if (text.trim().isEmpty()) {
-            rowSorter.setRowFilter(null);
-        } else {
-            // Tìm kiếm không phân biệt hoa thường trên cột Tên (cột 1)
-            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text, 1));
-        }
+        rowSorter.setRowFilter(text.trim().isEmpty() ? null : RowFilter.regexFilter("(?i)" + text, 1));
     }
 
     @Override
     public void onRefresh() {
-        authorBUS.loadData(); // Load lại từ DB
-        loadDataToTable(); // Vẽ lại bảng
+        authorBUS.loadDataFromDB();
+        loadDataToTable();
         JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu!");
     }
 
@@ -149,17 +128,23 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
         return new boolean[] { true, true, true, false, false, false };
     }
 
+    // ===================== UTILS =====================
+
+    private AuthorDTO getSelectedAuthor() {
+        int row = table.getSelectedRow();
+        if (row == -1)
+            return null;
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+        return authorBUS.getAll().stream().filter(a -> a.getAuthorId() == id).findFirst().orElse(null);
+    }
+
     private void openDialog(AuthorDTO author) {
         Window parent = SwingUtilities.getWindowAncestor(this);
-        // Kiểm tra xem parent có phải là Frame không để tránh lỗi cast
-        if (parent instanceof Frame) {
-            AuthorDialog dialog = new AuthorDialog((Frame) parent, author);
-            dialog.setVisible(true);
-
-            if (dialog.isSuccess()) {
-                authorBUS.loadData();
-                loadDataToTable();
-            }
-        }
+        if (!(parent instanceof Frame))
+            return;
+        AuthorDialog dialog = new AuthorDialog((Frame) parent, author);
+        dialog.setVisible(true);
+        if (dialog.isSuccess())
+            loadDataToTable();
     }
 }

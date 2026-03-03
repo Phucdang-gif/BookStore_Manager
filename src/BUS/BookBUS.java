@@ -4,6 +4,7 @@ import DAO.BookDAO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
 import DTO.PublisherDTO;
+import DTO.ValidationResult;
 import GUI.util.ExcelHelper;
 
 import java.io.File;
@@ -24,14 +25,13 @@ public class BookBUS {
     public boolean loadDataFromDB() {
         try {
             listBook = bookDAO.selectAll();
-            // Nếu list trả về null (do lỗi kết nối bên DAO) thì coi như thất bại
             if (listBook == null)
                 return false;
             refreshAllStatuses();
-            return true; // Thành công
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; // Có lỗi xảy ra
+            return false;
         }
     }
 
@@ -39,7 +39,6 @@ public class BookBUS {
         return listBook;
     }
 
-    // Lấy chi tiết sách (Gọi DAO để lấy mới nhất kèm tác giả)
     public BookDTO getBookDetails(int bookId) {
         try {
             return bookDAO.selectById(bookId);
@@ -49,28 +48,115 @@ public class BookBUS {
         }
     }
 
-    // Thêm mới (add)
-    public boolean addBook(BookDTO newBook) {
+    public BookDTO getByIsbn(String isbn) {
         try {
-            int newBookId = bookDAO.insertBook(newBook);
-            if (newBookId > 0) {
-                newBook.setBookId(newBookId);
+            return bookDAO.selectByIsbn(isbn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // ===================== THÊM MỚI =====================
+
+    /**
+     * Trả về ValidationResult.
+     * - isValid() == true → thành công
+     * - isValid() == false → có lỗi, dùng getError("field") để highlight GUI
+     */
+    public ValidationResult addBook(BookDTO newBook) {
+        ValidationResult vr = Validator.validateBook(newBook);
+        if (!vr.isValid())
+            return vr;
+
+        BookDTO existing = getByIsbn(newBook.getIsbn());
+        if (existing != null) {
+            vr.addError("isbn", "Mã ISBN đã tồn tại (Sách: " + existing.getBookTitle() + ")");
+            return vr;
+        }
+
+        try {
+            int newId = bookDAO.insertBook(newBook);
+            if (newId > 0) {
+                newBook.setBookId(newId);
                 if (newBook.getAuthors() != null && !newBook.getAuthors().isEmpty()) {
-                    bookDAO.insertBookAuthors(newBookId, newBook.getAuthors());
+                    bookDAO.insertBookAuthors(newId, newBook.getAuthors());
                 }
                 listBook.add(newBook);
-                return true;
+                return vr; // isValid() == true
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+
+        vr.addError("system", "Lỗi hệ thống khi thêm sách!");
+        return vr;
+    }
+
+    // ===================== CẬP NHẬT =====================
+
+    public ValidationResult updateBook(BookDTO book) {
+        ValidationResult vr = Validator.validateBook(book);
+        if (!vr.isValid())
+            return vr;
+
+        BookDTO existing = getByIsbn(book.getIsbn());
+        if (existing != null && existing.getBookId() != book.getBookId()) {
+            vr.addError("isbn", "Mã ISBN đã tồn tại (Sách: " + existing.getBookTitle() + ")");
+            return vr;
+        }
+
+        try {
+            boolean updated = bookDAO.updateBook(book);
+            if (updated) {
+                for (int i = 0; i < listBook.size(); i++) {
+                    if (listBook.get(i).getBookId() == book.getBookId()) {
+                        listBook.set(i, book);
+                        break;
+                    }
+                }
+                return vr; // isValid() == true
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        vr.addError("system", "Lỗi hệ thống khi cập nhật sách!");
+        return vr;
+    }
+
+    // ===================== XÓA =====================
+
+    public ValidationResult deleteBook(int bookId) {
+        ValidationResult vr = new ValidationResult();
+        try {
+            boolean deleted = bookDAO.delete(bookId);
+            if (deleted) {
+                listBook.removeIf(b -> b.getBookId() == bookId);
+                return vr; // isValid() == true
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        vr.addError("system", "Lỗi hệ thống khi xóa sách!");
+        return vr;
+    }
+
+    // ===================== TÌM KIẾM / LỌC =====================
+
+    public ArrayList<BookDTO> searchBooks(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty())
+            return getAll();
+        String key = keyword.toLowerCase();
+        return (ArrayList<BookDTO>) listBook.stream()
+                .filter(b -> b.getBookTitle().toLowerCase().contains(key) || b.getIsbn().contains(key))
+                .collect(Collectors.toList());
     }
 
     public ArrayList<BookDTO> getBooksByCategory(int catId) {
         try {
             if (catId == 0)
-                return getAll(); // 0 là tất cả
+                return getAll();
             return bookDAO.selectByCategoryId(catId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,67 +186,21 @@ public class BookBUS {
         }
     }
 
-    // Hàm tìm kiếm chung (Search Bar)
-    public ArrayList<BookDTO> searchBooks(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty())
-            return getAll();
-        String key = keyword.toLowerCase();
-
-        return (ArrayList<BookDTO>) listBook.stream()
-                .filter(b -> b.getBookTitle().toLowerCase().contains(key) ||
-                        b.getIsbn().contains(key))
-                .collect(Collectors.toList());
-    }
-
-    // CẬP NHẬT (Update)
-    public boolean updateBook(BookDTO book) {
-        try {
-            boolean isUpdated = bookDAO.updateBook(book);
-            if (isUpdated) {
-                // Cập nhật lại trong danh sách Cache (listBook) để bảng hiển thị đúng ngay lập
-                // tức
-                for (int i = 0; i < listBook.size(); i++) {
-                    if (listBook.get(i).getBookId() == book.getBookId()) {
-                        listBook.set(i, book);
-                        break;
-                    }
-                }
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean deleteBook(int bookId) {
-        try {
-            return bookDAO.delete(bookId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    // Trong file BUS/BookBUS.java
+    // ===================== IMPORT EXCEL =====================
 
     public String importBooksFromExcel(File file) {
-        // 1. Đọc file (Gọi ExcelHelper ở đây hoặc truyền List vào cũng được)
         List<BookDTO> listImport = ExcelHelper.importBooksFromExcel(file);
         if (listImport.isEmpty())
             return "File rỗng hoặc lỗi định dạng!";
 
-        // 2. Chuẩn bị dữ liệu tra cứu
         PublisherBUS pubBUS = new PublisherBUS();
         CategoryBUS catBUS = new CategoryBUS();
         List<PublisherDTO> listPub = pubBUS.getAll();
         List<CategoryDTO> listCat = catBUS.getAll();
 
-        int countSuccess = 0;
-        int countFail = 0;
+        int countSuccess = 0, countFail = 0;
 
-        // 3. Xử lý logic
         for (BookDTO excelBook : listImport) {
-            // --- Map ID từ Tên ---
             for (PublisherDTO p : listPub) {
                 if (p.getName().equalsIgnoreCase(excelBook.getPublisherName())) {
                     excelBook.setPublisherId(p.getId());
@@ -174,15 +214,13 @@ public class BookBUS {
                 }
             }
 
-            // --- Merge & Save ---
-            boolean isSuccess = false;
+            ValidationResult result;
             BookDTO currentDbBook = null;
             if (excelBook.getBookId() > 0) {
-                currentDbBook = getBookDetails(excelBook.getBookId()); // Gọi hàm có sẵn của BUS
+                currentDbBook = getBookDetails(excelBook.getBookId());
             }
 
             if (currentDbBook != null) {
-                // Update & Merge
                 currentDbBook.setIsbn(excelBook.getIsbn());
                 currentDbBook.setBookTitle(excelBook.getBookTitle());
                 currentDbBook.setAuthorNames(excelBook.getAuthorNames());
@@ -196,14 +234,13 @@ public class BookBUS {
                 if (excelBook.getImage() != null && !excelBook.getImage().isEmpty()) {
                     currentDbBook.setImage(excelBook.getImage());
                 }
-                isSuccess = updateBook(currentDbBook); // Gọi hàm update của BUS
+                result = updateBook(currentDbBook);
             } else {
-                // Insert
                 excelBook.setBookId(0);
-                isSuccess = addBook(excelBook); // Gọi hàm add của BUS
+                result = addBook(excelBook);
             }
 
-            if (isSuccess)
+            if (result.isValid())
                 countSuccess++;
             else
                 countFail++;
@@ -212,47 +249,31 @@ public class BookBUS {
         return "Kết quả nhập:\n- Thành công: " + countSuccess + "\n- Thất bại: " + countFail;
     }
 
-    /**
-     * Hàm 1: Kiểm tra và cập nhật trạng thái cho 1 cuốn sách cụ thể.
-     * Logic:
-     * - Nếu Tồn kho = 0 -> Chuyển thành "Hết hàng" (out_of_stock).
-     * - Nếu Tồn kho > 0 và đang là "Hết hàng" -> Chuyển thành "Còn hàng"
-     * (in_stock).
-     * - Giữ nguyên nếu đang là "Ngừng kinh doanh" (discontinued).
-     */
+    // ===================== QUẢN LÝ TRẠNG THÁI =====================
+
     public void checkAndUpdateStatus(BookDTO book) {
         String oldStatus = book.getStatus();
         String newStatus = oldStatus;
 
-        // Logic kiểm tra tồn kho
         if (book.getStockQuantity() <= 0) {
-            if (!"discontinued".equals(oldStatus)) {
+            if (!"discontinued".equals(oldStatus))
                 newStatus = "out_of_stock";
-            }
         } else {
-            if ("out_of_stock".equals(oldStatus) || oldStatus == null) {
+            if ("out_of_stock".equals(oldStatus) || oldStatus == null)
                 newStatus = "in_stock";
-            }
         }
 
-        // Nếu có thay đổi trạng thái
         if (newStatus != null && !newStatus.equals(oldStatus)) {
             try {
-                // --- SỬA ĐOẠN NÀY ---
-                // Thay vì gọi updateBook (nguy hiểm), hãy gọi updateStatus (an toàn)
                 boolean success = bookDAO.updateStatus(book.getBookId(), newStatus);
-
                 if (success) {
                     book.setStatus(newStatus);
-
-                    // Cập nhật lại Cache
                     for (BookDTO b : listBook) {
                         if (b.getBookId() == book.getBookId()) {
                             b.setStatus(newStatus);
                             break;
                         }
                     }
-                    System.out.println("Đã cập nhật trạng thái sách ID " + book.getBookId() + " -> " + newStatus);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -260,34 +281,15 @@ public class BookBUS {
         }
     }
 
-    /**
-     * Hàm 2: Quét toàn bộ kho sách để sửa lỗi trạng thái (Dùng sau khi Import hoặc
-     * nút "Làm mới")
-     */
     public void refreshAllStatuses() {
         if (listBook == null)
             loadDataFromDB();
-
-        int countFixed = 0;
         for (BookDTO book : listBook) {
             String oldStatus = book.getStatus();
             checkAndUpdateStatus(book);
             if (!book.getStatus().equals(oldStatus)) {
-                countFixed++;
+                System.out.println("Auto Fix: Sách ID " + book.getBookId() + " -> " + book.getStatus());
             }
-        }
-        if (countFixed > 0) {
-            System.out.println("Auto Fix completed " + countFixed + " books.");
-        }
-    }
-
-    public BookDTO getByIsbn(String isbn) {
-        try {
-            // Gọi xuống DAO để tìm sách
-            return bookDAO.selectByIsbn(isbn);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 }
