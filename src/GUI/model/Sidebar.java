@@ -44,17 +44,15 @@ public class Sidebar extends JPanel {
     private void initComponents() {
         // --- ĐỔI TÊN ĐỘNG THEO TÀI KHOẢN ĐĂNG NHẬP ---
         DTO.AccountDTO currentUser = config.SessionManager.getCurrentAccount();
-        // 1. Lấy tên đầy đủ của nhân viên (Thay vì Username)
         String userFullName = accountBUS.getFullNameByEmployeeId(currentUser.getEmployeeId());
         if (userFullName == null || userFullName.equals("Không xác định")) {
             userFullName = currentUser.getUsername(); // Fallback nếu không tìm thấy tên
         }
 
-        // 2. Lấy tên nhóm quyền (Thay vì hiển thị tên nhân viên ở dòng dưới)
         String roleName = "Chưa phân quyền";
         DTO.PermissionGroupDTO permGroup = accountBUS.getPermissionGroupDTO(currentUser.getPermissionGroupId());
         if (permGroup != null) {
-            roleName = permGroup.getGroupName(); // Ví dụ: "Quản lý", "Nhân viên kho"...
+            roleName = permGroup.getGroupName();
         }
 
         JPanel pnlHeader = new JPanel(new BorderLayout());
@@ -192,30 +190,6 @@ public class Sidebar extends JPanel {
         });
 
         return btn;
-    }
-
-    // Hàm xử lý nghiệp vụ đăng xuất
-    private void processLogout() {
-        // 1. Hỏi lại cho chắc chắn
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
-                "Xác nhận đăng xuất",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            // 2. Xóa sạch dữ liệu tài khoản và quyền trên RAM
-            config.SessionManager.logout();
-
-            // 3. Đóng cửa sổ MainFrame hiện tại
-            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            if (parentFrame != null) {
-                parentFrame.dispose();
-            }
-
-            // 4. Mở lại màn hình Login
-            SwingUtilities.invokeLater(() -> new GUI.Login().setVisible(true));
-        }
     }
 
     private void setActiveButton(JButton btn) {
