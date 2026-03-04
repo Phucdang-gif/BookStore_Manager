@@ -163,7 +163,7 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
     @Override
     public void onRefresh() {
         loadDataToTable(accountBUS.getAll());
-        JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu");
+        
     }
 
     @Override
