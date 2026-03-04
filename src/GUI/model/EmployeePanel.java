@@ -26,15 +26,18 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] columns = {"Mã NV", "Họ Tên", "Giới Tính", "Số Điện Thoại", "Chức Vụ", "Lương", "Trạng Thái"};
+        String[] columns = { "Mã NV", "Họ Tên", "Giới Tính", "Số Điện Thoại", "Chức Vụ", "Lương", "Trạng Thái" };
         tableModel = new DefaultTableModel(columns, 0) {
-            @Override public boolean isCellEditable(int row, int column) { return false; }
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         table = new JTable(tableModel);
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(Color.WHITE);
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -42,14 +45,15 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
     }
 
     private void loadDataToTable(ArrayList<EmployeeDTO> list) {
-        tableModel.setRowCount(0); 
+        tableModel.setRowCount(0);
         if (list != null) {
             for (EmployeeDTO emp : list) {
                 String genderStr = emp.getGender().equals("male") ? "Nam" : "Nữ";
-                String statusStr = (emp.getStatus() != null && emp.getStatus().equals("active")) ? "Đang làm" : "Đã nghỉ";
-                tableModel.addRow(new Object[]{
-                    emp.getEmployeeId(), emp.getFullName(), genderStr, 
-                    emp.getPhone(), emp.getPosition(), df.format(emp.getSalary()), statusStr
+                String statusStr = (emp.getStatus() != null && emp.getStatus().equals("active")) ? "Đang làm"
+                        : "Đã nghỉ";
+                tableModel.addRow(new Object[] {
+                        emp.getEmployeeId(), emp.getFullName(), genderStr,
+                        emp.getPhone(), emp.getPosition(), df.format(emp.getSalary()), statusStr
                 });
             }
         }
@@ -65,13 +69,15 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
     @Override
     public void onEdit() {
         int row = table.getSelectedRow();
-        if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần sửa!"); return;
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần sửa!");
+            return;
         }
         int id = (int) table.getValueAt(row, 0);
-        EmployeeDTO selectedEmp = employeeBUS.getAll().stream().filter(e -> e.getEmployeeId() == id).findFirst().orElse(null);
-        
-        if(selectedEmp != null) {
+        EmployeeDTO selectedEmp = employeeBUS.getAll().stream().filter(e -> e.getEmployeeId() == id).findFirst()
+                .orElse(null);
+
+        if (selectedEmp != null) {
             EmployeeDialog dialog = new EmployeeDialog(null, true, "update", selectedEmp, employeeBUS);
             dialog.setVisible(true);
             onRefresh();
@@ -81,27 +87,60 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
     @Override
     public void onDelete() {
         int row = table.getSelectedRow();
-        if(row == -1) { JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để cho nghỉ việc!"); return; }
-        
-        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên này nghỉ việc?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để cho nghỉ việc!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên này nghỉ việc?", "Cảnh báo",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             int id = (int) table.getValueAt(row, 0);
-            if(employeeBUS.deleteEmployee(id)) {
+            if (employeeBUS.deleteEmployee(id)) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
                 onRefresh();
             }
         }
     }
 
-    @Override public void onDetail() {}
-    @Override public void onSearch(String text) { loadDataToTable(employeeBUS.search(text)); }
-    @Override public void onRefresh() { loadDataToTable(employeeBUS.getAll()); }
-    @Override public void onExportExcel() {}
-    @Override public void onImportExcel() {}
-   @Override
+    @Override
+    public void onDetail() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để xem chi tiết!");
+            return;
+        }
+        int id = (int) table.getValueAt(row, 0);
+        EmployeeDTO selectedEmp = employeeBUS.getById(id);
+
+        if (selectedEmp != null) {
+            EmployeeDialog dialog = new EmployeeDialog(null, true, "detail", selectedEmp, employeeBUS);
+            dialog.setVisible(true);
+        }
+    }
+
+    @Override
+    public void onSearch(String text) {
+        loadDataToTable(employeeBUS.search(text));
+    }
+
+    @Override
+    public void onRefresh() {
+        loadDataToTable(employeeBUS.getAll());
+    }
+
+    @Override
+    public void onExportExcel() {
+    }
+
+    @Override
+    public void onImportExcel() {
+    }
+
+    @Override
     public boolean[] getButtonConfig() {
         if (config.SessionManager.getCurrentAccount() == null) {
-            return new boolean[]{false, false, false, false, false, false}; 
+            return new boolean[] { false, false, false, false, false, false };
         }
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
@@ -109,6 +148,6 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         boolean canEdit = config.SessionManager.hasPermission(457, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(457, "Xóa");
 
-        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
+        return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
     }
 }

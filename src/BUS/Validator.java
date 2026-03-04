@@ -1,5 +1,6 @@
 package BUS;
 
+import DTO.AccountDTO;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
@@ -82,6 +83,30 @@ public class Validator {
             if (!publisher.getPhone().trim().matches("^[0-9+\\-\\s]{7,15}$"))
                 r.addError("phone", "Số điện thoại không đúng định dạng");
         }
+
+        return r;
+    }
+
+    public static ValidationResult validateAccount(AccountDTO acc) {
+        ValidationResult r = new ValidationResult();
+
+        if (acc.getUsername() == null || acc.getUsername().trim().isEmpty())
+            r.addError("username", "Tên đăng nhập không được để trống");
+        else if (acc.getUsername().length() < 4)
+            r.addError("username", "Tên đăng nhập phải có ít nhất 4 ký tự");
+        // Chỉ kiểm tra password khi tạo mới hoặc khi người dùng nhập password mới
+        // (Logic bỏ qua check password rỗng khi update sẽ nằm ở GUI hoặc BUS nếu
+        // password string rỗng)
+        if (acc.getPassword() != null && !acc.getPassword().isEmpty()) {
+            if (acc.getPassword().length() < 6)
+                r.addError("password", "Mật khẩu phải có ít nhất 6 ký tự");
+        }
+
+        if (acc.getEmployeeId() <= 0)
+            r.addError("employeeId", "Vui lòng chọn nhân viên sở hữu tài khoản");
+
+        if (acc.getPermissionGroupId() <= 0)
+            r.addError("permissionGroupId", "Vui lòng chọn nhóm quyền");
 
         return r;
     }

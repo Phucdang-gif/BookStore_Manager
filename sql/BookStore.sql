@@ -193,11 +193,9 @@ CREATE TABLE import_receipts (
     receipt_id   INT AUTO_INCREMENT PRIMARY KEY,
     supplier_id  INT NOT NULL,
     employee_id  INT NOT NULL,
-    import_date  DATETIME,
     receipt_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(15,2),
     status       VARCHAR(50),
-    notes        TEXT,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 ) ENGINE=InnoDB;
@@ -209,7 +207,6 @@ CREATE TABLE import_receipt_details (
     quantity    INT NOT NULL,
     unit_price  DECIMAL(15,2),
     subtotal    DECIMAL(15,2),
-    expiry_date DATE,
     FOREIGN KEY (receipt_id) REFERENCES import_receipts(receipt_id),
     FOREIGN KEY (book_id)    REFERENCES books(book_id)
 ) ENGINE=InnoDB;

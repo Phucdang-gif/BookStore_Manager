@@ -6,13 +6,12 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class PublisherDAO {
-    private Connection conn;
 
     public PublisherDAO() {
-        conn = DatabaseConnection.getInstance().getConnection();
     }
 
     public ArrayList<PublisherDTO> selectAll() {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         ArrayList<PublisherDTO> list = new ArrayList<>();
         // Sắp xếp theo ID hoặc tên tùy chọn
         String sql = "SELECT * FROM publishers ORDER BY publisher_id";
@@ -32,6 +31,7 @@ public class PublisherDAO {
     }
 
     public PublisherDTO selectById(int id) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM publishers WHERE publisher_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
@@ -50,6 +50,7 @@ public class PublisherDAO {
     }
 
     public int insert(PublisherDTO pub) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "INSERT INTO publishers (publisher_name, phone, status) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, pub.getName());
@@ -68,6 +69,7 @@ public class PublisherDAO {
     }
 
     public int update(PublisherDTO pub) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE publishers SET publisher_name = ?, phone = ?, status = ? WHERE publisher_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, pub.getName());
@@ -82,6 +84,7 @@ public class PublisherDAO {
     }
 
     public int delete(int id) {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "DELETE FROM publishers WHERE publisher_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);

@@ -20,7 +20,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     private JTable table;
     private DefaultTableModel tableModel;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); // Định dạng ngày
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); // Định dạng ngày
 
     public ImportReceiptPanel() {
         initUI();
@@ -32,42 +32,42 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         this.setBackground(Color.WHITE);
         this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] columns = {"Mã Phiếu", "Mã NCC", "Mã NV", "Ngày Nhập", "Tổng Tiền", "Trạng Thái"};
+        String[] columns = { "Mã Phiếu", "Mã NCC", "Mã NV", "Ngày Nhập", "Tổng Tiền", "Trạng Thái" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; 
+                return false;
             }
         };
         table = new JTable(tableModel);
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(Color.WHITE);
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
-        
+
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
     private void loadDataToTable(ArrayList<ImportReceiptDTO> list) {
-        tableModel.setRowCount(0); 
+        tableModel.setRowCount(0);
         if (list != null) {
             for (ImportReceiptDTO dto : list) {
                 // SỬA LỖI 4: Viết ngược lại để chống lỗi NULL
                 String statusStr = "Cancelled".equalsIgnoreCase(dto.getStatus()) ? "Đã Hủy" : "Hoàn Thành";
-                
+
                 // SỬA LỖI 3: Format ngày tháng
                 String dateStr = (dto.getReceiptDate() != null) ? sdf.format(dto.getReceiptDate()) : "";
 
-                tableModel.addRow(new Object[]{
-                    dto.getReceiptId(),    
-                    dto.getSupplierId(), 
-                    dto.getEmployeeId(), 
-                    dateStr,              // Dùng chuỗi ngày đã format
-                    df.format(dto.getTotalAmount()), 
-                    statusStr
+                tableModel.addRow(new Object[] {
+                        dto.getReceiptId(),
+                        dto.getSupplierId(),
+                        dto.getEmployeeId(),
+                        dateStr, // Dùng chuỗi ngày đã format
+                        df.format(dto.getTotalAmount()),
+                        statusStr
                 });
             }
         }
@@ -82,32 +82,32 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         // Mở cửa sổ Lập Phiếu Nhập
         CreateImportDialog dialog = new CreateImportDialog(null, true);
         dialog.setVisible(true);
-        
+
         // Làm mới lại bảng danh sách phiếu nhập
-        onRefresh(); 
+        onRefresh();
     }
 
     @Override
     public void onEdit() {
-        // Không cho phép sửa phiếu nhập
         JOptionPane.showMessageDialog(this, "Nghiệp vụ không cho phép sửa phiếu nhập đã lưu!");
     }
 
     @Override
     public void onDelete() {
         int row = table.getSelectedRow();
-        if(row == -1) {
+        if (row == -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Phiếu nhập cần hủy!");
             return;
         }
-        
+
         String currentStatus = (String) table.getValueAt(row, 5);
         if (currentStatus.equals("Đã Hủy")) {
             JOptionPane.showMessageDialog(this, "Phiếu này đã bị hủy từ trước!");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn HỦY phiếu nhập này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn HỦY phiếu nhập này?", "Cảnh báo",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             int importId = (int) table.getValueAt(row, 0);
             boolean isSuccess = importBUS.cancelReceipt(importId); // Đảm bảo BUS có hàm này
@@ -123,12 +123,12 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     @Override
     public void onDetail() {
         int row = table.getSelectedRow();
-        if(row == -1) {
+        if (row == -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Phiếu nhập để xem chi tiết!");
             return;
         }
         int importId = (int) table.getValueAt(row, 0); // Sửa biến receiptId thành importId cho đồng bộ
-        
+
         // Gọi Dialog xem chi tiết
         ImportDetailDialog dialog = new ImportDetailDialog(null, true, importId);
         dialog.setVisible(true);
@@ -148,22 +148,23 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     }
 
     @Override
-    public void onExportExcel() { }
+    public void onExportExcel() {
+    }
 
     @Override
-    public void onImportExcel() { }
+    public void onImportExcel() {
+    }
 
     @Override
     public boolean[] getButtonConfig() {
         if (config.SessionManager.getCurrentAccount() == null) {
-            return new boolean[]{false, false, false, false, false, false}; 
+            return new boolean[] { false, false, false, false, false, false };
         }
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
         boolean canAdd = config.SessionManager.hasPermission(454, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(454, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(454, "Xóa");
 
-        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
+        return new boolean[] { canAdd, false, canDelete, true, false, false };
     }
 }

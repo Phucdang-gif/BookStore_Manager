@@ -114,6 +114,7 @@ public class Login extends JFrame {
         btnShowHide.setContentAreaFilled(false); // Xóa nền
         btnShowHide.setFocusPainted(false); // Xóa viền focus
         btnShowHide.setBorderPainted(false); // Xóa viền nút
+        btnShowHide.setPreferredSize(new Dimension(30, 20));
         btnShowHide.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Đổi con trỏ chuột
 
         // Sự kiện click vào mắt

@@ -10,13 +10,13 @@ import DTO.AuthorDTO;
 import config.DatabaseConnection;
 
 public class AuthorDAO {
-    private Connection connection;
 
     public AuthorDAO() {
-        this.connection = DatabaseConnection.getInstance().getConnection();
+
     }
 
     public ArrayList<AuthorDTO> selectAll() throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         ArrayList<AuthorDTO> list = new ArrayList<>();
         String sql = "SELECT * FROM authors ORDER BY author_id DESC"; // Sắp xếp mới nhất lên đầu
         try (PreparedStatement pst = connection.prepareStatement(sql);
@@ -31,6 +31,7 @@ public class AuthorDAO {
     }
 
     public AuthorDTO selectById(int id) throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM authors WHERE author_id = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setInt(1, id);
@@ -48,6 +49,7 @@ public class AuthorDAO {
     // --- CÁC HÀM THÊM / SỬA / XÓA ---
 
     public boolean insert(AuthorDTO author) throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         String sql = "INSERT INTO authors (author_name) VALUES (?)";
         try (PreparedStatement pst = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pst.setString(1, author.getAuthorName());
@@ -66,6 +68,7 @@ public class AuthorDAO {
     }
 
     public boolean update(AuthorDTO author) throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE authors SET author_name = ? WHERE author_id = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setString(1, author.getAuthorName());
@@ -75,6 +78,7 @@ public class AuthorDAO {
     }
 
     public boolean delete(int id) throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         String sql = "DELETE FROM authors WHERE author_id = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setInt(1, id);
@@ -84,6 +88,7 @@ public class AuthorDAO {
 
     // Kiểm tra trùng tên (để validation)
     public boolean isNameExists(String name) throws SQLException {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT COUNT(*) FROM authors WHERE author_name = ?";
         try (PreparedStatement pst = connection.prepareStatement(sql)) {
             pst.setString(1, name);

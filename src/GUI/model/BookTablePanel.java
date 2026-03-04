@@ -37,16 +37,35 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
         loadTableData();
     }
 
-    // ===================== KHỞI TẠO =====================
-
     private void initComponents() {
         tableModel = new DefaultTableModel(COLUMNS, 0) {
+            @Override
             public boolean isCellEditable(int row, int col) {
                 return false;
             }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                switch (columnIndex) {
+                    case 0:
+                        return Integer.class; // ID
+                    case 3:
+                        return Double.class;
+                    case 4:
+                        return Double.class;
+                    case 5:
+                        return Integer.class; // Tồn kho
+                    case 6:
+                        return Integer.class; // Tồn kho tối thiểu
+                    default:
+                        return String.class;
+                }
+            }
         };
+
         bookTable = new JTable(tableModel);
         bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        bookTable.setAutoCreateRowSorter(true);
         styleTable();
 
         JScrollPane scrollPane = new JScrollPane(bookTable);
@@ -94,8 +113,6 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
             cm.getColumn(i).setPreferredWidth(widths[i]);
     }
 
-    // ===================== DỮ LIỆU =====================
-
     public void loadTableData() {
         listOriginal = bookBUS.getAll();
         setTableData(listOriginal);
@@ -108,8 +125,8 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
                     book.getBookId(),
                     book.getIsbn(),
                     book.getBookTitle(),
-                    book.getFormattedImportPrice(),
-                    book.getFormattedSellingPrice(),
+                    book.getImportPrice(),
+                    book.getSellingPrice(),
                     book.getStockQuantity(),
                     book.getMinimumStock(),
                     book.getStatusVietnamese()
@@ -249,7 +266,7 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
         boolean canAdd = config.SessionManager.hasPermission(451, "Thêm");
         boolean canEdit = config.SessionManager.hasPermission(451, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(451, "Xóa");
-        return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, true, true, false };
     }
 
     @Override

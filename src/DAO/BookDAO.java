@@ -12,18 +12,13 @@ import DTO.AuthorDTO;
 import config.DatabaseConnection;
 
 public class BookDAO {
-    private Connection conn;
 
     public BookDAO() {
-        this.conn = DatabaseConnection.getInstance().getConnection();
-    }
-
-    public BookDAO(Connection conn) {
-        this.conn = conn;
     }
 
     // --- CÁC HÀM THÊM MỚI (CREATE)
     public int insertBook(BookDTO book) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         int generatedBookId = -1;
         if (conn == null)
             return -1;
@@ -47,6 +42,7 @@ public class BookDAO {
     }
 
     public void insertBookAuthors(int bookId, List<AuthorDTO> authors) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         if (authors == null || authors.isEmpty())
             return;
         String sql = "INSERT INTO book_authors (book_id, author_id, display_order) VALUE (?,?,?)";
@@ -69,11 +65,13 @@ public class BookDAO {
     // Trong file DAO/BookDAO.java
 
     public ArrayList<BookDTO> selectAll() throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         ArrayList<BookDTO> books = new ArrayList<>();
 
         // Câu lệnh SQL nâng cấp: JOIN 5 bảng và gộp tên tác giả
         String sql = "SELECT b.*, p.publisher_name, c.category_name, " +
-                "GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors_list " + // <--- MỚI
+                "GROUP_CONCAT(a.author_name SEPARATOR '||') AS authors_list, " +
+                "GROUP_CONCAT(a.author_id SEPARATOR '||') AS author_ids " +
                 "FROM books b " +
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
@@ -89,18 +87,30 @@ public class BookDAO {
             while (rs.next()) {
                 BookDTO book = mapResultSetToBook(rs);
                 // --- XỬ LÝ DANH SÁCH TÁC GIẢ ---
-                String authorsStr = rs.getString("authors_list"); // Lấy chuỗi "Tác giả A, Tác giả B"
+                String authorsStr = rs.getString("authors_list");
+                String authorIdsStr = rs.getString("author_ids");
                 List<String> authorNames = new ArrayList<>();
+                List<AuthorDTO> authorList = new ArrayList<>();
 
                 if (authorsStr != null && !authorsStr.isEmpty()) {
-                    // Tách chuỗi thành mảng dựa trên dấu phẩy
-                    String[] arr = authorsStr.split(", ");
-                    for (String s : arr) {
-                        authorNames.add(s);
+                    String[] arrNames = authorsStr.split("\\|\\|"); // Split theo ||
+                    String[] arrIds = authorIdsStr.split("\\|\\|"); // Split theo ||
+
+                    for (int i = 0; i < arrNames.length; i++) {
+                        String name = arrNames[i];
+                        authorNames.add(name);
+                        try {
+                            if (i < arrIds.length) {
+                                int id = Integer.parseInt(arrIds[i]);
+                                authorList.add(new AuthorDTO(id, name));
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
                 book.setAuthorNames(authorNames);
-
+                book.setAuthors(authorList);
                 books.add(book);
             }
         }
@@ -108,6 +118,7 @@ public class BookDAO {
     }
 
     public BookDTO selectById(int bookId) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT b.*, p.publisher_name, c.category_name " +
                 "FROM books b " +
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
@@ -129,6 +140,7 @@ public class BookDAO {
     }
 
     public BookDTO selectByIsbn(String isbn) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         // Câu lệnh SQL tương tự selectById nhưng WHERE theo isbn
         String sql = "SELECT b.*, p.publisher_name, c.category_name " +
                 "FROM books b " +
@@ -156,6 +168,7 @@ public class BookDAO {
     }
 
     private List<AuthorDTO> getAuthorsByBookId(int bookId) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         List<AuthorDTO> authors = new ArrayList<>();
 
         // Vẫn dùng bảng book_authors (số nhiều) và sắp xếp
@@ -211,6 +224,7 @@ public class BookDAO {
 
     // Hàm phụ trợ để tránh lặp code (Private helper)
     private ArrayList<BookDTO> getBooksByQuery(String sql, int paramId) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         ArrayList<BookDTO> list = new ArrayList<>();
         try (PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, paramId);
@@ -237,6 +251,7 @@ public class BookDAO {
      * 3. Thêm lại danh sách tác giả mới
      */
     public boolean updateBook(BookDTO book) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE books SET isbn=?, book_title=?, publisher_id=?, category_id=?, " +
                 "page_count=?, language=?, publication_year=?, cover_type=?, import_price=?, " +
                 "selling_price=?, stock_quantity=?, minimum_stock=?, image=?, status=? " +
@@ -287,6 +302,7 @@ public class BookDAO {
 
     // Hàm này chỉ update cột status, an toàn tuyệt đối cho dữ liệu Tác giả
     public boolean updateStatus(int bookId, String newStatus) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "UPDATE books SET status = ? WHERE book_id = ?";
         if (conn == null)
             return false;
@@ -303,6 +319,7 @@ public class BookDAO {
      * sách)
      */
     public void deleteBookAuthors(int bookId) throws SQLException {
+        Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "DELETE FROM book_authors WHERE book_id = ?";
         if (conn == null)
             return;
@@ -313,7 +330,8 @@ public class BookDAO {
     }
 
     public boolean delete(int bookId) throws SQLException {
-        // Bước 1: Xóa các liên kết tác giả trước (để tránh lỗi khóa ngoại)
+        Connection conn = DatabaseConnection.getInstance().getConnection();
+        // Bước 1: Xóa tất cả tác giả
         deleteBookAuthors(bookId);
         // Bước 2: Xóa sách
         String sql = "DELETE FROM books WHERE book_id = ?";

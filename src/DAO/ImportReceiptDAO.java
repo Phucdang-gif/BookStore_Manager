@@ -14,7 +14,7 @@ public class ImportReceiptDAO {
         ArrayList<ImportReceiptDTO> list = new ArrayList<>();
         Connection con = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM import_receipts ORDER BY receipt_date DESC";
-        
+
         try {
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -26,7 +26,7 @@ public class ImportReceiptDAO {
                 dto.setReceiptDate(rs.getTimestamp("receipt_date"));
                 dto.setTotalAmount(rs.getDouble("total_amount"));
                 dto.setStatus(rs.getString("status"));
-               
+
                 list.add(dto);
             }
         } catch (Exception e) {
@@ -40,18 +40,15 @@ public class ImportReceiptDAO {
         int generatedId = -1;
         Connection con = DatabaseConnection.getInstance().getConnection();
         // Dùng đúng tên cột receipt_date như trong CSDL của em
-        String sql = "INSERT INTO import_receipts (supplier_id, employee_id, receipt_date, total_amount, status, note) VALUES (?, ?, NOW(), ?, ?, ?)";
-        
+        String sql = "INSERT INTO import_receipts (supplier_id, employee_id, receipt_date, total_amount, status) VALUES (?, ?, NOW(), ?, ?)";
+
         try {
             // QUAN TRỌNG: Thêm Statement.RETURN_GENERATED_KEYS
             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, dto.getSupplierId());
             ps.setInt(2, dto.getEmployeeId());
             ps.setDouble(3, dto.getTotalAmount());
-            // Trạng thái mặc định là Completed nếu chưa có
-            ps.setString(4, dto.getStatus() != null ? dto.getStatus() : "Completed"); 
-           
-            
+            ps.setString(4, dto.getStatus() != null ? dto.getStatus() : "Completed");
             if (ps.executeUpdate() > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
