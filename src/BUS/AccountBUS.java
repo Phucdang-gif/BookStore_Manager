@@ -40,7 +40,7 @@ public class AccountBUS {
         return index;
     }
     
-    // ĐÃ ĐỔI TÊN HÀM TỪ getRoleDTO -> getPermissionGroupDTO
+    
     public PermissionGroupDTO getPermissionGroupDTO(int permissionGroupId) {
         return permissionGroupDAO.getById(permissionGroupId);
     }
