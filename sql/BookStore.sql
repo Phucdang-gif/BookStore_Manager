@@ -234,259 +234,214 @@ CREATE INDEX idx_receipt_date    ON import_receipts(import_date);
 -- PHẦN 2: DỮ LIỆU MẪU
 -- =============================================
 
--- 1. NHÂN VIÊN
-INSERT INTO employees (full_name, date_of_birth, gender, phone, address, position, salary, hire_date, status) VALUES
-('Nguyễn Văn An',    '1990-05-15', 'male',   '0901234567', '123 Lê Lợi, Quận 1, TP.HCM',           'Quản lý',              15000000, '2020-01-10', 'active'),
-('Trần Thị Bình',    '1995-08-20', 'female', '0912345678', '456 Trần Hưng Đạo, Quận 5, TP.HCM',    'Nhân viên bán hàng',    8000000, '2021-03-15', 'active'),
-('Lê Hoàng Châu',    '1992-12-10', 'male',   '0923456789', '789 Nguyễn Huệ, Quận 1, TP.HCM',       'Thủ kho',               9000000, '2021-06-20', 'active'),
-('Phạm Thị Dung',    '1988-03-25', 'female', '0934567890', '321 Võ Văn Tần, Quận 3, TP.HCM',       'Kế toán',              12000000, '2019-11-05', 'active');
+-- 1. NHÂN VIÊN  (employee_id: 1–4)
+INSERT INTO employees (employee_id, full_name, date_of_birth, gender, phone, address, position, salary, hire_date, status) VALUES
+(1, 'Nguyễn Văn An',  '1990-05-15', 'male',   '0901234567', '123 Lê Lợi, Quận 1, TP.HCM',        'Quản lý',             15000000, '2020-01-10', 'active'),
+(2, 'Trần Thị Bình',  '1995-08-20', 'female', '0912345678', '456 Trần Hưng Đạo, Quận 5, TP.HCM', 'Nhân viên bán hàng',   8000000, '2021-03-15', 'active'),
+(3, 'Lê Hoàng Châu',  '1992-12-10', 'male',   '0923456789', '789 Nguyễn Huệ, Quận 1, TP.HCM',    'Thủ kho',              9000000, '2021-06-20', 'active'),
+(4, 'Phạm Thị Dung',  '1988-03-25', 'female', '0934567890', '321 Võ Văn Tần, Quận 3, TP.HCM',    'Kế toán',             12000000, '2019-11-05', 'active');
 
--- 2. NHÓM QUYỀN
-INSERT INTO permission_groups (group_name, status) VALUES
-('Quản trị viên',       'active'),
-('Nhân viên bán hàng',  'active'),
-('Thủ kho',             'active'),
-('Kế toán',             'active');
+-- 2. NHÓM QUYỀN  (permission_group_id: 151–154)
+INSERT INTO permission_groups (permission_group_id, group_name, status) VALUES
+(151, 'Quản trị viên',      'active'),
+(152, 'Nhân viên bán hàng', 'active'),
+(153, 'Thủ kho',            'active'),
+(154, 'Kế toán',            'active');
 
 -- 3. TÀI KHOẢN
-INSERT INTO accounts (employee_id, permission_group_id, username, password, status)
-SELECT e.employee_id, pg.permission_group_id, 'admin',    'admin123', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Nguyễn Văn An'   AND pg.group_name='Quản trị viên';
-INSERT INTO accounts (employee_id, permission_group_id, username, password, status)
-SELECT e.employee_id, pg.permission_group_id, 'nvbh01',   'bh123456', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Trần Thị Bình'   AND pg.group_name='Nhân viên bán hàng';
-INSERT INTO accounts (employee_id, permission_group_id, username, password, status)
-SELECT e.employee_id, pg.permission_group_id, 'thukho01', 'tk123456', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Lê Hoàng Châu'   AND pg.group_name='Thủ kho';
-INSERT INTO accounts (employee_id, permission_group_id, username, password, status)
-SELECT e.employee_id, pg.permission_group_id, 'ketoan01', 'kt123456', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Phạm Thị Dung'   AND pg.group_name='Kế toán';
+INSERT INTO accounts (employee_id, permission_group_id, username, password, status) VALUES
+(1, 151, 'admin',    'admin123', 'active'),
+(2, 152, 'nvbh01',   'bh123456', 'active'),
+(3, 153, 'thukho01', 'tk123456', 'active'),
+(4, 154, 'ketoan01', 'kt123456', 'active');
 
--- 4. CHỨC NĂNG (khớp đúng với GUI)
-INSERT INTO functions (function_name, system_function_code, function_group) VALUES
-('Quản lý sách',       'BOOK',        'Quản lý kho'),
-('Danh mục',           'CATEGORY',    'Quản lý kho'),
-('Quản lý khách hàng', 'CUSTOMER',    'Bán hàng'),
-('Quản lý nhập hàng',  'IMPORT',      'Quản lý kho'),
-('Quản lý hóa đơn',    'INVOICE',     'Bán hàng'),
-('Khuyến mãi',         'PROMOTION',   'Bán hàng'),
-('Quản lý nhân viên',  'EMPLOYEE',    'Quản lý hệ thống'),
-('Quản lý tài khoản',  'ACCOUNT',     'Quản lý hệ thống'),
-('Phân quyền',         'PERMISSION',  'Quản lý hệ thống');
+-- 4. CHỨC NĂNG  (function_id: 451–459)
+INSERT INTO functions (function_id, function_name, system_function_code, function_group) VALUES
+(451, 'Quản lý sách',       'BOOK',       'Quản lý kho'),
+(452, 'Danh mục',           'CATEGORY',   'Quản lý kho'),
+(453, 'Quản lý khách hàng', 'CUSTOMER',   'Bán hàng'),
+(454, 'Quản lý nhập hàng',  'IMPORT',     'Quản lý kho'),
+(455, 'Quản lý hóa đơn',    'INVOICE',    'Bán hàng'),
+(456, 'Khuyến mãi',         'PROMOTION',  'Bán hàng'),
+(457, 'Quản lý nhân viên',  'EMPLOYEE',   'Quản lý hệ thống'),
+(458, 'Quản lý tài khoản',  'ACCOUNT',    'Quản lý hệ thống'),
+(459, 'Phân quyền',         'PERMISSION', 'Quản lý hệ thống');
 
 -- 5. PHÂN QUYỀN
-
--- Admin: toàn quyền tất cả chức năng
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa,Xóa'
-FROM permission_groups pg, functions f
-WHERE pg.group_name = 'Quản trị viên';
+-- Admin (151): toàn quyền tất cả chức năng
+INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
+(151, 451, 'Xem,Thêm,Sửa,Xóa'),
+(151, 452, 'Xem,Thêm,Sửa,Xóa'),
+(151, 453, 'Xem,Thêm,Sửa,Xóa'),
+(151, 454, 'Xem,Thêm,Sửa,Xóa'),
+(151, 455, 'Xem,Thêm,Sửa,Xóa'),
+(151, 456, 'Xem,Thêm,Sửa,Xóa'),
+(151, 457, 'Xem,Thêm,Sửa,Xóa'),
+(151, 458, 'Xem,Thêm,Sửa,Xóa'),
+(151, 459, 'Xem,Thêm,Sửa,Xóa');
 
 -- Nhân viên bán hàng (152)
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='BOOK';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='CATEGORY';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='CUSTOMER';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm'     FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='INVOICE';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='PROMOTION';
+INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
+(152, 451, 'Xem'),
+(152, 452, 'Xem'),
+(152, 453, 'Xem,Thêm,Sửa'),
+(152, 455, 'Xem,Thêm'),
+(152, 456, 'Xem');
 
 -- Thủ kho (153)
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='BOOK';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='CATEGORY';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='IMPORT';
+INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
+(153, 451, 'Xem,Thêm,Sửa'),
+(153, 452, 'Xem,Thêm,Sửa'),
+(153, 454, 'Xem,Thêm,Sửa');
 
 -- Kế toán (154)
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='IMPORT';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='INVOICE';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='PROMOTION';
+INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
+(154, 454, 'Xem'),
+(154, 455, 'Xem'),
+(154, 456, 'Xem,Thêm,Sửa');
 
--- 6. KHÁCH HÀNG
-INSERT INTO customers (full_name, phone, loyalty_points, registration_date) VALUES
-('Võ Minh Tuấn',  '0945678901', 150, '2023-01-15'),
-('Hoàng Thị Mai', '0956789012', 320, '2023-03-20'),
-('Đặng Văn Nam',  '0967890123',  80, '2023-06-10'),
-('Bùi Thị Lan',   '0978901234', 500, '2022-12-05');
+-- 6. KHÁCH HÀNG  (customer_id: 751–754)
+INSERT INTO customers (customer_id, full_name, phone, loyalty_points, registration_date) VALUES
+(751, 'Võ Minh Tuấn',  '0945678901', 150, '2023-01-15'),
+(752, 'Hoàng Thị Mai', '0956789012', 320, '2023-03-20'),
+(753, 'Đặng Văn Nam',  '0967890123',  80, '2023-06-10'),
+(754, 'Bùi Thị Lan',   '0978901234', 500, '2022-12-05');
 
 -- 7. LỊCH SỬ QUY ĐỔI ĐIỂM
-INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_type)
-SELECT customer_id, 100, 10000, 'Giảm giá hóa đơn' FROM customers WHERE full_name='Hoàng Thị Mai';
-INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_type)
-SELECT customer_id, 200, 20000, 'Giảm giá hóa đơn' FROM customers WHERE full_name='Bùi Thị Lan';
+INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_type) VALUES
+(752, 100, 10000, 'Giảm giá hóa đơn'),
+(754, 200, 20000, 'Giảm giá hóa đơn');
 
--- 8. NHÀ XUẤT BẢN
-INSERT INTO publishers (publisher_name, phone, status) VALUES
-('Nhà xuất bản Trẻ',                    '0283822711', 'active'),
-('Nhà xuất bản Kim Đồng',               '0283943344', 'active'),
-('Nhà xuất bản Văn học',                '0283822211', 'active'),
-('Nhà xuất bản Thế giới',               '0283825252', 'active'),
-('Nhà xuất bản Nhã Nam',                '0283517898', 'active'),
-('Nhà xuất bản Phụ Nữ',                 '0243825993', 'active'),
-('Nhà xuất bản Lao Động',               '0243851538', 'active'),
-('Nhà xuất bản Hội Nhà Văn',            '0243822213', 'active'),
-('Nhà xuất bản Tổng hợp TP.HCM',        '0283822534', 'active'),
-('Nhà xuất bản Dân Trí',                '0243762334', 'active'),
-('Nhà xuất bản Hồng Đức',               '0243926002', 'active'),
-('Nhà xuất bản Tri Thức',               '0243944727', 'active'),
-('Nhà xuất bản Đại học Quốc gia Hà Nội','0243754773', 'active'),
-('Nhà xuất bản Công Thương',            '0243934168', 'active');
+-- 8. NHÀ XUẤT BẢN  (publisher_id: 1051–1064)
+INSERT INTO publishers (publisher_id, publisher_name, phone, status) VALUES
+(1051, 'Nhà xuất bản Trẻ',                     '0283822711', 'active'),
+(1052, 'Nhà xuất bản Kim Đồng',                '0283943344', 'active'),
+(1053, 'Nhà xuất bản Văn học',                 '0283822211', 'active'),
+(1054, 'Nhà xuất bản Thế giới',                '0283825252', 'active'),
+(1055, 'Nhà xuất bản Nhã Nam',                 '0283517898', 'active'),
+(1056, 'Nhà xuất bản Phụ Nữ',                  '0243825993', 'active'),
+(1057, 'Nhà xuất bản Lao Động',                '0243851538', 'active'),
+(1058, 'Nhà xuất bản Hội Nhà Văn',             '0243822213', 'active'),
+(1059, 'Nhà xuất bản Tổng hợp TP.HCM',         '0283822534', 'active'),
+(1060, 'Nhà xuất bản Dân Trí',                 '0243762334', 'active'),
+(1061, 'Nhà xuất bản Hồng Đức',                '0243926002', 'active'),
+(1062, 'Nhà xuất bản Tri Thức',                '0243944727', 'active'),
+(1063, 'Nhà xuất bản Đại học Quốc gia Hà Nội', '0243754773', 'active'),
+(1064, 'Nhà xuất bản Công Thương',             '0243934168', 'active');
 
--- 9. THỂ LOẠI / DANH MỤC
-INSERT INTO categories (category_name, display_order, status) VALUES
-('Văn học Việt Nam',           1,  'active'),
-('Văn học nước ngoài',         2,  'active'),
-('Sách thiếu nhi',             3,  'active'),
-('Sách kỹ năng sống',          4,  'active'),
-('Sách Kinh tế',               5,  'active'),
-('Sách Lịch sử',               6,  'active'),
-('Truyện Trinh thám - Kinh dị',7,  'active'),
-('Tâm lý học',                 8,  'active'),
-('Tiểu sử - Hồi ký',           9,  'active'),
-('Khoa học viễn tưởng',        10, 'active'),
-('Sách Giáo khoa - Tham khảo', 11, 'active'),
-('Sách Học Ngoại ngữ',         12, 'active'),
-('Y học - Sức khỏe',           13, 'active'),
-('Truyện Tranh (Manga/Comic)',  14, 'active');
+-- 9. THỂ LOẠI  (category_id: 1201–1214)
+INSERT INTO categories (category_id, category_name, display_order, status) VALUES
+(1201, 'Văn học Việt Nam',            1,  'active'),
+(1202, 'Văn học nước ngoài',          2,  'active'),
+(1203, 'Sách thiếu nhi',              3,  'active'),
+(1204, 'Sách kỹ năng sống',           4,  'active'),
+(1205, 'Sách Kinh tế',                5,  'active'),
+(1206, 'Sách Lịch sử',                6,  'active'),
+(1207, 'Truyện Trinh thám - Kinh dị', 7,  'active'),
+(1208, 'Tâm lý học',                  8,  'active'),
+(1209, 'Tiểu sử - Hồi ký',            9,  'active'),
+(1210, 'Khoa học viễn tưởng',         10, 'active'),
+(1211, 'Sách Giáo khoa - Tham khảo',  11, 'active'),
+(1212, 'Sách Học Ngoại ngữ',          12, 'active'),
+(1213, 'Y học - Sức khỏe',            13, 'active'),
+(1214, 'Truyện Tranh (Manga/Comic)',   14, 'active');
 
--- 10. SÁCH
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786041002345', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh',         368,'Tiếng Việt',2018,'Bìa mềm', 65000, 95000, 50,10,'hoa_vang.jpg',         'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Trẻ'                    AND c.category_name='Văn học Việt Nam';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786042134567', 'Doraemon - Nobita Và Hành Tinh Màu Tím',  196,'Tiếng Việt',2023,'Bìa mềm', 15000, 25000,100,20,'doraemon.jpg',          'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Kim Đồng'                AND c.category_name='Sách thiếu nhi';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786043245678', 'Nhà Giả Kim',                              227,'Tiếng Việt',2020,'Bìa cứng',45000, 79000, 35,10,'nha_gia_kim.jpg',       'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Văn học'                 AND c.category_name='Văn học nước ngoài';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786044356789', 'Đắc Nhân Tâm',                             320,'Tiếng Việt',2021,'Bìa mềm', 50000, 86000,  8,10,'dac_nhan_tam.jpg',      'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Thế giới'                AND c.category_name='Sách kỹ năng sống';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786049876541', 'Rừng Na Uy',                               500,'Tiếng Việt',2021,'Bìa mềm', 90000,150000, 40, 5,'rung_na_uy.jpg',        'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Hội Nhà Văn'             AND c.category_name='Văn học nước ngoài';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786041123456', 'Harry Potter và Hòn đá Phù thủy',          350,'Tiếng Việt',2022,'Bìa mềm',110000,185000,100,10,'harry_potter_1.jpg',    'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Trẻ'                    AND c.category_name='Sách thiếu nhi';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786048234567', 'Gió Lạnh Đầu Mùa',                         180,'Tiếng Việt',2019,'Bìa mềm', 30000, 55000, 25, 5,'gio_lanh_dau_mua.jpg',  'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Văn học'                 AND c.category_name='Văn học Việt Nam';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786048345678', 'Chí Phèo',                                  200,'Tiếng Việt',2020,'Bìa mềm', 35000, 60000, 30, 5,'chi_pheo.jpg',          'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Văn học'                 AND c.category_name='Văn học Việt Nam';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786048456789', 'Số Đỏ',                                     240,'Tiếng Việt',2021,'Bìa mềm', 40000, 75000, 20, 5,'so_do.jpg',             'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Văn học'                 AND c.category_name='Văn học Việt Nam';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786049567890', 'The Shining - Ngôi Nhà Ma',                 600,'Tiếng Việt',2022,'Bìa mềm',120000,199000, 15, 3,'the_shining.jpg',       'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Hội Nhà Văn'             AND c.category_name='Truyện Trinh thám - Kinh dị';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786047678901', 'Mật Mã Da Vinci',                           550,'Tiếng Việt',2018,'Bìa mềm',100000,169000, 45, 8,'mat_ma_da_vinci.jpg',   'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Lao Động'                AND c.category_name='Truyện Trinh thám - Kinh dị';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786045789012', 'Tuổi Trẻ Đáng Giá Bao Nhiêu',              280,'Tiếng Việt',2018,'Bìa mềm', 45000, 80000,200,20,'tuoi_tre_dang_gia.jpg', 'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Nhã Nam'                 AND c.category_name='Sách kỹ năng sống';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786049890123', 'Đại Dương Đen',                             320,'Tiếng Việt',2023,'Bìa mềm', 95000,165000, 60,10,'dai_duong_den.jpg',     'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Hội Nhà Văn'             AND c.category_name='Tâm lý học';
-INSERT INTO books (publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status)
-SELECT p.publisher_id, c.category_id, '9786046901234', 'Phép Lạ Của Sự Tỉnh Thức',                 150,'Tiếng Việt',2020,'Bìa mềm', 30000, 59000, 80,15,'phep_la_tinh_thuc.jpg', 'in_stock' FROM publishers p, categories c WHERE p.publisher_name='Nhà xuất bản Dân Trí'                  AND c.category_name='Tâm lý học';
+-- 10. SÁCH  (book_id: 1351–1364)
+INSERT INTO books (book_id, publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status) VALUES
+(1351, 1051, 1201, '9786041002345', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh',        368, 'Tiếng Việt', 2018, 'Bìa mềm',  65000,  95000,  50, 10, 'hoa_vang.jpg',         'in_stock'),
+(1352, 1052, 1203, '9786042134567', 'Doraemon - Nobita Và Hành Tinh Màu Tím', 196, 'Tiếng Việt', 2023, 'Bìa mềm',  15000,  25000, 100, 20, 'doraemon.jpg',          'in_stock'),
+(1353, 1053, 1202, '9786043245678', 'Nhà Giả Kim',                             227, 'Tiếng Việt', 2020, 'Bìa cứng', 45000,  79000,  35, 10, 'nha_gia_kim.jpg',       'in_stock'),
+(1354, 1054, 1204, '9786044356789', 'Đắc Nhân Tâm',                            320, 'Tiếng Việt', 2021, 'Bìa mềm',  50000,  86000,   8, 10, 'dac_nhan_tam.jpg',      'in_stock'),
+(1355, 1058, 1202, '9786049876541', 'Rừng Na Uy',                              500, 'Tiếng Việt', 2021, 'Bìa mềm',  90000, 150000,  40,  5, 'rung_na_uy.jpg',        'in_stock'),
+(1356, 1051, 1203, '9786041123456', 'Harry Potter và Hòn đá Phù thủy',         350, 'Tiếng Việt', 2022, 'Bìa mềm', 110000, 185000, 100, 10, 'harry_potter_1.jpg',    'in_stock'),
+(1357, 1053, 1201, '9786048234567', 'Gió Lạnh Đầu Mùa',                        180, 'Tiếng Việt', 2019, 'Bìa mềm',  30000,  55000,  25,  5, 'gio_lanh_dau_mua.jpg',  'in_stock'),
+(1358, 1053, 1201, '9786048345678', 'Chí Phèo',                                 200, 'Tiếng Việt', 2020, 'Bìa mềm',  35000,  60000,  30,  5, 'chi_pheo.jpg',          'in_stock'),
+(1359, 1053, 1201, '9786048456789', 'Số Đỏ',                                    240, 'Tiếng Việt', 2021, 'Bìa mềm',  40000,  75000,  20,  5, 'so_do.jpg',             'in_stock'),
+(1360, 1058, 1207, '9786049567890', 'The Shining - Ngôi Nhà Ma',                600, 'Tiếng Việt', 2022, 'Bìa mềm', 120000, 199000,  15,  3, 'the_shining.jpg',       'in_stock'),
+(1361, 1057, 1207, '9786047678901', 'Mật Mã Da Vinci',                          550, 'Tiếng Việt', 2018, 'Bìa mềm', 100000, 169000,  45,  8, 'mat_ma_da_vinci.jpg',   'in_stock'),
+(1362, 1055, 1204, '9786045789012', 'Tuổi Trẻ Đáng Giá Bao Nhiêu',             280, 'Tiếng Việt', 2018, 'Bìa mềm',  45000,  80000, 200, 20, 'tuoi_tre_dang_gia.jpg', 'in_stock'),
+(1363, 1058, 1208, '9786049890123', 'Đại Dương Đen',                            320, 'Tiếng Việt', 2023, 'Bìa mềm',  95000, 165000,  60, 10, 'dai_duong_den.jpg',     'in_stock'),
+(1364, 1060, 1208, '9786046901234', 'Phép Lạ Của Sự Tỉnh Thức',                150, 'Tiếng Việt', 2020, 'Bìa mềm',  30000,  59000,  80, 15, 'phep_la_tinh_thuc.jpg', 'in_stock');
 
--- 11. TÁC GIẢ
-INSERT INTO authors (author_name) VALUES
-('Nguyễn Nhật Ánh'),
-('Fujiko F. Fujio'),
-('Paulo Coelho'),
-('Dale Carnegie'),
-('Haruki Murakami'),
-('J.K. Rowling'),
-('Thạch Lam'),
-('Nam Cao'),
-('Vũ Trọng Phụng'),
-('Stephen King'),
-('Dan Brown'),
-('Rosie Nguyễn'),
-('Đặng Hoàng Giang'),
-('Thiền sư Thích Nhất Hạnh');
+-- 11. TÁC GIẢ  (author_id: 1501–1514)
+INSERT INTO authors (author_id, author_name) VALUES
+(1501, 'Nguyễn Nhật Ánh'),
+(1502, 'Fujiko F. Fujio'),
+(1503, 'Paulo Coelho'),
+(1504, 'Dale Carnegie'),
+(1505, 'Haruki Murakami'),
+(1506, 'J.K. Rowling'),
+(1507, 'Thạch Lam'),
+(1508, 'Nam Cao'),
+(1509, 'Vũ Trọng Phụng'),
+(1510, 'Stephen King'),
+(1511, 'Dan Brown'),
+(1512, 'Rosie Nguyễn'),
+(1513, 'Đặng Hoàng Giang'),
+(1514, 'Thiền sư Thích Nhất Hạnh');
 
 -- 12. SÁCH - TÁC GIẢ
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Tôi Thấy Hoa Vàng Trên Cỏ Xanh'        AND a.author_name='Nguyễn Nhật Ánh';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Doraemon - Nobita Và Hành Tinh Màu Tím' AND a.author_name='Fujiko F. Fujio';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Nhà Giả Kim'                            AND a.author_name='Paulo Coelho';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Đắc Nhân Tâm'                           AND a.author_name='Dale Carnegie';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Rừng Na Uy'                             AND a.author_name='Haruki Murakami';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Harry Potter và Hòn đá Phù thủy'        AND a.author_name='J.K. Rowling';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Gió Lạnh Đầu Mùa'                       AND a.author_name='Thạch Lam';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Chí Phèo'                               AND a.author_name='Nam Cao';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Số Đỏ'                                  AND a.author_name='Vũ Trọng Phụng';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='The Shining - Ngôi Nhà Ma'              AND a.author_name='Stephen King';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Mật Mã Da Vinci'                        AND a.author_name='Dan Brown';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Tuổi Trẻ Đáng Giá Bao Nhiêu'           AND a.author_name='Rosie Nguyễn';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Đại Dương Đen'                          AND a.author_name='Đặng Hoàng Giang';
-INSERT INTO book_authors (book_id, author_id, display_order)
-SELECT b.book_id, a.author_id, 1 FROM books b, authors a WHERE b.book_title='Phép Lạ Của Sự Tỉnh Thức'              AND a.author_name='Thiền sư Thích Nhất Hạnh';
+INSERT INTO book_authors (book_id, author_id, display_order) VALUES
+(1351, 1501, 1),
+(1352, 1502, 1),
+(1353, 1503, 1),
+(1354, 1504, 1),
+(1355, 1505, 1),
+(1356, 1506, 1),
+(1357, 1507, 1),
+(1358, 1508, 1),
+(1359, 1509, 1),
+(1360, 1510, 1),
+(1361, 1511, 1),
+(1362, 1512, 1),
+(1363, 1513, 1),
+(1364, 1514, 1);
 
--- 13. HÓA ĐƠN
-INSERT INTO invoices (customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status)
-SELECT c.customer_id, e.employee_id, 190000, 10000, 180000, 'Tiền mặt',    'Completed' FROM customers c, employees e WHERE c.full_name='Võ Minh Tuấn'  AND e.full_name='Trần Thị Bình';
-INSERT INTO invoices (customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status)
-SELECT c.customer_id, e.employee_id,  79000,  5000,  69000, 'Chuyển khoản','Completed' FROM customers c, employees e WHERE c.full_name='Hoàng Thị Mai' AND e.full_name='Trần Thị Bình';
-INSERT INTO invoices (customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status)
-SELECT c.customer_id, e.employee_id, 120000,     0, 120000, 'Tiền mặt',    'Completed' FROM customers c, employees e WHERE c.full_name='Đặng Văn Nam'  AND e.full_name='Trần Thị Bình';
-INSERT INTO invoices (customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status)
-SELECT c.customer_id, e.employee_id, 258000, 20000, 238000, 'Thẻ',         'Completed' FROM customers c, employees e WHERE c.full_name='Bùi Thị Lan'   AND e.full_name='Trần Thị Bình';
+-- 13. HÓA ĐƠN  (invoice_id: 1801–1804)
+INSERT INTO invoices (invoice_id, customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status) VALUES
+(1801, 751, 2, 190000, 10000, 180000, 'Tiền mặt',     'Completed'),
+(1802, 752, 2,  79000,  5000,  69000, 'Chuyển khoản', 'Completed'),
+(1803, 753, 2, 120000,     0, 120000, 'Tiền mặt',     'Completed'),
+(1804, 754, 2, 258000, 20000, 238000, 'Thẻ',          'Completed');
 
 -- 14. CHI TIẾT HÓA ĐƠN
-INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal)
-SELECT i.invoice_id, b.book_id, 2,  95000, 190000 FROM invoices i, books b, customers c WHERE i.customer_id=c.customer_id AND c.full_name='Võ Minh Tuấn'  AND b.book_title='Tôi Thấy Hoa Vàng Trên Cỏ Xanh';
-INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal)
-SELECT i.invoice_id, b.book_id, 1,  79000,  79000 FROM invoices i, books b, customers c WHERE i.customer_id=c.customer_id AND c.full_name='Hoàng Thị Mai' AND b.book_title='Nhà Giả Kim';
-INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal)
-SELECT i.invoice_id, b.book_id, 4,  25000, 100000 FROM invoices i, books b, customers c WHERE i.customer_id=c.customer_id AND c.full_name='Đặng Văn Nam'  AND b.book_title='Doraemon - Nobita Và Hành Tinh Màu Tím';
-INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal)
-SELECT i.invoice_id, b.book_id, 3,  86000, 258000 FROM invoices i, books b, customers c WHERE i.customer_id=c.customer_id AND c.full_name='Bùi Thị Lan'   AND b.book_title='Đắc Nhân Tâm';
+INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal) VALUES
+(1801, 1351, 2,  95000, 190000),
+(1802, 1353, 1,  79000,  79000),
+(1803, 1352, 4,  25000, 100000),
+(1804, 1354, 3,  86000, 258000);
 
 -- 15. DỊCH VỤ GIẢM GIÁ / KHUYẾN MÃI
 INSERT INTO discount_services (service_name, discount_type, discount_value, status) VALUES
-('Giảm giá 10% cho hóa đơn trên 200k', 'Phần trăm',         10,    'active'),
-('Giảm 20k cho hóa đơn đầu tiên',       'Số tiền cố định',   20000, 'active'),
-('Giảm 15% cho sách thiếu nhi',         'Phần trăm',         15,    'active'),
-('Mua 3 tặng 1',                         'Khuyến mãi đặc biệt', 0,  'inactive');
+('Giảm giá 10% cho hóa đơn trên 200k', 'Phần trăm',            10,    'active'),
+('Giảm 20k cho hóa đơn đầu tiên',       'Số tiền cố định',    20000,  'active'),
+('Giảm 15% cho sách thiếu nhi',         'Phần trăm',            15,    'active'),
+('Mua 3 tặng 1',                         'Khuyến mãi đặc biệt',  0,    'inactive');
 
--- 16. NHÀ CUNG CẤP
-INSERT INTO suppliers (supplier_name, phone, status) VALUES
-('Công ty Sách Miền Nam',    '0287654321', 'active'),
-('Công ty Phát hành Fahasa', '0287777888', 'active'),
-('Công ty Sách Phương Nam',  '0283888999', 'active'),
-('Công ty Sách Thiên Long',  '0289999000', 'active');
+-- 16. NHÀ CUNG CẤP  (supplier_id: 2701–2704)
+INSERT INTO suppliers (supplier_id, supplier_name, phone, status) VALUES
+(2701, 'Công ty Sách Miền Nam',    '0287654321', 'active'),
+(2702, 'Công ty Phát hành Fahasa', '0287777888', 'active'),
+(2703, 'Công ty Sách Phương Nam',  '0283888999', 'active'),
+(2704, 'Công ty Sách Thiên Long',  '0289999000', 'active');
 
 -- 17. PHIẾU NHẬP
-INSERT INTO import_receipts (supplier_id, employee_id, total_amount, status)
-SELECT s.supplier_id, e.employee_id, 3250000, 'Completed' FROM suppliers s, employees e WHERE s.supplier_name='Công ty Sách Miền Nam'    AND e.full_name='Lê Hoàng Châu';
-INSERT INTO import_receipts (supplier_id, employee_id, total_amount, status)
-SELECT s.supplier_id, e.employee_id, 1500000, 'Completed' FROM suppliers s, employees e WHERE s.supplier_name='Công ty Phát hành Fahasa' AND e.full_name='Lê Hoàng Châu';
-INSERT INTO import_receipts (supplier_id, employee_id, total_amount, status)
-SELECT s.supplier_id, e.employee_id, 3600000, 'Completed' FROM suppliers s, employees e WHERE s.supplier_name='Công ty Sách Phương Nam'  AND e.full_name='Lê Hoàng Châu';
-INSERT INTO import_receipts (supplier_id, employee_id, total_amount, status)
-SELECT s.supplier_id, e.employee_id, 3000000, 'Completed' FROM suppliers s, employees e WHERE s.supplier_name='Công ty Sách Thiên Long'  AND e.full_name='Lê Hoàng Châu';
+INSERT INTO import_receipts (receipt_id, supplier_id, employee_id, total_amount, status) VALUES
+(1, 2701, 3, 3250000, 'Completed'),
+(2, 2702, 3, 1500000, 'Completed'),
+(3, 2703, 3, 3600000, 'Completed'),
+(4, 2704, 3, 3000000, 'Completed');
 
 -- 18. CHI TIẾT PHIẾU NHẬP
-INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal)
-SELECT r.receipt_id, b.book_id, 50,  65000, 3250000 FROM import_receipts r, suppliers s, books b WHERE r.supplier_id=s.supplier_id AND s.supplier_name='Công ty Sách Miền Nam'    AND b.book_title='Tôi Thấy Hoa Vàng Trên Cỏ Xanh';
-INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal)
-SELECT r.receipt_id, b.book_id,100,  15000, 1500000 FROM import_receipts r, suppliers s, books b WHERE r.supplier_id=s.supplier_id AND s.supplier_name='Công ty Phát hành Fahasa' AND b.book_title='Doraemon - Nobita Và Hành Tinh Màu Tím';
-INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal)
-SELECT r.receipt_id, b.book_id, 80,  45000, 3600000 FROM import_receipts r, suppliers s, books b WHERE r.supplier_id=s.supplier_id AND s.supplier_name='Công ty Sách Phương Nam'  AND b.book_title='Nhà Giả Kim';
-INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal)
-SELECT r.receipt_id, b.book_id, 60,  50000, 3000000 FROM import_receipts r, suppliers s, books b WHERE r.supplier_id=s.supplier_id AND s.supplier_name='Công ty Sách Thiên Long'  AND b.book_title='Đắc Nhân Tâm';
+INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal) VALUES
+(1, 1351, 50,  65000, 3250000),
+(2, 1352, 100, 15000, 1500000),
+(3, 1353, 80,  45000, 3600000),
+(4, 1354, 60,  50000, 3000000);
 
 -- 19. THAM SỐ HỆ THỐNG
 INSERT INTO system_parameters (parameter_code, parameter_value, description) VALUES
-('TY_LE_TICH_DIEM',          '10',  'Tích 1 điểm cho mỗi 10,000 VNĐ'),
-('TY_LE_QUI_DOI_DIEM',       '100', 'Đổi 1 điểm = 100 VNĐ'),
-('SO_LUONG_TOI_THIEU_CANH_BAO','10','Cảnh báo khi tồn kho < 10 cuốn'),
-('THOI_GIAN_LUU_HOA_DON',    '365', 'Lưu hóa đơn trong 365 ngày');
+('TY_LE_TICH_DIEM',            '10',  'Tích 1 điểm cho mỗi 10,000 VNĐ'),
+('TY_LE_QUI_DOI_DIEM',         '100', 'Đổi 1 điểm = 100 VNĐ'),
+('SO_LUONG_TOI_THIEU_CANH_BAO','10',  'Cảnh báo khi tồn kho < 10 cuốn'),
+('THOI_GIAN_LUU_HOA_DON',      '365', 'Lưu hóa đơn trong 365 ngày');
