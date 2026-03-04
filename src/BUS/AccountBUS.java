@@ -43,6 +43,9 @@ public class AccountBUS {
         return index;
     }
 
+    public String getFullNameByEmployeeId(int employeeId) {
+        return accountDAO.getFullNameByEmployeeId(employeeId);
+    }
     // ================== CÁC HÀM ĐÃ SỬA ĐỔI ==================
 
     public ValidationResult addAccount(AccountDTO acc) {

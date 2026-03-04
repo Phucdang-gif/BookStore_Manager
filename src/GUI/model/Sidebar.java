@@ -7,13 +7,12 @@ import GUI.util.ThemeColor;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import org.apache.poi.hslf.blip.DIB;
-
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import BUS.AccountBUS;
 
 public class Sidebar extends JPanel {
     private ActionListener menuListener;
@@ -23,6 +22,7 @@ public class Sidebar extends JPanel {
     private JButton btnSelected; // Nút đang active
     private JButton btnToggle; // nút ẩn hiện
     private JButton btnLogout; // nút đăng xuất
+    private AccountBUS accountBUS = new AccountBUS();
 
     public Sidebar() {
         initStyle();
@@ -44,15 +44,26 @@ public class Sidebar extends JPanel {
     private void initComponents() {
         // --- ĐỔI TÊN ĐỘNG THEO TÀI KHOẢN ĐĂNG NHẬP ---
         DTO.AccountDTO currentUser = config.SessionManager.getCurrentAccount();
-        String displayName = (currentUser != null) ? currentUser.getUsername() : "Chưa đăng nhập";
+        // 1. Lấy tên đầy đủ của nhân viên (Thay vì Username)
+        String userFullName = accountBUS.getFullNameByEmployeeId(currentUser.getEmployeeId());
+        if (userFullName == null || userFullName.equals("Không xác định")) {
+            userFullName = currentUser.getUsername(); // Fallback nếu không tìm thấy tên
+        }
+
+        // 2. Lấy tên nhóm quyền (Thay vì hiển thị tên nhân viên ở dòng dưới)
+        String roleName = "Chưa phân quyền";
+        DTO.PermissionGroupDTO permGroup = accountBUS.getPermissionGroupDTO(currentUser.getPermissionGroupId());
+        if (permGroup != null) {
+            roleName = permGroup.getGroupName(); // Ví dụ: "Quản lý", "Nhân viên kho"...
+        }
 
         JPanel pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
         pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
 
         // Hiển thị tên thật lên Sidebar
-        UserProfilePanel userPanel = new UserProfilePanel(displayName, "hé lô "+displayName+" nhá");
-        
+        UserProfilePanel userPanel = new UserProfilePanel(userFullName, roleName);
+
         btnToggle = new JButton();
         IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
         btnToggle.setPreferredSize(new Dimension(40, 40));
@@ -131,49 +142,14 @@ public class Sidebar extends JPanel {
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // Chỉ cuộn dọc
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setPreferredSize(new Dimension(8, 0));
-        // // Làm trong suốt nền để không bị lệch màu
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setOpaque(false);
-        // Tăng tốc độ cuộn chuột (Mặc định Swing cuộn rất chậm)
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         add(pnlFooter, BorderLayout.SOUTH);
         add(pnlHeader, BorderLayout.NORTH);
-        add(menuContainer, BorderLayout.CENTER);
-         // --- THÊM NÚT ĐĂNG XUẤT Ở DƯỚI CÙNG ---
-        JButton btnLogout = new JButton("ĐĂNG XUẤT");
-        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnLogout.setHorizontalAlignment(SwingConstants.LEFT);
-        btnLogout.setIconTextGap(15);
-        btnLogout.setFocusPainted(false);
-        btnLogout.setContentAreaFilled(false);
-        btnLogout.setOpaque(true);
-        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnLogout.setBorder(new EmptyBorder(15, 25, 15, 20));
-        
-        // Đổi màu chữ sang đỏ cho nổi bật
-        btnLogout.setForeground(new Color(220, 53, 69)); 
-        
-        // Nếu em có icon logout.svg thì dùng dòng dưới, không thì comment lại nhé
-        // GUI.util.IconHelper.setIcon(btnLogout, "GUI/icon/logout.svg", 20, 20); 
-
-        // Hiệu ứng Hover cho nút Đăng xuất
-        btnLogout.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                btnLogout.setBackground(new Color(255, 235, 238)); // Nền đỏ nhạt khi di chuột
-            }
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                btnLogout.setBackground(ThemeColor.bgPanel);
-            }
-        });
-
-        // Bắt sự kiện Click để Đăng xuất
-        btnLogout.addActionListener(e -> processLogout());
-
-        // Đặt nút này ở dưới đáy (SOUTH) của Sidebar
-        add(btnLogout, BorderLayout.SOUTH);
-    } 
-    
+        add(scrollPane, BorderLayout.CENTER);
+    }
 
     public void addToggleEvent(ActionListener event) {
         btnToggle.addActionListener(event);
@@ -217,25 +193,26 @@ public class Sidebar extends JPanel {
 
         return btn;
     }
+
     // Hàm xử lý nghiệp vụ đăng xuất
     private void processLogout() {
         // 1. Hỏi lại cho chắc chắn
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", 
-            "Xác nhận đăng xuất", 
-            JOptionPane.YES_NO_OPTION, 
-            JOptionPane.QUESTION_MESSAGE);
-            
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?",
+                "Xác nhận đăng xuất",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
         if (confirm == JOptionPane.YES_OPTION) {
             // 2. Xóa sạch dữ liệu tài khoản và quyền trên RAM
             config.SessionManager.logout();
-            
+
             // 3. Đóng cửa sổ MainFrame hiện tại
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             if (parentFrame != null) {
                 parentFrame.dispose();
             }
-            
+
             // 4. Mở lại màn hình Login
             SwingUtilities.invokeLater(() -> new GUI.Login().setVisible(true));
         }
