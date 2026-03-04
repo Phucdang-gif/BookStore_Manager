@@ -105,6 +105,18 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onDetail() {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để xem chi tiết!");
+            return;
+        }
+        int id = (int) table.getValueAt(row, 0);
+        EmployeeDTO selectedEmp = employeeBUS.getById(id);
+
+        if (selectedEmp != null) {
+            EmployeeDialog dialog = new EmployeeDialog(null, true, "detail", selectedEmp, employeeBUS);
+            dialog.setVisible(true);
+        }
     }
 
     @Override

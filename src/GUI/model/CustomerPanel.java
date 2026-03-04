@@ -7,6 +7,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.text.SimpleDateFormat;
 
 public class CustomerPanel extends JPanel implements FeatureControllerInterface {
 
@@ -43,12 +44,17 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
     }
 
     private void loadDataToTable(ArrayList<CustomerDTO> list) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         tableModel.setRowCount(0);
         if (list != null) {
             for (CustomerDTO cus : list) {
+                String dateStr = "";
+                if (cus.getRegistrationDate() != null) {
+                    dateStr = dateFormat.format(cus.getRegistrationDate());
+                }
                 tableModel.addRow(new Object[] {
                         cus.getCustomerId(), cus.getFullName(), cus.getPhone(),
-                        cus.getLoyaltyPoints(), cus.getRegistrationDate()
+                        cus.getLoyaltyPoints(), dateStr
                 });
             }
         }
@@ -131,7 +137,6 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
             return new boolean[] { false, false, false, false, false, false };
         }
 
-        
         boolean canAdd = config.SessionManager.hasPermission(453, "Thêm");
         boolean canEdit = config.SessionManager.hasPermission(453, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(453, "Xóa");

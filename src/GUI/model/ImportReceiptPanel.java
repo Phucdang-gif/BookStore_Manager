@@ -20,7 +20,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     private JTable table;
     private DefaultTableModel tableModel;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm"); // Định dạng ngày
+    private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); // Định dạng ngày
 
     public ImportReceiptPanel() {
         initUI();
@@ -163,7 +163,6 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
         boolean canAdd = config.SessionManager.hasPermission(454, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(454, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(454, "Xóa");
 
         return new boolean[] { canAdd, false, canDelete, true, false, false };
