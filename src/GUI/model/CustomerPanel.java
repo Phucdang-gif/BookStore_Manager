@@ -131,10 +131,10 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
             return new boolean[] { false, false, false, false, false, false };
         }
 
-        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
-        boolean canAdd = config.SessionManager.hasPermission(456, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(456, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(456, "Xóa");
+        
+        boolean canAdd = config.SessionManager.hasPermission(453, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(453, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(453, "Xóa");
 
         return new boolean[] { canAdd, canEdit, canDelete, false, false, false };
     }

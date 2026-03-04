@@ -167,9 +167,9 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
         }
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
-        boolean canAdd = config.SessionManager.hasPermission(457, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(457, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(457, "Xóa");
+        boolean canAdd = config.SessionManager.hasPermission(456, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(456, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(456, "Xóa");
 
         return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }

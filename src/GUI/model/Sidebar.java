@@ -51,8 +51,8 @@ public class Sidebar extends JPanel {
         pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
 
         // Hiển thị tên thật lên Sidebar
-        UserProfilePanel userPanel = new UserProfilePanel(displayName, "Nhân Viên");
-
+        UserProfilePanel userPanel = new UserProfilePanel(displayName, "hé lô "+displayName+" nhá");
+        
         btnToggle = new JButton();
         IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
         btnToggle.setPreferredSize(new Dimension(40, 40));
@@ -74,22 +74,22 @@ public class Sidebar extends JPanel {
         if (config.SessionManager.hasPermission(451, "Xem")) {
             items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
         }
-        if (config.SessionManager.hasPermission(455, "Xem")) {
+        if (config.SessionManager.hasPermission(452, "Xem")) {
             items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
         }
-        if (config.SessionManager.hasPermission(456, "Xem")) {
+        if (config.SessionManager.hasPermission(453, "Xem")) {
             items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
         }
         if (config.SessionManager.hasPermission(454, "Xem")) {
             items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
         }
-        if (config.SessionManager.hasPermission(453, "Xem")) {
+        if (config.SessionManager.hasPermission(455, "Xem")) {
             items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
         }
-        if (config.SessionManager.hasPermission(457, "Xem")) {
+        if (config.SessionManager.hasPermission(456, "Xem")) {
             items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
         }
-        if (config.SessionManager.hasPermission(452, "Xem")) {
+        if (config.SessionManager.hasPermission(457, "Xem")) {
             items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
         }
         if (config.SessionManager.hasPermission(458, "Xem")) {
@@ -139,8 +139,41 @@ public class Sidebar extends JPanel {
 
         add(pnlFooter, BorderLayout.SOUTH);
         add(pnlHeader, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-    }
+        add(menuContainer, BorderLayout.CENTER);
+         // --- THÊM NÚT ĐĂNG XUẤT Ở DƯỚI CÙNG ---
+        JButton btnLogout = new JButton("ĐĂNG XUẤT");
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogout.setHorizontalAlignment(SwingConstants.LEFT);
+        btnLogout.setIconTextGap(15);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setContentAreaFilled(false);
+        btnLogout.setOpaque(true);
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.setBorder(new EmptyBorder(15, 25, 15, 20));
+        
+        // Đổi màu chữ sang đỏ cho nổi bật
+        btnLogout.setForeground(new Color(220, 53, 69)); 
+        
+        // Nếu em có icon logout.svg thì dùng dòng dưới, không thì comment lại nhé
+        // GUI.util.IconHelper.setIcon(btnLogout, "GUI/icon/logout.svg", 20, 20); 
+
+        // Hiệu ứng Hover cho nút Đăng xuất
+        btnLogout.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnLogout.setBackground(new Color(255, 235, 238)); // Nền đỏ nhạt khi di chuột
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btnLogout.setBackground(ThemeColor.bgPanel);
+            }
+        });
+
+        // Bắt sự kiện Click để Đăng xuất
+        btnLogout.addActionListener(e -> processLogout());
+
+        // Đặt nút này ở dưới đáy (SOUTH) của Sidebar
+        add(btnLogout, BorderLayout.SOUTH);
+    } 
+    
 
     public void addToggleEvent(ActionListener event) {
         btnToggle.addActionListener(event);
@@ -183,6 +216,29 @@ public class Sidebar extends JPanel {
         });
 
         return btn;
+    }
+    // Hàm xử lý nghiệp vụ đăng xuất
+    private void processLogout() {
+        // 1. Hỏi lại cho chắc chắn
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?", 
+            "Xác nhận đăng xuất", 
+            JOptionPane.YES_NO_OPTION, 
+            JOptionPane.QUESTION_MESSAGE);
+            
+        if (confirm == JOptionPane.YES_OPTION) {
+            // 2. Xóa sạch dữ liệu tài khoản và quyền trên RAM
+            config.SessionManager.logout();
+            
+            // 3. Đóng cửa sổ MainFrame hiện tại
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (parentFrame != null) {
+                parentFrame.dispose();
+            }
+            
+            // 4. Mở lại màn hình Login
+            SwingUtilities.invokeLater(() -> new GUI.Login().setVisible(true));
+        }
     }
 
     private void setActiveButton(JButton btn) {

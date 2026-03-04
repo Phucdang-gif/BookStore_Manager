@@ -134,7 +134,11 @@ public class PermissionDialog extends JDialog {
             boolean isSuccess = permissionDetailBUS.saveAllPermissions(permissionGroupId, listNewPerms);
             
             if (isSuccess) {
-                JOptionPane.showMessageDialog(this, "Đã lưu lại cấu hình phân quyền thành công!");
+                // Thay vì chỉ báo "Thành công" cụt lủn, hãy báo như một phần mềm chuyên nghiệp:
+                JOptionPane.showMessageDialog(this, 
+            "Đã cập nhật phân quyền thành công!\nCác thay đổi sẽ được áp dụng vào lần đăng nhập tiếp theo của tài khoản.", 
+            "Thông báo hệ thống", 
+                        JOptionPane.INFORMATION_MESSAGE);
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Lưu thất bại! Hàm DAO trả về false.", "Lỗi", JOptionPane.ERROR_MESSAGE);

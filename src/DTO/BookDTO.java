@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.text.NumberFormat;
 import java.sql.Timestamp;
-import DTO.AuthorDTO;
 
 public class BookDTO {
     private int bookId; // book_id
