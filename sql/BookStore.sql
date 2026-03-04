@@ -2,6 +2,27 @@
 -- BOOKSTORE DATABASE - FULL SETUP SCRIPT
 -- Có thể chạy trên máy bất kỳ (tự tạo DB mới)
 -- =============================================
+-- Quy hoạch dải ID (mỗi bảng 150 ID):
+--   employees               :    1 –  150
+--   permission_groups       :  151 –  300
+--   accounts                :  301 –  450
+--   functions               :  451 –  600
+--   permission_details      :  601 –  750
+--   customers               :  751 –  900
+--   point_redemption_history:  901 – 1050
+--   publishers              : 1051 – 1200
+--   categories              : 1201 – 1350
+--   books                   : 1351 – 1500
+--   authors                 : 1501 – 1650
+--   book_authors            : 1651 – 1800
+--   invoices                : 1801 – 1950
+--   invoice_details         : 1951 – 2100
+--   discount_services       : 2101 – 2250
+--   invoice_services        : 2251 – 2400
+--   suppliers               : 2401 – 2550
+--   import_receipts         : 2551 – 2700
+--   import_receipt_details  : 2701 – 2850
+-- =============================================
 
 DROP DATABASE IF EXISTS bookstore_db;
 CREATE DATABASE bookstore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -24,7 +45,7 @@ CREATE TABLE employees (
     termination_date DATE,
     status         ENUM('active', 'inactive') DEFAULT 'active',
     avatar         VARCHAR(255)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=1;
 
 CREATE TABLE permission_groups (
     permission_group_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,7 +64,7 @@ CREATE TABLE accounts (
     created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id)         REFERENCES employees(employee_id),
     FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=301;
 
 CREATE TABLE functions (
     function_id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -60,7 +81,7 @@ CREATE TABLE permission_details (
     assigned_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (permission_group_id) REFERENCES permission_groups(permission_group_id),
     FOREIGN KEY (function_id)         REFERENCES functions(function_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=601;
 
 CREATE TABLE customers (
     customer_id       INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,7 +99,7 @@ CREATE TABLE point_redemption_history (
     redemption_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     redemption_type VARCHAR(50),
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=901;
 
 CREATE TABLE publishers (
     publisher_id   INT AUTO_INCREMENT PRIMARY KEY,
@@ -127,7 +148,7 @@ CREATE TABLE book_authors (
     display_order  INT,
     FOREIGN KEY (book_id)   REFERENCES books(book_id),
     FOREIGN KEY (author_id) REFERENCES authors(author_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=1651;
 
 CREATE TABLE invoices (
     invoice_id     INT AUTO_INCREMENT PRIMARY KEY,
@@ -156,7 +177,7 @@ CREATE TABLE invoice_details (
     subtotal   DECIMAL(15,2),
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
     FOREIGN KEY (book_id)    REFERENCES books(book_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=1951;
 
 CREATE TABLE discount_services (
     service_id       INT AUTO_INCREMENT PRIMARY KEY,
@@ -169,7 +190,7 @@ CREATE TABLE discount_services (
     end_date         DATETIME,
     status           ENUM('active', 'inactive') DEFAULT 'active',
     description      TEXT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=2101;
 
 CREATE TABLE invoice_services (
     invoice_service_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -180,14 +201,14 @@ CREATE TABLE invoice_services (
     description        TEXT,
     FOREIGN KEY (invoice_id) REFERENCES invoices(invoice_id),
     FOREIGN KEY (service_id) REFERENCES discount_services(service_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=2251;
 
 CREATE TABLE suppliers (
     supplier_id   INT AUTO_INCREMENT PRIMARY KEY,
     supplier_name VARCHAR(100) NOT NULL,
     phone         VARCHAR(15),
     status        ENUM('active', 'inactive') DEFAULT 'active'
-) ENGINE=InnoDB AUTO_INCREMENT=2701;
+) ENGINE=InnoDB AUTO_INCREMENT=2401;
 
 CREATE TABLE import_receipts (
     receipt_id   INT AUTO_INCREMENT PRIMARY KEY,
@@ -200,7 +221,7 @@ CREATE TABLE import_receipts (
     notes        TEXT,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=2551;
 
 CREATE TABLE import_receipt_details (
     detail_id   INT AUTO_INCREMENT PRIMARY KEY,
@@ -212,7 +233,7 @@ CREATE TABLE import_receipt_details (
     expiry_date DATE,
     FOREIGN KEY (receipt_id) REFERENCES import_receipts(receipt_id),
     FOREIGN KEY (book_id)    REFERENCES books(book_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB AUTO_INCREMENT=2701;
 
 CREATE TABLE system_parameters (
     parameter_code  VARCHAR(50) PRIMARY KEY,
@@ -234,28 +255,28 @@ CREATE INDEX idx_receipt_date    ON import_receipts(import_date);
 -- PHẦN 2: DỮ LIỆU MẪU
 -- =============================================
 
--- 1. NHÂN VIÊN  (employee_id: 1–4)
+-- 1. NHÂN VIÊN  (1–150)
 INSERT INTO employees (employee_id, full_name, date_of_birth, gender, phone, address, position, salary, hire_date, status) VALUES
 (1, 'Nguyễn Văn An',  '1990-05-15', 'male',   '0901234567', '123 Lê Lợi, Quận 1, TP.HCM',        'Quản lý',             15000000, '2020-01-10', 'active'),
 (2, 'Trần Thị Bình',  '1995-08-20', 'female', '0912345678', '456 Trần Hưng Đạo, Quận 5, TP.HCM', 'Nhân viên bán hàng',   8000000, '2021-03-15', 'active'),
 (3, 'Lê Hoàng Châu',  '1992-12-10', 'male',   '0923456789', '789 Nguyễn Huệ, Quận 1, TP.HCM',    'Thủ kho',              9000000, '2021-06-20', 'active'),
 (4, 'Phạm Thị Dung',  '1988-03-25', 'female', '0934567890', '321 Võ Văn Tần, Quận 3, TP.HCM',    'Kế toán',             12000000, '2019-11-05', 'active');
 
--- 2. NHÓM QUYỀN  (permission_group_id: 151–154)
+-- 2. NHÓM QUYỀN  (151–300)
 INSERT INTO permission_groups (permission_group_id, group_name, status) VALUES
 (151, 'Quản trị viên',      'active'),
 (152, 'Nhân viên bán hàng', 'active'),
 (153, 'Thủ kho',            'active'),
 (154, 'Kế toán',            'active');
 
--- 3. TÀI KHOẢN
-INSERT INTO accounts (employee_id, permission_group_id, username, password, status) VALUES
-(1, 151, 'admin',    'admin123', 'active'),
-(2, 152, 'nvbh01',   'bh123456', 'active'),
-(3, 153, 'thukho01', 'tk123456', 'active'),
-(4, 154, 'ketoan01', 'kt123456', 'active');
+-- 3. TÀI KHOẢN  (301–450)
+INSERT INTO accounts (account_id, employee_id, permission_group_id, username, password, status) VALUES
+(301, 1, 151, 'admin',    'admin123', 'active'),
+(302, 2, 152, 'nvbh01',   'bh123456', 'active'),
+(303, 3, 153, 'thukho01', 'tk123456', 'active'),
+(304, 4, 154, 'ketoan01', 'kt123456', 'active');
 
--- 4. CHỨC NĂNG  (function_id: 451–459)
+-- 4. CHỨC NĂNG  (451–600)
 INSERT INTO functions (function_id, function_name, system_function_code, function_group) VALUES
 (451, 'Quản lý sách',       'BOOK',       'Quản lý kho'),
 (452, 'Danh mục',           'CATEGORY',   'Quản lý kho'),
@@ -267,52 +288,49 @@ INSERT INTO functions (function_id, function_name, system_function_code, functio
 (458, 'Quản lý tài khoản',  'ACCOUNT',    'Quản lý hệ thống'),
 (459, 'Phân quyền',         'PERMISSION', 'Quản lý hệ thống');
 
--- 5. PHÂN QUYỀN
--- Admin (151): toàn quyền tất cả chức năng
-INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
-(151, 451, 'Xem,Thêm,Sửa,Xóa'),
-(151, 452, 'Xem,Thêm,Sửa,Xóa'),
-(151, 453, 'Xem,Thêm,Sửa,Xóa'),
-(151, 454, 'Xem,Thêm,Sửa,Xóa'),
-(151, 455, 'Xem,Thêm,Sửa,Xóa'),
-(151, 456, 'Xem,Thêm,Sửa,Xóa'),
-(151, 457, 'Xem,Thêm,Sửa,Xóa'),
-(151, 458, 'Xem,Thêm,Sửa,Xóa'),
-(151, 459, 'Xem,Thêm,Sửa,Xóa');
-
+-- 5. PHÂN QUYỀN  (601–750)
+-- Admin (151): toàn quyền
+INSERT INTO permission_details (detail_id, permission_group_id, function_id, actions) VALUES
+(601, 151, 451, 'Xem,Thêm,Sửa,Xóa'),
+(602, 151, 452, 'Xem,Thêm,Sửa,Xóa'),
+(603, 151, 453, 'Xem,Thêm,Sửa,Xóa'),
+(604, 151, 454, 'Xem,Thêm,Sửa,Xóa'),
+(605, 151, 455, 'Xem,Thêm,Sửa,Xóa'),
+(606, 151, 456, 'Xem,Thêm,Sửa,Xóa'),
+(607, 151, 457, 'Xem,Thêm,Sửa,Xóa'),
+(608, 151, 458, 'Xem,Thêm,Sửa,Xóa'),
+(609, 151, 459, 'Xem,Thêm,Sửa,Xóa');
 -- Nhân viên bán hàng (152)
-INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
-(152, 451, 'Xem'),
-(152, 452, 'Xem'),
-(152, 453, 'Xem,Thêm,Sửa'),
-(152, 455, 'Xem,Thêm'),
-(152, 456, 'Xem');
-
+INSERT INTO permission_details (detail_id, permission_group_id, function_id, actions) VALUES
+(610, 152, 451, 'Xem'),
+(611, 152, 452, 'Xem'),
+(612, 152, 453, 'Xem,Thêm,Sửa'),
+(613, 152, 455, 'Xem,Thêm'),
+(614, 152, 456, 'Xem');
 -- Thủ kho (153)
-INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
-(153, 451, 'Xem,Thêm,Sửa'),
-(153, 452, 'Xem,Thêm,Sửa'),
-(153, 454, 'Xem,Thêm,Sửa');
-
+INSERT INTO permission_details (detail_id, permission_group_id, function_id, actions) VALUES
+(615, 153, 451, 'Xem,Thêm,Sửa'),
+(616, 153, 452, 'Xem,Thêm,Sửa'),
+(617, 153, 454, 'Xem,Thêm,Sửa');
 -- Kế toán (154)
-INSERT INTO permission_details (permission_group_id, function_id, actions) VALUES
-(154, 454, 'Xem'),
-(154, 455, 'Xem'),
-(154, 456, 'Xem,Thêm,Sửa');
+INSERT INTO permission_details (detail_id, permission_group_id, function_id, actions) VALUES
+(618, 154, 454, 'Xem'),
+(619, 154, 455, 'Xem'),
+(620, 154, 456, 'Xem,Thêm,Sửa');
 
--- 6. KHÁCH HÀNG  (customer_id: 751–754)
+-- 6. KHÁCH HÀNG  (751–900)
 INSERT INTO customers (customer_id, full_name, phone, loyalty_points, registration_date) VALUES
 (751, 'Võ Minh Tuấn',  '0945678901', 150, '2023-01-15'),
 (752, 'Hoàng Thị Mai', '0956789012', 320, '2023-03-20'),
 (753, 'Đặng Văn Nam',  '0967890123',  80, '2023-06-10'),
 (754, 'Bùi Thị Lan',   '0978901234', 500, '2022-12-05');
 
--- 7. LỊCH SỬ QUY ĐỔI ĐIỂM
-INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_type) VALUES
-(752, 100, 10000, 'Giảm giá hóa đơn'),
-(754, 200, 20000, 'Giảm giá hóa đơn');
+-- 7. LỊCH SỬ QUY ĐỔI ĐIỂM  (901–1050)
+INSERT INTO point_redemption_history (history_id, customer_id, points_redeemed, value_received, redemption_type) VALUES
+(901, 752, 100, 10000, 'Giảm giá hóa đơn'),
+(902, 754, 200, 20000, 'Giảm giá hóa đơn');
 
--- 8. NHÀ XUẤT BẢN  (publisher_id: 1051–1064)
+-- 8. NHÀ XUẤT BẢN  (1051–1200)
 INSERT INTO publishers (publisher_id, publisher_name, phone, status) VALUES
 (1051, 'Nhà xuất bản Trẻ',                     '0283822711', 'active'),
 (1052, 'Nhà xuất bản Kim Đồng',                '0283943344', 'active'),
@@ -329,7 +347,7 @@ INSERT INTO publishers (publisher_id, publisher_name, phone, status) VALUES
 (1063, 'Nhà xuất bản Đại học Quốc gia Hà Nội', '0243754773', 'active'),
 (1064, 'Nhà xuất bản Công Thương',             '0243934168', 'active');
 
--- 9. THỂ LOẠI  (category_id: 1201–1214)
+-- 9. THỂ LOẠI  (1201–1350)
 INSERT INTO categories (category_id, category_name, display_order, status) VALUES
 (1201, 'Văn học Việt Nam',            1,  'active'),
 (1202, 'Văn học nước ngoài',          2,  'active'),
@@ -346,7 +364,7 @@ INSERT INTO categories (category_id, category_name, display_order, status) VALUE
 (1213, 'Y học - Sức khỏe',            13, 'active'),
 (1214, 'Truyện Tranh (Manga/Comic)',   14, 'active');
 
--- 10. SÁCH  (book_id: 1351–1364)
+-- 10. SÁCH  (1351–1500)
 INSERT INTO books (book_id, publisher_id, category_id, isbn, book_title, page_count, language, publication_year, cover_type, import_price, selling_price, stock_quantity, minimum_stock, image, status) VALUES
 (1351, 1051, 1201, '9786041002345', 'Tôi Thấy Hoa Vàng Trên Cỏ Xanh',        368, 'Tiếng Việt', 2018, 'Bìa mềm',  65000,  95000,  50, 10, 'hoa_vang.jpg',         'in_stock'),
 (1352, 1052, 1203, '9786042134567', 'Doraemon - Nobita Và Hành Tinh Màu Tím', 196, 'Tiếng Việt', 2023, 'Bìa mềm',  15000,  25000, 100, 20, 'doraemon.jpg',          'in_stock'),
@@ -363,7 +381,7 @@ INSERT INTO books (book_id, publisher_id, category_id, isbn, book_title, page_co
 (1363, 1058, 1208, '9786049890123', 'Đại Dương Đen',                            320, 'Tiếng Việt', 2023, 'Bìa mềm',  95000, 165000,  60, 10, 'dai_duong_den.jpg',     'in_stock'),
 (1364, 1060, 1208, '9786046901234', 'Phép Lạ Của Sự Tỉnh Thức',                150, 'Tiếng Việt', 2020, 'Bìa mềm',  30000,  59000,  80, 15, 'phep_la_tinh_thuc.jpg', 'in_stock');
 
--- 11. TÁC GIẢ  (author_id: 1501–1514)
+-- 11. TÁC GIẢ  (1501–1650)
 INSERT INTO authors (author_id, author_name) VALUES
 (1501, 'Nguyễn Nhật Ánh'),
 (1502, 'Fujiko F. Fujio'),
@@ -380,64 +398,64 @@ INSERT INTO authors (author_id, author_name) VALUES
 (1513, 'Đặng Hoàng Giang'),
 (1514, 'Thiền sư Thích Nhất Hạnh');
 
--- 12. SÁCH - TÁC GIẢ
-INSERT INTO book_authors (book_id, author_id, display_order) VALUES
-(1351, 1501, 1),
-(1352, 1502, 1),
-(1353, 1503, 1),
-(1354, 1504, 1),
-(1355, 1505, 1),
-(1356, 1506, 1),
-(1357, 1507, 1),
-(1358, 1508, 1),
-(1359, 1509, 1),
-(1360, 1510, 1),
-(1361, 1511, 1),
-(1362, 1512, 1),
-(1363, 1513, 1),
-(1364, 1514, 1);
+-- 12. SÁCH - TÁC GIẢ  (1651–1800)
+INSERT INTO book_authors (book_author_id, book_id, author_id, display_order) VALUES
+(1651, 1351, 1501, 1),
+(1652, 1352, 1502, 1),
+(1653, 1353, 1503, 1),
+(1654, 1354, 1504, 1),
+(1655, 1355, 1505, 1),
+(1656, 1356, 1506, 1),
+(1657, 1357, 1507, 1),
+(1658, 1358, 1508, 1),
+(1659, 1359, 1509, 1),
+(1660, 1360, 1510, 1),
+(1661, 1361, 1511, 1),
+(1662, 1362, 1512, 1),
+(1663, 1363, 1513, 1),
+(1664, 1364, 1514, 1);
 
--- 13. HÓA ĐƠN  (invoice_id: 1801–1804)
+-- 13. HÓA ĐƠN  (1801–1950)
 INSERT INTO invoices (invoice_id, customer_id, employee_id, total_amount, total_discount, final_amount, payment_method, status) VALUES
 (1801, 751, 2, 190000, 10000, 180000, 'Tiền mặt',     'Completed'),
 (1802, 752, 2,  79000,  5000,  69000, 'Chuyển khoản', 'Completed'),
 (1803, 753, 2, 120000,     0, 120000, 'Tiền mặt',     'Completed'),
 (1804, 754, 2, 258000, 20000, 238000, 'Thẻ',          'Completed');
 
--- 14. CHI TIẾT HÓA ĐƠN
-INSERT INTO invoice_details (invoice_id, book_id, quantity, unit_price, subtotal) VALUES
-(1801, 1351, 2,  95000, 190000),
-(1802, 1353, 1,  79000,  79000),
-(1803, 1352, 4,  25000, 100000),
-(1804, 1354, 3,  86000, 258000);
+-- 14. CHI TIẾT HÓA ĐƠN  (1951–2100)
+INSERT INTO invoice_details (detail_id, invoice_id, book_id, quantity, unit_price, subtotal) VALUES
+(1951, 1801, 1351, 2,  95000, 190000),
+(1952, 1802, 1353, 1,  79000,  79000),
+(1953, 1803, 1352, 4,  25000, 100000),
+(1954, 1804, 1354, 3,  86000, 258000);
 
--- 15. DỊCH VỤ GIẢM GIÁ / KHUYẾN MÃI
-INSERT INTO discount_services (service_name, discount_type, discount_value, status) VALUES
-('Giảm giá 10% cho hóa đơn trên 200k', 'Phần trăm',            10,    'active'),
-('Giảm 20k cho hóa đơn đầu tiên',       'Số tiền cố định',    20000,  'active'),
-('Giảm 15% cho sách thiếu nhi',         'Phần trăm',            15,    'active'),
-('Mua 3 tặng 1',                         'Khuyến mãi đặc biệt',  0,    'inactive');
+-- 15. DỊCH VỤ GIẢM GIÁ  (2101–2250)
+INSERT INTO discount_services (service_id, service_name, discount_type, discount_value, status) VALUES
+(2101, 'Giảm giá 10% cho hóa đơn trên 200k', 'Phần trăm',            10,    'active'),
+(2102, 'Giảm 20k cho hóa đơn đầu tiên',       'Số tiền cố định',    20000,  'active'),
+(2103, 'Giảm 15% cho sách thiếu nhi',         'Phần trăm',            15,    'active'),
+(2104, 'Mua 3 tặng 1',                         'Khuyến mãi đặc biệt',  0,    'inactive');
 
--- 16. NHÀ CUNG CẤP  (supplier_id: 2701–2704)
+-- 16. NHÀ CUNG CẤP  (2401–2550)
 INSERT INTO suppliers (supplier_id, supplier_name, phone, status) VALUES
-(2701, 'Công ty Sách Miền Nam',    '0287654321', 'active'),
-(2702, 'Công ty Phát hành Fahasa', '0287777888', 'active'),
-(2703, 'Công ty Sách Phương Nam',  '0283888999', 'active'),
-(2704, 'Công ty Sách Thiên Long',  '0289999000', 'active');
+(2401, 'Công ty Sách Miền Nam',    '0287654321', 'active'),
+(2402, 'Công ty Phát hành Fahasa', '0287777888', 'active'),
+(2403, 'Công ty Sách Phương Nam',  '0283888999', 'active'),
+(2404, 'Công ty Sách Thiên Long',  '0289999000', 'active');
 
--- 17. PHIẾU NHẬP
+-- 17. PHIẾU NHẬP  (2551–2700)
 INSERT INTO import_receipts (receipt_id, supplier_id, employee_id, total_amount, status) VALUES
-(1, 2701, 3, 3250000, 'Completed'),
-(2, 2702, 3, 1500000, 'Completed'),
-(3, 2703, 3, 3600000, 'Completed'),
-(4, 2704, 3, 3000000, 'Completed');
+(2551, 2401, 3, 3250000, 'Completed'),
+(2552, 2402, 3, 1500000, 'Completed'),
+(2553, 2403, 3, 3600000, 'Completed'),
+(2554, 2404, 3, 3000000, 'Completed');
 
--- 18. CHI TIẾT PHIẾU NHẬP
-INSERT INTO import_receipt_details (receipt_id, book_id, quantity, unit_price, subtotal) VALUES
-(1, 1351, 50,  65000, 3250000),
-(2, 1352, 100, 15000, 1500000),
-(3, 1353, 80,  45000, 3600000),
-(4, 1354, 60,  50000, 3000000);
+-- 18. CHI TIẾT PHIẾU NHẬP  (2701–2850)
+INSERT INTO import_receipt_details (detail_id, receipt_id, book_id, quantity, unit_price, subtotal) VALUES
+(2701, 2551, 1351, 50,  65000, 3250000),
+(2702, 2552, 1352, 100, 15000, 1500000),
+(2703, 2553, 1353, 80,  45000, 3600000),
+(2704, 2554, 1354, 60,  50000, 3000000);
 
 -- 19. THAM SỐ HỆ THỐNG
 INSERT INTO system_parameters (parameter_code, parameter_value, description) VALUES
