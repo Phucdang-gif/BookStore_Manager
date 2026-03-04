@@ -74,22 +74,22 @@ public class Sidebar extends JPanel {
         if (config.SessionManager.hasPermission(451, "Xem")) {
             items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
         }
-        if (config.SessionManager.hasPermission(455, "Xem")) {
+        if (config.SessionManager.hasPermission(452, "Xem")) {
             items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
         }
-        if (config.SessionManager.hasPermission(456, "Xem")) {
+        if (config.SessionManager.hasPermission(453, "Xem")) {
             items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
         }
         if (config.SessionManager.hasPermission(454, "Xem")) {
             items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
         }
-        if (config.SessionManager.hasPermission(453, "Xem")) {
+        if (config.SessionManager.hasPermission(455, "Xem")) {
             items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
         }
-        if (config.SessionManager.hasPermission(457, "Xem")) {
+        if (config.SessionManager.hasPermission(456, "Xem")) {
             items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
         }
-        if (config.SessionManager.hasPermission(452, "Xem")) {
+        if (config.SessionManager.hasPermission(457, "Xem")) {
             items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
         }
         if (config.SessionManager.hasPermission(458, "Xem")) {

@@ -105,9 +105,9 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         }
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
-        boolean canAdd = config.SessionManager.hasPermission(452, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(452, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(452, "Xóa");
+        boolean canAdd = config.SessionManager.hasPermission(457, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(457, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(457, "Xóa");
 
         return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
     }
