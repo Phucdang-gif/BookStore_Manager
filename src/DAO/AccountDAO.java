@@ -164,6 +164,7 @@ public class AccountDAO {
                 account.setPermissionGroupId(rs.getInt("permission_group_id"));
                 account.setUsername(rs.getString("username"));
                 account.setStatus(rs.getString("status"));
+                account.setPassword(rs.getString("password"));
                 // account.setFullName(rs.getString("full_name"));
                 // account.setAvatar(rs.getString("avatar"));
                 // account.setRoleName(rs.getString("group_name"));

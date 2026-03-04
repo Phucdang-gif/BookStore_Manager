@@ -56,8 +56,36 @@ public class AccountDialog extends JDialog {
         pnlForm.add(txtUsername);
 
         pnlForm.add(new JLabel("Mật Khẩu:"));
+        
+        // --- TÍNH NĂNG ẨN/HIỆN MẬT KHẨU ---
+        JPanel pnlPassword = new JPanel(new BorderLayout()); // Cái hộp chứa
         txtPassword = new JPasswordField();
-        pnlForm.add(txtPassword);
+        
+        JButton btnTogglePass = new JButton("Hiện"); // Nút bấm
+        btnTogglePass.setFocusPainted(false);
+        btnTogglePass.setBackground(new Color(240, 240, 240));
+        btnTogglePass.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Bắt sự kiện Click để chuyển đổi trạng thái
+        btnTogglePass.addActionListener(e -> {
+            if (txtPassword.getEchoChar() == (char) 0) {
+                // Mật khẩu đang HIỆN -> Đổi thành ẨN
+                txtPassword.setEchoChar('•'); // Trả về dấu chấm tròn
+                btnTogglePass.setText("Hiện");
+            } else {
+                // Mật khẩu đang ẨN -> Đổi thành HIỆN
+                txtPassword.setEchoChar((char) 0); // Ký tự null để hiển thị text thật
+                btnTogglePass.setText("Ẩn");
+            }
+        });
+        
+        // Ráp ô text và nút vào hộp
+        pnlPassword.add(txtPassword, BorderLayout.CENTER);
+        pnlPassword.add(btnTogglePass, BorderLayout.EAST);
+        
+        // Nhét cả hộp vào Form
+        pnlForm.add(pnlPassword);
+        // ----------------------------------
 
         pnlForm.add(new JLabel("Nhóm Quyền:"));
         cbPermissionGroup = new JComboBox<>();
@@ -107,6 +135,7 @@ public class AccountDialog extends JDialog {
             
             txtUsername.setText(currentAccount.getUsername());
             txtPassword.setText(currentAccount.getPassword());
+            
 
             // Chọn đúng Nhóm Quyền hiện tại
             for (int i = 0; i < cbPermissionGroup.getItemCount(); i++) {
@@ -123,9 +152,7 @@ public class AccountDialog extends JDialog {
                 cbPermissionGroup.setEnabled(false); 
                 btnSave.setVisible(false); 
                 btnCancel.setText("Đóng"); 
-            } else if (mode.equals("update")) {
-                txtUsername.setEditable(false); // Thường không cho đổi Username khi đã tạo
-            }
+            } 
         }
     }
 

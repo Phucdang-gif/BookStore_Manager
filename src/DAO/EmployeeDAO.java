@@ -98,7 +98,7 @@ public class EmployeeDAO {
         // Truy vấn: Lấy nhân viên mà khi JOIN sang bảng accounts, không tìm thấy ID tài khoản
         String sql = "SELECT e.* FROM employees e " +
                      "LEFT JOIN accounts a ON e.employee_id = a.employee_id " +
-                     "WHERE a.account_id IS NULL AND e.status = 'Active'"; 
+                     "WHERE a.account_id IS NULL AND e.status = 'active'"; 
                      // Chỉ cấp tài khoản cho nhân viên còn đang làm việc
         try {
             PreparedStatement ps = con.prepareStatement(sql);
