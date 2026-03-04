@@ -82,8 +82,13 @@ public class BookBUS {
                 if (newBook.getAuthors() != null && !newBook.getAuthors().isEmpty()) {
                     bookDAO.insertBookAuthors(newId, newBook.getAuthors());
                 }
+                if (newBook.getAuthorNames() == null || newBook.getAuthorNames().isEmpty()) {
+                    List<String> names = newBook.getAuthors().stream().map(a -> a.getAuthorName())
+                            .collect(Collectors.toList());
+                    newBook.setAuthorNames(names);
+                }
                 listBook.add(newBook);
-                return vr; // isValid() == true
+                return vr;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,13 +114,19 @@ public class BookBUS {
         try {
             boolean updated = bookDAO.updateBook(book);
             if (updated) {
+                if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
+                    List<String> names = book.getAuthors().stream()
+                            .map(a -> a.getAuthorName())
+                            .collect(Collectors.toList());
+                    book.setAuthorNames(names);
+                }
                 for (int i = 0; i < listBook.size(); i++) {
                     if (listBook.get(i).getBookId() == book.getBookId()) {
                         listBook.set(i, book);
                         break;
                     }
                 }
-                return vr; // isValid() == true
+                return vr;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -184,6 +195,18 @@ public class BookBUS {
             e.printStackTrace();
             return new ArrayList<>();
         }
+    }
+
+    public ArrayList<BookDTO> filterBooks(int catId, int pubId, int authorId) {
+        if (catId == 0 && pubId == 0 && authorId == 0)
+            return getAll();
+        return listBook.stream().filter(b -> {
+            boolean matchCat = catId == 0 || b.getCategoryId() == catId;
+            boolean matchPub = pubId == 0 || b.getPublisherId() == pubId;
+            boolean matchAut = authorId == 0 || b.getAuthors().stream()
+                    .anyMatch(a -> a.getAuthorId() == authorId);
+            return matchCat && matchPub && matchAut;
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     // ===================== IMPORT EXCEL =====================

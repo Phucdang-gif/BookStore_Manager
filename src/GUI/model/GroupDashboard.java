@@ -142,7 +142,7 @@ public class GroupDashboard extends JPanel {
         // --- C. GÁN SỰ KIỆN LỌC ---
         ActionListener filterAction = e -> {
             if (!isLoadingFilter)
-                applyFilters(e.getSource());
+                applyFilters();
         };
         cbFilterCategory.addActionListener(filterAction);
         cbFilterPublisher.addActionListener(filterAction);
@@ -204,31 +204,44 @@ public class GroupDashboard extends JPanel {
         pnlListContent.repaint();
     }
 
-    private void applyFilters(Object source) {
-        ArrayList<BookDTO> results = null;
-        isLoadingFilter = true;
-
-        if (source == cbFilterCategory) {
-            int id = ((FilterItem) cbFilterCategory.getSelectedItem()).id;
-            cbFilterPublisher.setSelectedIndex(0);
-            cbFilterAuthor.setSelectedIndex(0);
-            results = bookBUS.getBooksByCategory(id);
-
-        } else if (source == cbFilterPublisher) {
-            int id = ((FilterItem) cbFilterPublisher.getSelectedItem()).id;
-            cbFilterCategory.setSelectedIndex(0);
-            cbFilterAuthor.setSelectedIndex(0);
-            results = bookBUS.getBooksByPublisher(id);
-
-        } else if (source == cbFilterAuthor) {
-            int id = ((FilterItem) cbFilterAuthor.getSelectedItem()).id;
-            cbFilterCategory.setSelectedIndex(0);
-            cbFilterPublisher.setSelectedIndex(0);
-            results = bookBUS.getBooksByAuthor(id);
+    private void applyFilters() {
+        // 1. Lấy các giá trị ID đang chọn từ Combobox
+        // Nếu chưa khởi tạo xong hoặc combobox null thì bỏ qua
+        if (isLoadingFilter || cbFilterCategory.getSelectedItem() == null)
+            return;
+        int selectedCatId = ((FilterItem) cbFilterCategory.getSelectedItem()).id;
+        int selectedPubId = ((FilterItem) cbFilterPublisher.getSelectedItem()).id;
+        int selectedAuId = ((FilterItem) cbFilterAuthor.getSelectedItem()).id;
+        // 2. Lấy danh sách gốc (Tất cả sách)
+        ArrayList<BookDTO> allBooks = bookBUS.getAll();
+        ArrayList<BookDTO> filteredList = new ArrayList<>();
+        // 3. Vòng lặp lọc theo logic AND (Thỏa mãn TẤT CẢ tiêu chí)
+        for (BookDTO book : allBooks) {
+            // Kiểm tra Thể loại (0 là "Tất cả")
+            boolean matchCat = (selectedCatId == 0) || (book.getCategoryId() == selectedCatId);
+            // Kiểm tra NXB
+            boolean matchPub = (selectedPubId == 0) || (book.getPublisherId() == selectedPubId);
+            // Kiểm tra Tác giả
+            boolean matchAu = false;
+            if (selectedAuId == 0) {
+                matchAu = true; // chọn tất cả
+            } else {
+                if (book.getAuthors() != null) {
+                    for (AuthorDTO a : book.getAuthors()) {
+                        if (a.getAuthorId() == selectedAuId) {
+                            matchAu = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            // Nếu thỏa mãn cả 3 thì thêm vào danh sách kết quả
+            if (matchCat && matchPub && matchAu) {
+                filteredList.add(book);
+            }
         }
-
-        isLoadingFilter = false;
-        refreshData(results);
+        // 4. Hiển thị lại dữ liệu đã lọc
+        refreshData(filteredList);
     }
 
     public void resetFilters() {

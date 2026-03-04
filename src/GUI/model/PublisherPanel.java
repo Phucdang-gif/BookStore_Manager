@@ -120,7 +120,7 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
         DTO.AccountDTO currentAcc = config.SessionManager.getCurrentAccount();
         if (currentAcc == null)
             return new boolean[] { false, false, false, false, false, false };
-        return new boolean[] { true, true, true, true, false, false };
+        return new boolean[] { true, true, true, false, false, false };
     }
 
     // ===================== UTILS =====================

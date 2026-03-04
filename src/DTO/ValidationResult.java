@@ -27,4 +27,18 @@ public class ValidationResult {
         errors.values().forEach(msg -> sb.append("• ").append(msg).append("\n"));
         return sb.toString().trim();
     }
+
+    public boolean showAlert(java.awt.Component parentComponent) {
+        if (isValid()) {
+            return true; // Dữ liệu đúng, cho phép đi tiếp
+        } else {
+            // Dữ liệu sai, hiện thông báo lỗi
+            javax.swing.JOptionPane.showMessageDialog(
+                    parentComponent,
+                    this.getSummary(), // Lấy toàn bộ lỗi
+                    "Thông báo lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            return false; // Dữ liệu sai, báo hiệu dừng lại
+        }
+    }
 }

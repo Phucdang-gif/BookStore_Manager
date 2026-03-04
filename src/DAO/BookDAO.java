@@ -73,7 +73,8 @@ public class BookDAO {
 
         // Câu lệnh SQL nâng cấp: JOIN 5 bảng và gộp tên tác giả
         String sql = "SELECT b.*, p.publisher_name, c.category_name, " +
-                "GROUP_CONCAT(a.author_name SEPARATOR ', ') AS authors_list " + // <--- MỚI
+                "GROUP_CONCAT(a.author_name SEPARATOR '||') AS authors_list, " +
+                "GROUP_CONCAT(a.author_id SEPARATOR '||') AS author_ids " +
                 "FROM books b " +
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
@@ -89,18 +90,30 @@ public class BookDAO {
             while (rs.next()) {
                 BookDTO book = mapResultSetToBook(rs);
                 // --- XỬ LÝ DANH SÁCH TÁC GIẢ ---
-                String authorsStr = rs.getString("authors_list"); // Lấy chuỗi "Tác giả A, Tác giả B"
+                String authorsStr = rs.getString("authors_list");
+                String authorIdsStr = rs.getString("author_ids");
                 List<String> authorNames = new ArrayList<>();
+                List<AuthorDTO> authorList = new ArrayList<>();
 
                 if (authorsStr != null && !authorsStr.isEmpty()) {
-                    // Tách chuỗi thành mảng dựa trên dấu phẩy
-                    String[] arr = authorsStr.split(", ");
-                    for (String s : arr) {
-                        authorNames.add(s);
+                    String[] arrNames = authorsStr.split("\\|\\|"); // Split theo ||
+                    String[] arrIds = authorIdsStr.split("\\|\\|"); // Split theo ||
+
+                    for (int i = 0; i < arrNames.length; i++) {
+                        String name = arrNames[i];
+                        authorNames.add(name);
+                        try {
+                            if (i < arrIds.length) {
+                                int id = Integer.parseInt(arrIds[i]);
+                                authorList.add(new AuthorDTO(id, name));
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
                 book.setAuthorNames(authorNames);
-
+                book.setAuthors(authorList);
                 books.add(book);
             }
         }
