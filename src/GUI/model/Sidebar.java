@@ -139,7 +139,7 @@ public class Sidebar extends JPanel {
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER); // Chỉ cuộn dọc
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setPreferredSize(new Dimension(8, 0));
+        scrollPane.setPreferredSize(new Dimension(5, 0));
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setOpaque(false);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
@@ -214,12 +214,8 @@ public class Sidebar extends JPanel {
     }
 
     public void toggle() {
-        // Đảo ngược trạng thái hiển thị
         boolean isShow = !this.isVisible();
         this.setVisible(isShow);
-
-        // Nếu muốn mượt hơn thì dùng Timer để thay đổi width (nâng cao),
-        // nhưng setVisible là cách nhanh và ổn định nhất cho BorderLayout.
         this.revalidate();
         this.repaint();
     }

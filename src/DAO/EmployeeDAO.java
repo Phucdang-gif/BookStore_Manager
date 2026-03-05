@@ -11,7 +11,7 @@ public class EmployeeDAO {
         ArrayList<EmployeeDTO> list = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM employees ORDER BY employee_id ASC";
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -28,6 +28,7 @@ public class EmployeeDAO {
                 emp.setHireDate(rs.getDate("hire_date"));
                 emp.setTerminationDate(rs.getDate("termination_date"));
                 emp.setStatus(rs.getString("status") != null ? rs.getString("status") : "active");
+                emp.setAvatar(rs.getString("avatar") != null ? rs.getString("avatar") : null);
                 list.add(emp);
             }
         } catch (SQLException e) {
@@ -38,7 +39,7 @@ public class EmployeeDAO {
 
     public boolean insert(EmployeeDTO emp) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "INSERT INTO employees (full_name, date_of_birth, gender, phone, address, position, salary, hire_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')";
+        String sql = "INSERT INTO employees (full_name, date_of_birth, gender, phone, address, position, salary, hire_date, avatar, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,'active')";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, emp.getFullName());
@@ -49,6 +50,7 @@ public class EmployeeDAO {
             ps.setString(6, emp.getPosition());
             ps.setDouble(7, emp.getSalary());
             ps.setDate(8, emp.getHireDate());
+            ps.setString(9, emp.getAvatar());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -58,7 +60,7 @@ public class EmployeeDAO {
 
     public boolean update(EmployeeDTO emp) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "UPDATE employees SET full_name=?, date_of_birth=?, gender=?, phone=?, address=?, position=?, salary=?, hire_date=? WHERE employee_id=?";
+        String sql = "UPDATE employees SET full_name=?, date_of_birth=?, gender=?, phone=?, address=?, position=?, salary=?, hire_date=?, avatar = ? WHERE employee_id=?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, emp.getFullName());
@@ -69,7 +71,8 @@ public class EmployeeDAO {
             ps.setString(6, emp.getPosition());
             ps.setDouble(7, emp.getSalary());
             ps.setDate(8, emp.getHireDate());
-            ps.setInt(9, emp.getEmployeeId());
+            ps.setString(9, emp.getAvatar());
+            ps.setInt(10, emp.getEmployeeId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,16 +93,18 @@ public class EmployeeDAO {
             return false;
         }
     }
+
     // Lấy danh sách nhân viên CHƯA được cấp tài khoản
     public ArrayList<EmployeeDTO> getEmployeesWithoutAccount() {
         ArrayList<EmployeeDTO> list = new ArrayList<>();
         Connection con = config.DatabaseConnection.getInstance().getConnection();
-        
-        // Truy vấn: Lấy nhân viên mà khi JOIN sang bảng accounts, không tìm thấy ID tài khoản
+
+        // Truy vấn: Lấy nhân viên mà khi JOIN sang bảng accounts, không tìm thấy ID tài
+        // khoản
         String sql = "SELECT e.* FROM employees e " +
-                     "LEFT JOIN accounts a ON e.employee_id = a.employee_id " +
-                     "WHERE a.account_id IS NULL AND e.status = 'active'"; 
-                     // Chỉ cấp tài khoản cho nhân viên còn đang làm việc
+                "LEFT JOIN accounts a ON e.employee_id = a.employee_id " +
+                "WHERE a.account_id IS NULL AND e.status = 'active'";
+        // Chỉ cấp tài khoản cho nhân viên còn đang làm việc
         try {
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -108,7 +113,14 @@ public class EmployeeDAO {
                 emp.setEmployeeId(rs.getInt("employee_id"));
                 emp.setFullName(rs.getString("full_name"));
                 emp.setPhone(rs.getString("phone"));
-                // ... map các trường khác nếu cần ...
+                emp.setGender(rs.getString("gender"));
+                emp.setAddress(rs.getString("address"));
+                emp.setSalary(rs.getDouble("salary"));
+                emp.setPosition(rs.getString("position"));
+                emp.setHireDate(rs.getDate("hire_date"));
+                emp.setStatus(rs.getString("status"));
+                emp.setTerminationDate(rs.getDate("termination_date"));
+                emp.setAvatar(rs.getString("avatar"));
                 list.add(emp);
             }
         } catch (Exception e) {
@@ -116,6 +128,7 @@ public class EmployeeDAO {
         }
         return list;
     }
+
     public EmployeeDTO getById(int employeeId) {
         EmployeeDTO emp = null;
         Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -137,11 +150,12 @@ public class EmployeeDAO {
                 emp.setHireDate(rs.getDate("hire_date"));
                 emp.setStatus(rs.getString("status"));
                 emp.setTerminationDate(rs.getDate("termination_date"));
+                emp.setAvatar(rs.getString("avatar"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return emp;
-    
+
     }
 }

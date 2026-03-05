@@ -3,6 +3,7 @@ package BUS;
 import DAO.CustomerDAO;
 import DTO.CustomerDTO;
 import java.util.ArrayList;
+import DTO.ValidationResult;
 
 public class CustomerBUS {
 
@@ -17,34 +18,52 @@ public class CustomerBUS {
         return this.listCustomer;
     }
 
-    public boolean addCustomer(CustomerDTO dto) {
-        boolean isSuccess = customerDAO.insert(dto);
-        if (isSuccess) this.listCustomer = customerDAO.getAll(); // Refresh RAM
-        return isSuccess;
+    public ValidationResult addCustomer(CustomerDTO dto) {
+        ValidationResult vr = Validator.validateCustomer(dto, this.listCustomer);
+        if (!vr.isValid())
+            return vr;
+
+        if (customerDAO.insert(dto)) {
+            this.listCustomer = customerDAO.getAll();
+        } else {
+            vr.addError("system", "Lỗi hệ thống khi thêm khách hàng");
+        }
+        return vr;
     }
 
-    public boolean updateCustomer(CustomerDTO dto) {
-        boolean isSuccess = customerDAO.update(dto);
-        if (isSuccess) this.listCustomer = customerDAO.getAll(); // Refresh RAM
-        return isSuccess;
+    public ValidationResult updateCustomer(CustomerDTO dto) {
+        ValidationResult vr = Validator.validateCustomer(dto, this.listCustomer);
+        if (!vr.isValid())
+            return vr;
+        if (customerDAO.update(dto)) {
+            this.listCustomer = customerDAO.getAll();
+        } else {
+            vr.addError("system", "Lỗi hệ thống khi cập nhật khách hàng");
+        }
+        return vr;
     }
 
-    public boolean deleteCustomer(int customerId) {
-        boolean isSuccess = customerDAO.delete(customerId);
-        if (isSuccess) this.listCustomer = customerDAO.getAll(); // Refresh RAM
-        return isSuccess;
+    public ValidationResult deleteCustomer(int customerId) {
+        ValidationResult vr = new ValidationResult();
+        if (customerDAO.delete(customerId)) {
+            this.listCustomer = customerDAO.getAll();
+        } else {
+            vr.addError("system", "Không thể xóa khách hàng này");
+        }
+        return vr;
     }
 
     public ArrayList<CustomerDTO> search(String text) {
         ArrayList<CustomerDTO> result = new ArrayList<>();
         text = text.toLowerCase().trim();
-        
-        if (text.isEmpty()) return this.listCustomer;
+
+        if (text.isEmpty())
+            return this.listCustomer;
 
         for (CustomerDTO cus : listCustomer) {
-            if (String.valueOf(cus.getCustomerId()).contains(text) || 
-                cus.getFullName().toLowerCase().contains(text) || 
-                cus.getPhone().contains(text)) {
+            if (String.valueOf(cus.getCustomerId()).contains(text) ||
+                    cus.getFullName().toLowerCase().contains(text) ||
+                    cus.getPhone().contains(text)) {
                 result.add(cus);
             }
         }

@@ -34,6 +34,7 @@ public class MainPanel extends JPanel {
         authorBUS = new AuthorBUS();
         categoryBUS = new CategoryBUS();
         publisherBUS = new PublisherBUS();
+
         setLayout(new BorderLayout());
         setOpaque(true);
         setBackground(ThemeColor.bgPanel);
@@ -94,6 +95,7 @@ public class MainPanel extends JPanel {
             case "BOOK":
                 header.setController(pnlBook);
                 setHeaderVisible(true);
+
                 break;
             case "GROUP":
                 pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)

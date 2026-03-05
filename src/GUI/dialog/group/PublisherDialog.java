@@ -78,23 +78,13 @@ public class PublisherDialog extends JDialog {
             JOptionPane.showMessageDialog(this, publisher == null ? "Thêm thành công!" : "Cập nhật thành công!");
             dispose();
         } else {
-            resetBorders();
+            GUI.util.ValidationUI.resetAll(txtName, txtPhone);
             if (vr.getError("name") != null)
-                setError(txtName);
+                GUI.util.ValidationUI.setError(txtName, vr.getError("name"));
             if (vr.getError("phone") != null)
-                setError(txtPhone);
+                GUI.util.ValidationUI.setError(txtPhone, vr.getError("phone"));
             JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
         }
-    }
-
-    private void setError(JTextField field) {
-        field.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-    }
-
-    private void resetBorders() {
-        javax.swing.border.Border def = UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border");
-        txtName.setBorder(def);
-        txtPhone.setBorder(def);
     }
 
     public boolean isSuccess() {

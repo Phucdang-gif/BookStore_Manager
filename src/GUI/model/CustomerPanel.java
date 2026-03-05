@@ -96,15 +96,17 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Xác nhận xóa khách hàng này?\n(Không thể xóa nếu khách đã từng mua hàng)", "Cảnh báo",
                 JOptionPane.YES_NO_OPTION);
+
         if (confirm == JOptionPane.YES_OPTION) {
             int id = (int) table.getValueAt(row, 0);
-            if (customerBUS.deleteCustomer(id)) {
+            DTO.ValidationResult vr = customerBUS.deleteCustomer(id);
+
+            if (vr.isValid()) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 onRefresh();
             } else {
-                JOptionPane.showMessageDialog(this,
-                        "Không thể xóa! Khách hàng này đã có lịch sử hóa đơn trong hệ thống.", "Lỗi Xóa",
-                        JOptionPane.ERROR_MESSAGE);
+                // Hiển thị thông báo lỗi cụ thể từ hệ thống hoặc ràng buộc dữ liệu
+                JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi Xóa", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

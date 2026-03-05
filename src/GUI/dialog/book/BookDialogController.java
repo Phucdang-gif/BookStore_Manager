@@ -219,13 +219,14 @@ public class BookDialogController {
     // ===================== XỬ LÝ LƯU =====================
 
     private void handleSave() {
-        collectFormData();
+        BookDTO temp = collectFormData();
 
         ValidationResult vr = (mode == DialogMode.ADD)
-                ? bookBUS.addBook(bookDTO)
-                : bookBUS.updateBook(bookDTO);
+                ? bookBUS.addBook(temp)
+                : bookBUS.updateBook(temp);
 
         if (vr.isValid()) {
+            this.bookDTO = temp;
             isSuccess = true;
             JOptionPane.showMessageDialog(view,
                     mode == DialogMode.ADD ? "Thêm sách thành công!" : "Cập nhật thành công!");
@@ -237,56 +238,54 @@ public class BookDialogController {
     }
 
     /**
-     * Gán dữ liệu từ form vào DTO — không validate, chỉ thu thập.
+     * Gán dữ liệu từ form vào DTO
      */
-    private void collectFormData() {
-        if (bookDTO == null)
-            bookDTO = new BookDTO();
+    private BookDTO collectFormData() {
+        BookDTO tempBook = new BookDTO();
+        if (this.bookDTO != null && mode == DialogMode.EDIT) {
+            tempBook.setBookId(this.bookDTO.getBookId());
+        }
+        tempBook.setBookTitle(toTitleCase(view.txtTitle.getText()));
+        tempBook.setIsbn(view.txtIsbn.getText().trim().replace("-", ""));
+        tempBook.setLanguage(toTitleCase(view.txtLanguage.getText()));
+        tempBook.setPublicationYear(parseInt(view.txtYear.getText()));
+        tempBook.setPageCount(parseInt(view.txtPage.getText()));
+        tempBook.setImportPrice(parseDouble(view.txtPriceImport.getText()));
+        tempBook.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
+        tempBook.setStockQuantity(parseInt(view.txtQuantity.getText()));
+        tempBook.setMinimumStock(parseInt(view.txtMinStock.getText()));
+        tempBook.setCoverType(view.cbCoverType.getSelectedItem().toString());
+        tempBook.setAuthors(currentAuthors);
+        tempBook.setImage(selectedImagePath);
 
-        bookDTO.setBookTitle(toTitleCase(view.txtTitle.getText()));
-        bookDTO.setIsbn(view.txtIsbn.getText().trim().replace("-", ""));
-        bookDTO.setLanguage(toTitleCase(view.txtLanguage.getText()));
-        bookDTO.setPublicationYear(parseInt(view.txtYear.getText()));
-        bookDTO.setPageCount(parseInt(view.txtPage.getText()));
-        bookDTO.setImportPrice(parseDouble(view.txtPriceImport.getText()));
-        bookDTO.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
-        bookDTO.setStockQuantity(parseInt(view.txtQuantity.getText()));
-        bookDTO.setMinimumStock(parseInt(view.txtMinStock.getText()));
-        bookDTO.setCoverType(view.cbCoverType.getSelectedItem().toString());
-        bookDTO.setAuthors(currentAuthors);
-        bookDTO.setImage(selectedImagePath);
-
-        // Status
         switch (view.cbStatus.getSelectedItem().toString()) {
             case "Hết hàng":
-                bookDTO.setStatus("out_of_stock");
+                tempBook.setStatus("out_of_stock");
                 break;
             case "Ngừng kinh doanh":
-                bookDTO.setStatus("discontinued");
+                tempBook.setStatus("discontinued");
                 break;
             default:
-                bookDTO.setStatus("in_stock");
+                tempBook.setStatus("in_stock");
         }
-
-        // Category
         String selectedCat = view.cbCategory.getSelectedItem().toString();
         for (CategoryDTO cat : listCategories) {
             if (cat.getName().equals(selectedCat)) {
-                bookDTO.setCategoryId(cat.getId());
-                bookDTO.setCategoryName(cat.getName());
+                tempBook.setCategoryId(cat.getId());
+                tempBook.setCategoryName(cat.getName());
+                break;
+            }
+        }
+        String selectedPub = view.cbPublisher.getSelectedItem().toString();
+        for (PublisherDTO pub : listPublishers) {
+            if (pub.getName().equals(selectedPub)) {
+                tempBook.setPublisherId(pub.getId());
+                tempBook.setPublisherName(pub.getName());
                 break;
             }
         }
 
-        // Publisher
-        String selectedPub = view.cbPublisher.getSelectedItem().toString();
-        for (PublisherDTO pub : listPublishers) {
-            if (pub.getName().equals(selectedPub)) {
-                bookDTO.setPublisherId(pub.getId());
-                bookDTO.setPublisherName(pub.getName());
-                break;
-            }
-        }
+        return tempBook;
     }
 
     /**
@@ -308,14 +307,13 @@ public class BookDialogController {
         }
 
         // Reset tất cả
-        fieldMap.values().forEach(c -> view.setInputError(c, false));
+        fieldMap.values().forEach(c -> GUI.util.ValidationUI.reset(c));
 
         // Highlight field lỗi
         vr.getErrors().forEach((field, msg) -> {
             JComponent comp = fieldMap.get(field);
             if (comp != null) {
-                view.setInputError(comp, true);
-                comp.setToolTipText(msg);
+                GUI.util.ValidationUI.setError(comp, msg);
             }
         });
     }

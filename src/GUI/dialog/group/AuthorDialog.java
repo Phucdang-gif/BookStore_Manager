@@ -4,7 +4,6 @@ import BUS.AuthorBUS;
 import DTO.AuthorDTO;
 import DTO.ValidationResult;
 import GUI.util.ThemeColor;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -63,11 +62,11 @@ public class AuthorDialog extends JDialog {
             JOptionPane.showMessageDialog(this, author == null ? "Thêm thành công!" : "Cập nhật thành công!");
             dispose();
         } else {
-            // Highlight field nếu lỗi tên
-            txtAuthorName.setBorder(vr.getError("authorName") != null
-                    ? BorderFactory.createLineBorder(Color.RED, 2)
-                    : UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border"));
-            JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
+            GUI.util.ValidationUI.resetAll(txtAuthorName);
+            if (vr.getError("authorName") != null) {
+                GUI.util.ValidationUI.setError(txtAuthorName, vr.getError("authorName"));
+            }
+            JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
         }
     }
 

@@ -19,7 +19,7 @@ public class CustomerDialog extends JDialog {
         this.mode = mode;
         this.currentCus = cus;
         this.customerBUS = bus;
-        
+
         setTitle(mode.equals("add") ? "Thêm Khách Hàng Mới" : "Cập Nhật Thông Tin");
         setSize(400, 300);
         setLocationRelativeTo(null);
@@ -32,20 +32,20 @@ public class CustomerDialog extends JDialog {
         JPanel pnlForm = new JPanel(new GridLayout(4, 2, 10, 20));
         pnlForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        pnlForm.add(new JLabel("Họ và Tên:")); 
+        pnlForm.add(new JLabel("Họ và Tên:"));
         pnlForm.add(txtName = new JTextField());
-        
-        pnlForm.add(new JLabel("Số Điện Thoại:")); 
+
+        pnlForm.add(new JLabel("Số Điện Thoại:"));
         pnlForm.add(txtPhone = new JTextField());
-        
-        pnlForm.add(new JLabel("Điểm Tích Lũy:")); 
+
+        pnlForm.add(new JLabel("Điểm Tích Lũy:"));
         pnlForm.add(txtPoints = new JTextField());
         if (mode.equals("add")) {
             txtPoints.setText("0");
             txtPoints.setEditable(false); // Thêm mới thì điểm mặc định là 0
         }
 
-        pnlForm.add(new JLabel("Ngày Đăng Ký:")); 
+        pnlForm.add(new JLabel("Ngày Đăng Ký:"));
         pnlForm.add(lblDate = new JLabel(mode.equals("add") ? "Tự động tạo" : ""));
         lblDate.setForeground(Color.GRAY);
 
@@ -56,7 +56,8 @@ public class CustomerDialog extends JDialog {
         JButton btnCancel = new JButton("Hủy");
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> save());
-        pnlBtns.add(btnSave); pnlBtns.add(btnCancel);
+        pnlBtns.add(btnSave);
+        pnlBtns.add(btnCancel);
         add(pnlBtns, BorderLayout.SOUTH);
     }
 
@@ -73,29 +74,26 @@ public class CustomerDialog extends JDialog {
         String name = txtName.getText().trim();
         String phone = txtPhone.getText().trim();
         String pointsStr = txtPoints.getText().trim();
-
-        if (name.isEmpty() || phone.isEmpty() || pointsStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         try {
             int points = Integer.parseInt(pointsStr);
             CustomerDTO cus = new CustomerDTO(
-                mode.equals("add") ? 0 : currentCus.getCustomerId(), 
-                name, phone, points, null
-            );
+                    mode.equals("add") ? 0 : currentCus.getCustomerId(),
+                    name, phone, points, null);
 
-            boolean success = mode.equals("add") ? customerBUS.addCustomer(cus) : customerBUS.updateCustomer(cus);
-            
-            if (success) {
+            // 2. Gọi BUS và nhận ValidationResult (Thay vì boolean)
+            DTO.ValidationResult vr = mode.equals("add") ? customerBUS.addCustomer(cus)
+                    : customerBUS.updateCustomer(cus);
+
+            // 3. Kiểm tra tính hợp lệ từ BUS
+            if (vr.isValid()) {
                 JOptionPane.showMessageDialog(this, "Lưu thành công!");
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Lỗi khi lưu vào CSDL!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Điểm tích lũy phải là số!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Điểm tích lũy phải là số!", "Lỗi nhập liệu",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }

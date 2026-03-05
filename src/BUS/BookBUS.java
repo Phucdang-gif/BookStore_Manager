@@ -65,23 +65,15 @@ public class BookBUS {
      * - isValid() == false → có lỗi, dùng getError("field") để highlight GUI
      */
     public ValidationResult addBook(BookDTO newBook) {
-        ValidationResult vr = Validator.validateBook(newBook);
+        ValidationResult vr = Validator.validateBook(newBook, this.listBook);
         if (!vr.isValid())
             return vr;
-
-        BookDTO existing = getByIsbn(newBook.getIsbn());
-        if (existing != null) {
-            vr.addError("isbn", "Mã ISBN đã tồn tại (Sách: " + existing.getBookTitle() + ")");
-            return vr;
-        }
-
         try {
             int newId = bookDAO.insertBook(newBook);
             if (newId > 0) {
                 newBook.setBookId(newId);
-                if (newBook.getAuthors() != null && !newBook.getAuthors().isEmpty()) {
-                    bookDAO.insertBookAuthors(newId, newBook.getAuthors());
-                }
+
+                bookDAO.insertBookAuthors(newId, newBook.getAuthors());
                 if (newBook.getAuthorNames() == null || newBook.getAuthorNames().isEmpty()) {
                     List<String> names = newBook.getAuthors().stream().map(a -> a.getAuthorName())
                             .collect(Collectors.toList());
@@ -101,19 +93,11 @@ public class BookBUS {
     // ===================== CẬP NHẬT =====================
 
     public ValidationResult updateBook(BookDTO book) {
-        ValidationResult vr = Validator.validateBook(book);
+        ValidationResult vr = Validator.validateBook(book, this.listBook);
         if (!vr.isValid())
             return vr;
-
-        BookDTO existing = getByIsbn(book.getIsbn());
-        if (existing != null && existing.getBookId() != book.getBookId()) {
-            vr.addError("isbn", "Mã ISBN đã tồn tại (Sách: " + existing.getBookTitle() + ")");
-            return vr;
-        }
-
         try {
-            boolean updated = bookDAO.updateBook(book);
-            if (updated) {
+            if (bookDAO.updateBook(book)) {
                 if (book.getAuthors() != null && !book.getAuthors().isEmpty()) {
                     List<String> names = book.getAuthors().stream()
                             .map(a -> a.getAuthorName())

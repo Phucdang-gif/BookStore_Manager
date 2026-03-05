@@ -157,22 +157,10 @@ public class AccountDialog extends JDialog {
         }
     }
 
-    // ================== HÀM NÀY ĐÃ ĐƯỢC RÚT GỌN ==================
     private void saveAccount() {
         try {
             EmployeeDTO selectedEmp = (EmployeeDTO) cbEmployee.getSelectedItem();
             PermissionGroupDTO selectedGroup = (PermissionGroupDTO) cbPermissionGroup.getSelectedItem();
-
-            if (selectedEmp == null || selectedEmp.getEmployeeId() == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn một nhân viên cụ thể!", "Lỗi",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (selectedGroup == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhóm quyền!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
             String username = txtUsername.getText().trim();
             String password = new String(txtPassword.getPassword()).trim();
 
@@ -181,25 +169,31 @@ public class AccountDialog extends JDialog {
             if (mode.equals("add")) {
                 AccountDTO newAcc = new AccountDTO(0, selectedEmp.getEmployeeId(), selectedGroup.getPermissionGroupId(),
                         username, password, "active", null);
-
-                // Gọi BUS và nhận về ValidationResult
                 result = accountBUS.addAccount(newAcc);
 
             } else if (mode.equals("update")) {
                 currentAccount.setPassword(password);
                 currentAccount.setPermissionGroupId(selectedGroup.getPermissionGroupId());
-
-                // Gọi BUS và nhận về ValidationResult
+                currentAccount.setUsername(username);
                 result = accountBUS.updateAccount(currentAccount);
             } else {
                 return;
             }
 
-            // Dùng hàm showAlert để tự động hiện lỗi (nếu có)
-            if (result.showAlert(this)) {
-                // Nếu không có lỗi (isValid == true) -> Thành công
+            if (result.isValid()) {
                 JOptionPane.showMessageDialog(this, "Thao tác thành công!");
                 dispose();
+            } else {
+                GUI.util.ValidationUI.resetAll(txtUsername, txtPassword, cbPermissionGroup, cbEmployee);
+                if (result.getError("username") != null)
+                    GUI.util.ValidationUI.setError(txtUsername, result.getError("username"));
+                if (result.getError("password") != null)
+                    GUI.util.ValidationUI.setError(txtPassword, result.getError("password"));
+                if (result.getError("permissionGroupId") != null)
+                    GUI.util.ValidationUI.setError(cbPermissionGroup, result.getError("permissionGroupId"));
+                if (result.getError("employeeId") != null)
+                    GUI.util.ValidationUI.setError(cbEmployee, result.getError("employeeId"));
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
             }
 
         } catch (Exception ex) {

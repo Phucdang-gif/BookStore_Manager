@@ -125,6 +125,8 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
             if (result.showAlert(this)) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công");
                 onRefresh();
+            } else {
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

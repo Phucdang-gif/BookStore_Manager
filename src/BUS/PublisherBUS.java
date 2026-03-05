@@ -36,7 +36,7 @@ public class PublisherBUS {
     // ===================== THÊM MỚI =====================
 
     public ValidationResult add(PublisherDTO pub) {
-        ValidationResult vr = Validator.validatePublisher(pub);
+        ValidationResult vr = Validator.validatePublisher(pub, this.publisherList);
         if (!vr.isValid())
             return vr;
 
@@ -44,25 +44,23 @@ public class PublisherBUS {
         if (id > 0) {
             loadDataFromDB();
             return vr; // isValid() == true
-        }
-
-        vr.addError("system", "Lỗi hệ thống khi thêm nhà xuất bản!");
+        } else
+            vr.addError("system", "Lỗi hệ thống khi thêm nhà xuất bản!");
         return vr;
     }
 
     // ===================== CẬP NHẬT =====================
 
     public ValidationResult update(PublisherDTO pub) {
-        ValidationResult vr = Validator.validatePublisher(pub);
+        ValidationResult vr = Validator.validatePublisher(pub, this.publisherList);
         if (!vr.isValid())
             return vr;
 
         if (publisherDAO.update(pub) > 0) {
             loadDataFromDB();
             return vr; // isValid() == true
-        }
-
-        vr.addError("system", "Lỗi hệ thống khi cập nhật nhà xuất bản!");
+        } else
+            vr.addError("system", "Lỗi hệ thống khi cập nhật nhà xuất bản!");
         return vr;
     }
 

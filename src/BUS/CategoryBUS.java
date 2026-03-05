@@ -36,44 +36,34 @@ public class CategoryBUS {
     // ===================== THÊM MỚI =====================
 
     public ValidationResult add(CategoryDTO category) {
-        ValidationResult vr = Validator.validateCategory(category);
+        ValidationResult vr = Validator.validateCategory(category, this.categoryList);
         if (!vr.isValid())
             return vr;
-
-        if (categoryDAO.checkDuplicate(category.getName())) {
-            vr.addError("name", "Tên thể loại \"" + category.getName() + "\" đã tồn tại");
-            return vr;
-        }
 
         int result = categoryDAO.insert(category);
         if (result > 0) {
             loadDataFromDB();
-            return vr; // isValid() == true
+            return vr;
+        } else {
+            vr.addError("system", "Lỗi hệ thống khi thêm thể loại!");
         }
-
-        vr.addError("system", "Lỗi hệ thống khi thêm thể loại!");
         return vr;
     }
 
     // ===================== CẬP NHẬT =====================
 
     public ValidationResult update(CategoryDTO category) {
-        ValidationResult vr = Validator.validateCategory(category);
+        ValidationResult vr = Validator.validateCategory(category, this.categoryList);
         if (!vr.isValid())
             return vr;
-
-        if (categoryDAO.checkDuplicateExclude(category.getName(), category.getId())) {
-            vr.addError("name", "Tên thể loại \"" + category.getName() + "\" đã tồn tại");
-            return vr;
-        }
 
         int result = categoryDAO.update(category);
         if (result > 0) {
             loadDataFromDB();
             return vr; // isValid() == true
+        } else {
+            vr.addError("system", "Lỗi hệ thống khi cập nhật thể loại!");
         }
-
-        vr.addError("system", "Lỗi hệ thống khi cập nhật thể loại!");
         return vr;
     }
 

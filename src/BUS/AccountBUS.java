@@ -50,21 +50,13 @@ public class AccountBUS {
     public String getFullNameByEmployeeId(int employeeId) {
         return accountDAO.getFullNameByEmployeeId(employeeId);
     }
-    // ================== CÁC HÀM ĐÃ SỬA ĐỔI ==================
 
     public ValidationResult addAccount(AccountDTO acc) {
-        // 1. Kiểm tra dữ liệu đầu vào (Format, rỗng...)
-        ValidationResult vr = Validator.validateAccount(acc);
+        ValidationResult vr = Validator.validateAccount(acc, this.listAccount);
         if (!vr.isValid())
             return vr;
 
-        // 2. Kiểm tra Logic nghiệp vụ (Trùng username)
-        if (accountDAO.isUsernameExists(acc.getUsername())) {
-            vr.addError("username", "Tên đăng nhập '" + acc.getUsername() + "' đã tồn tại");
-            return vr;
-        }
-        boolean success = accountDAO.insert(acc);
-        if (success) {
+        if (accountDAO.insert(acc)) {
             this.listAccount = accountDAO.selectAll();
         } else {
             vr.addError("system", "Lỗi hệ thống: Không thể thêm tài khoản vào CSDL");
@@ -73,14 +65,11 @@ public class AccountBUS {
     }
 
     public ValidationResult updateAccount(AccountDTO acc) {
-        // 1. Validate form
-        ValidationResult vr = Validator.validateAccount(acc);
+        ValidationResult vr = Validator.validateAccount(acc, this.listAccount);
         if (!vr.isValid())
             return vr;
 
-        // 2. Update DB
-        boolean success = accountDAO.update(acc);
-        if (success) {
+        if (accountDAO.update(acc)) {
             // Update lại list RAM
             for (int i = 0; i < listAccount.size(); i++) {
                 if (listAccount.get(i).getAccountId() == acc.getAccountId()) {

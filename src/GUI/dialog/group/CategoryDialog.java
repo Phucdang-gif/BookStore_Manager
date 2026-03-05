@@ -4,7 +4,6 @@ import BUS.CategoryBUS;
 import DTO.CategoryDTO;
 import DTO.ValidationResult;
 import GUI.util.ThemeColor;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -78,23 +77,13 @@ public class CategoryDialog extends JDialog {
             JOptionPane.showMessageDialog(this, category == null ? "Thêm thành công!" : "Cập nhật thành công!");
             dispose();
         } else {
-            resetBorders();
+            GUI.util.ValidationUI.resetAll(txtName, txtOrder);
             if (vr.getError("name") != null)
-                setError(txtName);
+                GUI.util.ValidationUI.setError(txtName, vr.getError("name"));
             if (vr.getError("displayOrder") != null)
-                setError(txtOrder);
+                GUI.util.ValidationUI.setError(txtOrder, vr.getError("displayOrder"));
             JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
         }
-    }
-
-    private void setError(JTextField field) {
-        field.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
-    }
-
-    private void resetBorders() {
-        javax.swing.border.Border def = UIManager.getLookAndFeel().getDefaults().getBorder("TextField.border");
-        txtName.setBorder(def);
-        txtOrder.setBorder(def);
     }
 
     private int parseOrder(String text) {

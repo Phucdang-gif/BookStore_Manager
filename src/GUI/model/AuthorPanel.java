@@ -98,7 +98,6 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onDetail() {
-        onEdit();
     }
 
     @Override

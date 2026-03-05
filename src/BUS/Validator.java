@@ -4,108 +4,226 @@ import DTO.AccountDTO;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
+import DTO.CustomerDTO;
+import DTO.DiscountServiceDTO;
+import DTO.EmployeeDTO;
 import DTO.PublisherDTO;
 import DTO.ValidationResult;
+import java.util.Collection;
+import java.util.List;
 
 public class Validator {
+    private final ValidationResult result;
 
-    public static ValidationResult validateBook(BookDTO book) {
-        ValidationResult r = new ValidationResult();
+    private Validator() {
+        this.result = new ValidationResult();
+    }
 
-        if (book.getBookTitle() == null || book.getBookTitle().trim().isEmpty())
-            r.addError("bookTitle", "Tên sách không được để trống");
+    private ValidationResult getResult() {
+        return result;
+    }
 
-        if (book.getIsbn() == null || book.getIsbn().trim().isEmpty())
-            r.addError("isbn", "Mã ISBN không được để trống");
-        else if (!book.getIsbn().replaceAll("-", "").matches("\\d{10}|\\d{13}"))
-            r.addError("isbn", "Mã ISBN không hợp lệ (phải có 10 hoặc 13 số)");
+    // Kiểm tra null
+    private Validator requireNotBlank(String field, String value, String message) {
+        if (value == null || value.trim().isEmpty()) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getCategoryId() <= 0)
-            r.addError("categoryId", "Vui lòng chọn danh mục");
+    // Kiểm tra độ dài tối đa
+    private Validator requireMaxLength(String field, String value, int max, String message) {
+        if (value != null && value.trim().length() > max) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getPublisherId() <= 0)
-            r.addError("publisherId", "Vui lòng chọn nhà xuất bản");
+    // Kiểm tra độ dài tối thiểu
+    private Validator requireMinLength(String field, String value, int min, String message) {
+        if (value != null && !value.trim().isEmpty() && value.trim().length() < min) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getImportPrice() < 0)
-            r.addError("importPrice", "Giá nhập không được âm");
+    // Kiểm tra số dương
+    private Validator requirePositive(String field, double value, String message) {
+        if (value <= 0) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getSellingPrice() <= 0)
-            r.addError("sellingPrice", "Giá bán phải lớn hơn 0");
-        else if (book.getImportPrice() >= 0 && book.getSellingPrice() < book.getImportPrice())
-            r.addError("sellingPrice", "Giá bán không được nhỏ hơn giá nhập");
+    // Kiểm tra số không âm
+    private Validator requireNonNegative(String field, double value, String message) {
+        if (value < 0) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getStockQuantity() < 0)
-            r.addError("stockQuantity", "Số lượng tồn kho không được âm");
+    // Kiểm tra không rỗng
+    private Validator requireNotEmpty(String field, Collection<?> collection, String message) {
+        if (collection == null || collection.isEmpty()) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        if (book.getMinimumStock() < 0)
-            r.addError("minimumStock", "Tồn kho tối thiểu không được âm");
+    // Kiểm tra Regex
+    private Validator requirePattern(String field, String value, String regex, String message) {
+        // Chỉ kiểm tra Regex nếu người dùng có nhập dữ liệu
+        if (value != null && !value.trim().isEmpty()) {
+            if (!value.matches(regex)) {
+                result.addError(field, message);
+            }
+        }
+        return this;
+    }
 
-        if (book.getAuthors() == null || book.getAuthors().isEmpty())
-            r.addError("authors", "Vui lòng chọn ít nhất một tác giả");
+    // Kiểm tra điều kiện
+    private Validator requireCondition(String field, boolean isValid, String message) {
+        if (!isValid) {
+            result.addError(field, message);
+        }
+        return this;
+    }
 
-        return r;
+    private Validator requireValidPhone(String field, String phone, String message) {
+        if (phone != null && !phone.trim().isEmpty()) {
+            // Regex chuẩn: Bắt đầu bằng 0 hoặc +84, theo sau là 8-9 chữ số
+            if (!phone.trim().matches("^(0|\\+84)[0-9]{8,9}$")) {
+                result.addError(field, message);
+            }
+        }
+        return this;
+    }
+
+    private Validator requireUnique(String field, boolean isDuplicate, String message) {
+        if (isDuplicate) {
+            result.addError(field, message);
+        }
+        return this;
+    }
+
+    public static ValidationResult validateBook(BookDTO book, List<BookDTO> existingList) {
+        boolean isIsbnDuplicate = existingList != null && existingList.stream()
+                .anyMatch(b -> b.getIsbn().equals(book.getIsbn()) && b.getBookId() != book.getBookId());
+
+        return new Validator()
+                .requireNotBlank("bookTitle", book.getBookTitle(), "Tên sách không được để trống")
+                .requireUnique("isbn", isIsbnDuplicate, "Mã ISBN đã tồn tại")
+                .requireNotBlank("isbn", book.getIsbn(), "Mã ISBN không được để trống")
+                .requirePattern("isbn",
+                        book.getIsbn() != null ? book.getIsbn().replaceAll("-", "") : "",
+                        "\\d{10}|\\d{13}",
+                        "Mã ISBN không hợp lệ (phải có 10 hoặc 13 số)")
+                .requirePositive("categoryId", book.getCategoryId(), "Vui lòng chọn danh mục")
+                .requirePositive("publisherId", book.getPublisherId(), "Vui lòng chọn nhà xuất bản")
+                .requireNonNegative("importPrice", book.getImportPrice(), "Giá nhập không được âm")
+                .requirePositive("sellingPrice", book.getSellingPrice(), "Giá bán phải lớn hơn 0")
+                .requireCondition("sellingPrice",
+                        book.getImportPrice() < 0 || book.getSellingPrice() >= book.getImportPrice(),
+                        "Giá bán không được nhỏ hơn giá nhập")
+                .requireNonNegative("stockQuantity", book.getStockQuantity(), "Số lượng tồn kho không được âm")
+                .requireNonNegative("minimumStock", book.getMinimumStock(), "Tồn kho tối thiểu không được âm")
+                .requireNotEmpty("authors", book.getAuthors(), "Vui lòng chọn ít nhất một tác giả")
+                .requireNotEmpty("authorNames", book.getAuthorNames(), "Vui lòng chọn ít nhất một tác giả")
+                .getResult();
     }
 
     public static ValidationResult validateAuthor(AuthorDTO author) {
-        ValidationResult r = new ValidationResult();
-
-        if (author.getAuthorName() == null || author.getAuthorName().trim().isEmpty())
-            r.addError("authorName", "Tên tác giả không được để trống");
-        else if (author.getAuthorName().trim().length() > 100)
-            r.addError("authorName", "Tên tác giả không được vượt quá 100 ký tự");
-
-        return r;
+        return new Validator()
+                .requireNotBlank("authorName", author.getAuthorName(), "Tên tác giả không được để trống")
+                .requireMaxLength("authorName", author.getAuthorName(), 100,
+                        "Tên tác giả không được vượt quá 100 ký tự")
+                .getResult();
     }
 
-    public static ValidationResult validateCategory(CategoryDTO category) {
-        ValidationResult r = new ValidationResult();
-
-        if (category.getName() == null || category.getName().trim().isEmpty())
-            r.addError("name", "Tên thể loại không được để trống");
-        else if (category.getName().trim().length() > 100)
-            r.addError("name", "Tên thể loại không được vượt quá 100 ký tự");
-
-        if (category.getDisplayOrder() < 0)
-            r.addError("displayOrder", "Thứ tự hiển thị phải là số không âm");
-
-        return r;
+    public static ValidationResult validateCategory(CategoryDTO category, List<CategoryDTO> existingList) {
+        boolean isNameDuplicate = existingList != null && existingList.stream()
+                .anyMatch(c -> c.getName().equalsIgnoreCase(category.getName()) && c.getId() != category.getId());
+        return new Validator()
+                .requireUnique("name", isNameDuplicate, "Tên thể loại đã tồn tại")
+                .requireNotBlank("name", category.getName(), "Tên thể loại không được để trống")
+                .requireMaxLength("name", category.getName(), 100, "Tên thể loại không được vượt quá 100 ký tự")
+                .requireNonNegative("displayOrder", category.getDisplayOrder(), "Thứ tự hiển thị phải là số không âm")
+                .getResult();
     }
 
-    public static ValidationResult validatePublisher(PublisherDTO publisher) {
-        ValidationResult r = new ValidationResult();
-
-        if (publisher.getName() == null || publisher.getName().trim().isEmpty())
-            r.addError("name", "Tên nhà xuất bản không được để trống");
-        else if (publisher.getName().trim().length() > 150)
-            r.addError("name", "Tên nhà xuất bản không được vượt quá 150 ký tự");
-
-        if (publisher.getPhone() != null && !publisher.getPhone().trim().isEmpty()) {
-            if (!publisher.getPhone().trim().matches("^[0-9+\\-\\s]{7,15}$"))
-                r.addError("phone", "Số điện thoại không đúng định dạng");
-        }
-
-        return r;
+    public static ValidationResult validatePublisher(PublisherDTO publisher, List<PublisherDTO> existingList) {
+        boolean isPhoneDuplicate = existingList != null && existingList.stream()
+                .anyMatch(p -> p.getPhone().equals(publisher.getPhone()) && p.getId() != publisher.getId());
+        return new Validator()
+                .requireUnique("phone", isPhoneDuplicate, "Số điện thoại đã tồn tại")
+                .requireNotBlank("name", publisher.getName(), "Tên nhà xuất bản không được để trống")
+                .requireMaxLength("name", publisher.getName(), 150, "Tên nhà xuất bản không được vượt quá 150 ký tự")
+                .requireValidPhone("phone", publisher.getPhone(), "Số điện thoại không hợp lệ")
+                .getResult();
     }
 
-    public static ValidationResult validateAccount(AccountDTO acc) {
-        ValidationResult r = new ValidationResult();
+    public static ValidationResult validateAccount(AccountDTO acc, List<AccountDTO> existingList) {
+        boolean isUsernameDuplicate = existingList != null && existingList.stream()
+                .anyMatch(p -> p.getUsername().equals(acc.getUsername()) && p.getAccountId() != acc.getAccountId());
+        return new Validator()
+                .requireUnique("username", isUsernameDuplicate, "Tên đăng nhập đã tồn tại")
+                .requireNotBlank("username", acc.getUsername(), "Tên đăng nhập không được để trống")
+                .requireMinLength("username", acc.getUsername(), 4, "Tên đăng nhập phải có ít nhất 4 ký tự")
+                // Nếu có nhập pass thì pass phải >= 6 ký tự. Cho phép rỗng (dùng khi update
+                // không đổi pass)
+                .requireCondition("password",
+                        acc.getPassword() == null || acc.getPassword().isEmpty() || acc.getPassword().length() >= 6,
+                        "Mật khẩu phải có ít nhất 6 ký tự")
+                .requirePositive("employeeId", acc.getEmployeeId(), "Vui lòng chọn nhân viên")
+                .requirePositive("permissionGroupId", acc.getPermissionGroupId(), "Vui lòng chọn nhóm quyền")
+                .getResult();
+    }
 
-        if (acc.getUsername() == null || acc.getUsername().trim().isEmpty())
-            r.addError("username", "Tên đăng nhập không được để trống");
-        else if (acc.getUsername().length() < 4)
-            r.addError("username", "Tên đăng nhập phải có ít nhất 4 ký tự");
+    public static ValidationResult validateCustomer(CustomerDTO cus, List<CustomerDTO> existingList) {
+        boolean isPhoneDuplicate = existingList != null && existingList.stream()
+                .anyMatch(c -> c.getPhone().equals(cus.getPhone()) && c.getCustomerId() != cus.getCustomerId());
+        return new Validator()
+                .requireNotBlank("fullName", cus.getFullName(), "Tên khách hàng không được để trống")
+                .requireMaxLength("fullName", cus.getFullName(), 100, "Tên khách hàng không được vượt quá 100 ký tự")
+                .requireNotBlank("phone", cus.getPhone(), "Số điện thoại không được để trống")
+                .requireValidPhone("phone", cus.getPhone(), "Số điện thoại không hợp lệ")
+                .requireUnique("phone", isPhoneDuplicate, "Số điện thoại đã tồn tại")
+                .requireNonNegative("loyaltyPoints", cus.getLoyaltyPoints(), "Điểm tích lũy không được âm")
+                .getResult();
+    }
 
-        if (acc.getPassword() != null && !acc.getPassword().isEmpty()) {
-            if (acc.getPassword().length() < 6)
-                r.addError("password", "Mật khẩu phải có ít nhất 6 ký tự");
-        }
+    public static ValidationResult validateEmployee(EmployeeDTO emp, List<EmployeeDTO> existingList) {
+        boolean isPhoneDuplicate = existingList != null && existingList.stream()
+                .anyMatch(e -> e.getPhone().equals(emp.getPhone()) && e.getEmployeeId() != emp.getEmployeeId());
+        return new Validator()
+                .requireNotBlank("fullName", emp.getFullName(), "Tên nhân viên không được để trống")
+                .requireNotBlank("phone", emp.getPhone(), "Số điện thoại không được để trống")
+                .requireValidPhone("phone", emp.getPhone(), "Số điện thoại không hợp lệ")
+                .requireUnique("phone", isPhoneDuplicate, "Số điện thoại đã tồn tại")
+                .requireNotBlank("address", emp.getAddress(), "Địa chỉ không được để trống")
+                .requireNotBlank("position", emp.getPosition(), "Vui lòng nhập chức vụ")
+                .requireNonNegative("salary", emp.getSalary(), "Lương nhân viên không được âm")
+                .requireCondition("dateOfBirth", emp.getDateOfBirth() != null, "Vui lòng chọn ngày sinh")
+                .requireCondition("hireDate", emp.getHireDate() != null, "Vui lòng chọn ngày vào làm")
+                .getResult();
+    }
 
-        if (acc.getEmployeeId() <= 0)
-            r.addError("employeeId", "Vui lòng chọn nhân viên sở hữu tài khoản");
-
-        if (acc.getPermissionGroupId() <= 0)
-            r.addError("permissionGroupId", "Vui lòng chọn nhóm quyền");
-
-        return r;
+    public static ValidationResult validateDiscountService(DiscountServiceDTO ds,
+            List<DiscountServiceDTO> existingList) {
+        boolean isNameDuplicate = existingList != null && existingList.stream()
+                .anyMatch(d -> d.getServiceName().equalsIgnoreCase(ds.getServiceName())
+                        && d.getServiceId() != ds.getServiceId());
+        return new Validator()
+                .requireNotBlank("serviceName", ds.getServiceName(), "Tên chương trình khuyến mãi không được để trống")
+                .requireUnique("serviceName", isNameDuplicate, "Tên chương trình khuyến mãi đã tồn tại")
+                .requirePositive("discountValue", ds.getDiscountValue(), "Giá trị giảm giá phải lớn hơn 0")
+                .requireNonNegative("minimumAmount", ds.getMinimumAmount(), "Giá trị đơn hàng tối thiểu không được âm")
+                .requireNonNegative("maximumDiscount", ds.getMaximumDiscount(), "Mức giảm tối đa không được âm")
+                .requireCondition("dates",
+                        ds.getStartDate() != null && ds.getEndDate() != null
+                                && ds.getStartDate().before(ds.getEndDate()),
+                        "Ngày kết thúc phải diễn ra sau ngày bắt đầu")
+                .getResult();
     }
 }

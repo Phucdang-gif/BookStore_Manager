@@ -89,7 +89,7 @@ public class BookDialogView extends JPanel {
 
         JScrollPane scroll = new JScrollPane(pnlMain);
         scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.getVerticalScrollBar().setUnitIncrement(24);
         return scroll;
     }
 
@@ -326,7 +326,6 @@ public class BookDialogView extends JPanel {
         if (isError) {
             c.setBorder(new javax.swing.border.LineBorder(java.awt.Color.RED, 1));
         } else {
-            // Trả về màu mặc định (Giả sử trong BookDialogStyles là BORDER_COLOR)
             c.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(180, 180, 180), 1));
         }
     }
