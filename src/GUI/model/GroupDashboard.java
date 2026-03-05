@@ -190,7 +190,7 @@ public class GroupDashboard extends JPanel {
                     if (book.getImage().contains(":") || book.getImage().startsWith("/"))
                         imgPath = book.getImage();
                     else
-                        imgPath = "src/image/" + book.getImage();
+                        imgPath = "BookStore_Manager\\src\\image\\" + book.getImage();
                 }
 
                 ProductCard pCard = new ProductCard(

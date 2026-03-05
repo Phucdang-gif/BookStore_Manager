@@ -36,7 +36,7 @@ public class Login extends JFrame {
         setLayout(new GridLayout(1, 2));
 
         // --- PHẦN BÊN TRÁI: CHỨA ẢNH ---
-        sideImage = ImageHelper.readImage("src/image/bookshelf.jpg");
+        sideImage = ImageHelper.readImage("BookStore_Manager\\src\\image\\bookshelf.jpg");
         JPanel leftPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
