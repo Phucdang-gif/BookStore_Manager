@@ -162,8 +162,8 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onRefresh() {
+        accountBUS.refreshData();
         loadDataToTable(accountBUS.getAll());
-        
     }
 
     @Override

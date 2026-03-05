@@ -34,12 +34,11 @@ public class AccountDialog extends JDialog {
 
         setTitle(mode.equals("add") ? "Thêm Tài Khoản Mới"
                 : (mode.equals("update") ? "Cập Nhật Tài Khoản" : "Chi Tiết Tài Khoản"));
-        setSize(450, 380); // Tăng chiều cao một chút
-        setLocationRelativeTo(null);
-
         initUI();
         loadComboBoxData();
         loadData();
+        setSize(450, 380); // Tăng chiều cao một chút
+        setLocationRelativeTo(null);
     }
 
     private void initUI() {
@@ -49,6 +48,7 @@ public class AccountDialog extends JDialog {
 
         pnlForm.add(new JLabel("Chọn Nhân Viên:"));
         cbEmployee = new JComboBox<>();
+        cbEmployee.setMaximumRowCount(4); // Giới hạn số dòng hiển thị
         pnlForm.add(cbEmployee);
 
         pnlForm.add(new JLabel("Tên Đăng Nhập:"));
@@ -56,16 +56,16 @@ public class AccountDialog extends JDialog {
         pnlForm.add(txtUsername);
 
         pnlForm.add(new JLabel("Mật Khẩu:"));
-        
+
         // --- TÍNH NĂNG ẨN/HIỆN MẬT KHẨU ---
         JPanel pnlPassword = new JPanel(new BorderLayout()); // Cái hộp chứa
         txtPassword = new JPasswordField();
-        
+
         JButton btnTogglePass = new JButton("Hiện"); // Nút bấm
         btnTogglePass.setFocusPainted(false);
         btnTogglePass.setBackground(new Color(240, 240, 240));
         btnTogglePass.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         // Bắt sự kiện Click để chuyển đổi trạng thái
         btnTogglePass.addActionListener(e -> {
             if (txtPassword.getEchoChar() == (char) 0) {
@@ -78,11 +78,11 @@ public class AccountDialog extends JDialog {
                 btnTogglePass.setText("Ẩn");
             }
         });
-        
+
         // Ráp ô text và nút vào hộp
         pnlPassword.add(txtPassword, BorderLayout.CENTER);
         pnlPassword.add(btnTogglePass, BorderLayout.EAST);
-        
+
         // Nhét cả hộp vào Form
         pnlForm.add(pnlPassword);
         // ----------------------------------
@@ -114,9 +114,16 @@ public class AccountDialog extends JDialog {
 
         cbEmployee.removeAllItems();
         if (mode.equals("add")) {
-            ArrayList<EmployeeDTO> unassignedEmps = employeeBUS.getUnassignedEmployees();
-            for (EmployeeDTO emp : unassignedEmps) {
-                cbEmployee.addItem(emp);
+            EmployeeDTO defaultOption = new EmployeeDTO();
+            defaultOption.setEmployeeId(-1);
+            defaultOption.setFullName("--- Chọn nhân viên ---");
+            defaultOption.setPhone("");
+            cbEmployee.addItem(defaultOption);
+            ArrayList<EmployeeDTO> allEmps = employeeBUS.getAll();
+            for (EmployeeDTO emp : allEmps) {
+                if ("active".equals(emp.getStatus())) {
+                    cbEmployee.addItem(emp);
+                }
             }
         } else if (currentAccount != null) {
             EmployeeDTO currentEmp = employeeBUS.getById(currentAccount.getEmployeeId());
@@ -132,7 +139,6 @@ public class AccountDialog extends JDialog {
         if ((mode.equals("update") || mode.equals("view")) && currentAccount != null) {
             txtUsername.setText(currentAccount.getUsername());
             txtPassword.setText(currentAccount.getPassword());
-            
 
             for (int i = 0; i < cbPermissionGroup.getItemCount(); i++) {
                 if (cbPermissionGroup.getItemAt(i).getPermissionGroupId() == currentAccount.getPermissionGroupId()) {
@@ -142,12 +148,12 @@ public class AccountDialog extends JDialog {
             }
 
             if (mode.equals("view")) {
-                txtUsername.setEditable(false); 
-                txtPassword.setEditable(false); 
-                cbPermissionGroup.setEnabled(false); 
-                btnSave.setVisible(false); 
-                btnCancel.setText("Đóng"); 
-            } 
+                txtUsername.setEditable(false);
+                txtPassword.setEditable(false);
+                cbPermissionGroup.setEnabled(false);
+                btnSave.setVisible(false);
+                btnCancel.setText("Đóng");
+            }
         }
     }
 
@@ -157,9 +163,9 @@ public class AccountDialog extends JDialog {
             EmployeeDTO selectedEmp = (EmployeeDTO) cbEmployee.getSelectedItem();
             PermissionGroupDTO selectedGroup = (PermissionGroupDTO) cbPermissionGroup.getSelectedItem();
 
-            // Validator không check được ComboBox null từ GUI, nên check nhẹ ở đây
-            if (selectedEmp == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            if (selectedEmp == null || selectedEmp.getEmployeeId() == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một nhân viên cụ thể!", "Lỗi",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
             if (selectedGroup == null) {

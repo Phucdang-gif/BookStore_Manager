@@ -94,9 +94,7 @@ public class Validator {
             r.addError("username", "Tên đăng nhập không được để trống");
         else if (acc.getUsername().length() < 4)
             r.addError("username", "Tên đăng nhập phải có ít nhất 4 ký tự");
-        // Chỉ kiểm tra password khi tạo mới hoặc khi người dùng nhập password mới
-        // (Logic bỏ qua check password rỗng khi update sẽ nằm ở GUI hoặc BUS nếu
-        // password string rỗng)
+
         if (acc.getPassword() != null && !acc.getPassword().isEmpty()) {
             if (acc.getPassword().length() < 6)
                 r.addError("password", "Mật khẩu phải có ít nhất 6 ký tự");

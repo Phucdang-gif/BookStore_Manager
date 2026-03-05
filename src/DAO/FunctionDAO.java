@@ -15,8 +15,8 @@ public class FunctionDAO {
         ArrayList<FunctionDTO> list = new ArrayList<>();
         Connection conn = DatabaseConnection.getInstance().getConnection();
         // Sắp xếp: Nhóm trước -> ID sau
-        String sql = "SELECT * FROM functions ORDER BY function_group ASC, function_id ASC";
-        
+        String sql = "SELECT * FROM functions ORDER BY function_id ASC";
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
@@ -33,10 +33,11 @@ public class FunctionDAO {
         }
         return list;
     }
+
     public FunctionDTO getById(int id) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE function_id = ?";
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, id);
@@ -54,10 +55,11 @@ public class FunctionDAO {
         }
         return null;
     }
+
     public FunctionDTO getBySystemFunctionCode(String code) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE system_function_code = ?";
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, code);
@@ -75,10 +77,11 @@ public class FunctionDAO {
         }
         return null;
     }
+
     public FunctionDTO getByName(String name) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE function_name = ?";
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, name);
@@ -91,18 +94,18 @@ public class FunctionDAO {
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-            return null;
-            
+        return null;
+
     }
 
     public FunctionDTO getByGroup(String group) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         String sql = "SELECT * FROM functions WHERE function_group = ?";
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, group);
@@ -115,12 +118,11 @@ public class FunctionDAO {
                 func.setFunctionGroup(rs.getString("function_group"));
                 return func;
             }
-            
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
-    
+
 }
-   

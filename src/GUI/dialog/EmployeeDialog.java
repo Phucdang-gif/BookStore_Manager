@@ -39,8 +39,6 @@ public class EmployeeDialog extends JDialog {
             setTitle("Chi Tiết Nhân Viên");
         }
 
-        setSize(450, 520);
-        setLocationRelativeTo(null);
         initUI();
         loadData();
 
@@ -52,6 +50,8 @@ public class EmployeeDialog extends JDialog {
             btnCancel.setBackground(new Color(108, 117, 125)); // Màu xám cho nút Đóng
             btnCancel.setForeground(Color.WHITE);
         }
+        setSize(450, 520);
+        setLocationRelativeTo(null);
     }
 
     private void initUI() {

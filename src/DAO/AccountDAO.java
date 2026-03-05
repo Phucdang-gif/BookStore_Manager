@@ -115,7 +115,7 @@ public class AccountDAO {
 
     public boolean insert(AccountDTO account) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "INSERT INTO accounts (employee_id, permission_group_id, username, password, status) VALUES (?, ?, ?, ?, 'active')";
+        String sql = "INSERT INTO accounts (employee_id, permission_group_id, username, password, status, created_at) VALUES (?, ?, ?, ?, 'active', NOW())";
 
         try {
             PreparedStatement ps = conn.prepareStatement(sql);

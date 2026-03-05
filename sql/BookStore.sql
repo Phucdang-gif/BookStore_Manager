@@ -35,7 +35,7 @@ CREATE TABLE permission_groups (
 
 CREATE TABLE accounts (
     account_id          INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id         INT NOT NULL UNIQUE,
+    employee_id         INT NOT NULL,
     permission_group_id INT NOT NULL,
     username            VARCHAR(50) NOT NULL UNIQUE,
     password            VARCHAR(255) NOT NULL,
@@ -225,7 +225,7 @@ CREATE INDEX idx_employee_phone ON employees(phone);
 CREATE INDEX idx_customer_phone ON customers(phone);
 CREATE INDEX idx_book_title      ON books(book_title);
 CREATE INDEX idx_invoice_date    ON invoices(created_at);
-CREATE INDEX idx_receipt_date    ON import_receipts(import_date);
+CREATE INDEX idx_receipt_date    ON import_receipts(receipt_date);
 
 -- =============================================
 -- PHẦN 2: DỮ LIỆU MẪU

@@ -26,6 +26,10 @@ public class AccountBUS {
         return this.listAccount.get(index);
     }
 
+    public void refreshData() {
+        this.listAccount = accountDAO.selectAll();
+    }
+
     public PermissionGroupDTO getPermissionGroupDTO(int permissionGroupId) {
         return permissionGroupDAO.getById(permissionGroupId);
     }
@@ -59,17 +63,9 @@ public class AccountBUS {
             vr.addError("username", "Tên đăng nhập '" + acc.getUsername() + "' đã tồn tại");
             return vr;
         }
-
-        // 3. Kiểm tra nhân viên này đã có tài khoản chưa (Optional)
-        if (getAccountIndexByEmployeeId(acc.getEmployeeId()) != -1) {
-            vr.addError("employeeId", "Nhân viên này đã có tài khoản rồi!");
-            return vr;
-        }
-
-        // 4. Ghi vào DB
         boolean success = accountDAO.insert(acc);
         if (success) {
-            this.listAccount.add(acc);
+            this.listAccount = accountDAO.selectAll();
         } else {
             vr.addError("system", "Lỗi hệ thống: Không thể thêm tài khoản vào CSDL");
         }
@@ -92,6 +88,7 @@ public class AccountBUS {
                     break;
                 }
             }
+            this.listAccount = accountDAO.selectAll();
         } else {
             vr.addError("system", "Lỗi hệ thống: Cập nhật thất bại");
         }
