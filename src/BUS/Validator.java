@@ -7,6 +7,8 @@ import DTO.CategoryDTO;
 import DTO.CustomerDTO;
 import DTO.DiscountServiceDTO;
 import DTO.EmployeeDTO;
+import DTO.ImportReceiptDTO;
+import DTO.InvoiceDTO;
 import DTO.PublisherDTO;
 import DTO.ValidationResult;
 import java.util.Collection;
@@ -219,6 +221,33 @@ public class Validator {
                 .requirePositive("discountValue", ds.getDiscountValue(), "Giá trị giảm giá phải lớn hơn 0")
                 .requireNonNegative("minimumAmount", ds.getMinimumAmount(), "Giá trị đơn hàng tối thiểu không được âm")
                 .requireNonNegative("maximumDiscount", ds.getMaximumDiscount(), "Mức giảm tối đa không được âm")
+                .getResult();
+    }
+    // ========================================================
+    // LUẬT KIỂM TRA CHO PHIẾU NHẬP HÀNG (IMPORT RECEIPT)
+    // ========================================================
+    public static ValidationResult validateImportReceipt(ImportReceiptDTO receipt, boolean hasDetails) {
+        return new Validator()
+                // 1. Phải chọn Nhà Cung Cấp (Chặn lỗi rỗng ComboBox)
+                .requirePositive("supplierId", receipt.getSupplierId(), "Vui lòng chọn Nhà cung cấp từ danh sách!")
+                // 2. Phải có ID Nhân viên đang đăng nhập
+                .requirePositive("employeeId", receipt.getEmployeeId(), "Lỗi bảo mật: Không xác định được nhân viên lập phiếu!")
+                // 3. Tổng tiền không được âm
+                .requireNonNegative("totalAmount", receipt.getTotalAmount(), "Tổng tiền phiếu nhập không được âm!")
+                // 4. Bảng chi tiết không được để trống
+                .requireCondition("details", hasDetails, "Phiếu nhập đang trống! Vui lòng chọn ít nhất 1 cuốn sách để nhập kho.")
+                .getResult();
+    }
+
+    // ========================================================
+    // LUẬT KIỂM TRA CHO HÓA ĐƠN BÁN HÀNG (INVOICE)
+    // ========================================================
+    public static ValidationResult validateInvoice(InvoiceDTO invoice, boolean hasDetails) {
+        return new Validator()
+                .requirePositive("employeeId", invoice.getEmployeeId(), "Lỗi bảo mật: Không xác định được thu ngân!")
+                .requireNonNegative("totalAmount", invoice.getTotalAmount(), "Tổng tiền hóa đơn không được âm!")
+               
+                .requireCondition("details", hasDetails, "Giỏ hàng trống! Vui lòng thêm sách trước khi thanh toán.")
                 .getResult();
     }
 }

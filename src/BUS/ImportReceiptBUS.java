@@ -2,6 +2,8 @@ package BUS;
 
 import DAO.ImportReceiptDAO;
 import DTO.ImportReceiptDTO;
+import DTO.ValidationResult;
+
 import java.util.ArrayList;
 
 public class ImportReceiptBUS {
@@ -39,5 +41,25 @@ public class ImportReceiptBUS {
             }
         }
         return result;
+    }
+    public ValidationResult addReceipt(ImportReceiptDTO receipt, boolean hasDetails) {
+        // 1. Gọi cảnh sát kiểm tra
+        ValidationResult vr = Validator.validateImportReceipt(receipt, hasDetails);
+        
+        // 2. Nếu có lỗi (isValid == false), trả biên bản về ngay lập tức
+        if (!vr.isValid()) {
+            return vr; 
+        }
+
+        // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
+        int newId = dao.insert(receipt);
+        if (newId <= 0) {
+            vr.addError("system", "Lỗi CSDL: Không thể tạo Phiếu nhập (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
+        } else {
+            // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
+            receipt.setReceiptId(newId);
+        }
+        
+        return vr;
     }
 }

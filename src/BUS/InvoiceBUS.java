@@ -1,7 +1,10 @@
 package BUS;
 
 import DAO.InvoiceDAO;
+import DTO.ImportReceiptDTO;
 import DTO.InvoiceDTO;
+import DTO.ValidationResult;
+
 import java.util.ArrayList;
 
 public class InvoiceBUS {
@@ -49,5 +52,25 @@ public class InvoiceBUS {
             }
         }
         return result;
+    }
+    public ValidationResult addInvoice(InvoiceDTO receipt, boolean hasDetails) {
+        // 1. Gọi cảnh sát kiểm tra
+        ValidationResult vr = Validator.validateInvoice(receipt, hasDetails);
+        
+        // 2. Nếu có lỗi (isValid == false), trả biên bản về ngay lập tức
+        if (!vr.isValid()) {
+            return vr; 
+        }
+
+        // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
+        int newId = invoiceDAO.insert(receipt);
+        if (newId <= 0) {
+            vr.addError("system", "Lỗi CSDL: Không thể tạo Phiếu nhập (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
+        } else {
+            // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
+            receipt.setInvoiceId(newId);
+        }
+        
+        return vr;
     }
 }

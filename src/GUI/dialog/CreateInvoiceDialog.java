@@ -246,62 +246,152 @@ public class CreateInvoiceDialog extends JDialog {
         lblFinalAmount.setText(df.format(finalAmount));
     }
 
+    // private void saveInvoice() {
+    //     if (detailModel.getRowCount() == 0) {
+    //         JOptionPane.showMessageDialog(this, "Chưa có sản phẩm nào trong chi tiết hóa đơn!");
+    //         return;
+    //     }
+
+    //     CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
+    //     DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
+    //     String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
+
+    //     updateTotals(); 
+    //     String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
+    //     String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
+    //     double finalToPay = Double.parseDouble(finalStr);
+    //     double discountApplied = Double.parseDouble(discStr);
+
+    //     InvoiceDTO invoice = new InvoiceDTO();
+    //     invoice.setCustomerId(customer.getCustomerId()); 
+    //     invoice.setEmployeeId(1); // TODO: Lấy ID từ session đăng nhập sau này
+    //     invoice.setTotalAmount(currentTotal);
+    //     invoice.setTotalDiscount(discountApplied);
+    //     invoice.setFinalAmount(finalToPay);
+    //     invoice.setPaymentMethod(paymentMethod); 
+    //     invoice.setPointsUsed(0);
+    //     invoice.setPointsValue(0);
+    //     invoice.setPointsEarned(0);
+
+    //     int newInvoiceId = invoiceBUS.addInvoice(invoice); // Gọi đúng chuẩn 3 lớp
+
+    //     if (newInvoiceId > 0) {
+    //         ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
+    //         for (int i = 0; i < detailModel.getRowCount(); i++) {
+    //             int bId = (int) detailModel.getValueAt(i, 0);
+    //             double price = (double) detailModel.getValueAt(i, 2);
+    //             int qty = (int) detailModel.getValueAt(i, 3);
+    //             double subTotal = (double) detailModel.getValueAt(i, 4);
+
+    //             listDetails.add(new InvoiceDetailDTO(0, newInvoiceId, bId, qty, price, 0, subTotal));
+    //             bookDAO.updateQuantity(bId, qty); // Trừ tồn kho
+    //         }
+    //         detailDAO.insertBatch(listDetails);
+
+    //         if (promo != null && promo.getServiceId() != 0) {
+    //             InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
+    //             serviceLog.setInvoiceId(newInvoiceId);
+    //             serviceLog.setServiceId(promo.getServiceId());
+    //             serviceLog.setServiceType(promo.getDiscountType());
+    //             serviceLog.setDiscountValue(discountApplied);
+    //             serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
+    //             serviceDAO.insert(serviceLog);
+    //         }
+
+    //         JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + newInvoiceId);
+    //         dispose(); 
+    //     } else {
+    //         JOptionPane.showMessageDialog(this, "Lỗi khi tạo hóa đơn trong hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+    //     }
+    // }
     private void saveInvoice() {
-        if (detailModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Chưa có sản phẩm nào trong chi tiết hóa đơn!");
-            return;
-        }
-
-        CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
-        DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
-        String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
-
-        updateTotals(); 
-        String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
-        String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
-        double finalToPay = Double.parseDouble(finalStr);
-        double discountApplied = Double.parseDouble(discStr);
-
-        InvoiceDTO invoice = new InvoiceDTO();
-        invoice.setCustomerId(customer.getCustomerId()); 
-        invoice.setEmployeeId(1); // TODO: Lấy ID từ session đăng nhập sau này
-        invoice.setTotalAmount(currentTotal);
-        invoice.setTotalDiscount(discountApplied);
-        invoice.setFinalAmount(finalToPay);
-        invoice.setPaymentMethod(paymentMethod); 
-        invoice.setPointsUsed(0);
-        invoice.setPointsValue(0);
-        invoice.setPointsEarned(0);
-
-        int newInvoiceId = invoiceBUS.addInvoice(invoice); // Gọi đúng chuẩn 3 lớp
-
-        if (newInvoiceId > 0) {
-            ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
-            for (int i = 0; i < detailModel.getRowCount(); i++) {
-                int bId = (int) detailModel.getValueAt(i, 0);
-                double price = (double) detailModel.getValueAt(i, 2);
-                int qty = (int) detailModel.getValueAt(i, 3);
-                double subTotal = (double) detailModel.getValueAt(i, 4);
-
-                listDetails.add(new InvoiceDetailDTO(0, newInvoiceId, bId, qty, price, 0, subTotal));
-                bookDAO.updateQuantity(bId, qty); // Trừ tồn kho
+        try {
+            // 1. GOM DỮ LIỆU TỪ GIAO DIỆN
+            boolean hasDetails = detailModel.getRowCount() > 0;
+            
+            CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
+            int customerId = (customer != null && customer.getCustomerId() > 0) ? customer.getCustomerId() : 0;
+            
+            int employeeId = config.SessionManager.getCurrentAccount() != null ? config.SessionManager.getCurrentAccount().getEmployeeId() : 1;
+            if (config.SessionManager.getCurrentAccount() != null) {
+                employeeId = config.SessionManager.getCurrentAccount().getEmployeeId();
             }
-            detailDAO.insertBatch(listDetails);
+            
+            DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
+            String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
 
-            if (promo != null && promo.getServiceId() != 0) {
-                InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
-                serviceLog.setInvoiceId(newInvoiceId);
-                serviceLog.setServiceId(promo.getServiceId());
-                serviceLog.setServiceType(promo.getDiscountType());
-                serviceLog.setDiscountValue(discountApplied);
-                serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
-                serviceDAO.insert(serviceLog);
+            // Tính toán lại tiền một lần cuối cho chắc chắn
+            updateTotals(); 
+            String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
+            String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
+            double finalToPay = Double.parseDouble(finalStr);
+            double discountApplied = Double.parseDouble(discStr);
+
+            // Đóng gói DTO
+            InvoiceDTO invoice = new InvoiceDTO();
+            invoice.setCustomerId(customerId); 
+            invoice.setEmployeeId(employeeId);
+            invoice.setTotalAmount(currentTotal);
+            invoice.setTotalDiscount(discountApplied);
+            invoice.setFinalAmount(finalToPay);
+            invoice.setPaymentMethod(paymentMethod); 
+            invoice.setPointsUsed(0);
+            invoice.setPointsValue(0);
+            invoice.setPointsEarned(0);
+
+            // 2. GỌI LỚP BUS KIỂM DUYỆT
+            DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails);
+
+            // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ
+            if (result.isValid()) {
+                // NẾU HỢP LỆ: Tiến hành lưu các chi tiết sách vào hóa đơn
+                ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
+                for (int i = 0; i < detailModel.getRowCount(); i++) {
+                    int bId = (int) detailModel.getValueAt(i, 0);
+                    double price = (double) detailModel.getValueAt(i, 2);
+                    int qty = (int) detailModel.getValueAt(i, 3);
+                    double subTotal = (double) detailModel.getValueAt(i, 4);
+
+                    listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty, price, 0, subTotal));
+                    bookDAO.updateQuantity(bId, qty); // Trừ số lượng tồn kho
+                }
+                detailDAO.insertBatch(listDetails);
+
+                // Lưu lại lịch sử dùng mã khuyến mãi (nếu có)
+                if (promo != null && promo.getServiceId() != 0) {
+                    InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
+                    serviceLog.setInvoiceId(invoice.getInvoiceId());
+                    serviceLog.setServiceId(promo.getServiceId());
+                    serviceLog.setServiceType(promo.getDiscountType());
+                    serviceLog.setDiscountValue(discountApplied);
+                    serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
+                    serviceDAO.insert(serviceLog);
+                }
+
+                JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + invoice.getInvoiceId());
+                dispose(); 
+            } else {
+                // NẾU CÓ LỖI: Xử lý màu mè trên giao diện
+                
+                // Dọn viền đỏ cũ
+                GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
+                
+                // Dò lỗi để báo đỏ
+                if (result.getError("details") != null) {
+                    GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
+                }
+                
+                if (result.getError("employeeId") != null) {
+                    // Cảnh báo nếu nhân viên chưa đăng nhập hợp lệ
+                    JOptionPane.showMessageDialog(this, result.getError("employeeId"), "Lỗi Phân Quyền", JOptionPane.ERROR_MESSAGE);
+                }
+                
+                // Hiển thị thông báo tổng hợp
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi Thanh Toán", JOptionPane.WARNING_MESSAGE);
             }
-
-            JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + newInvoiceId);
-            dispose(); 
-        } else {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tạo hóa đơn trong hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Lỗi hệ thống: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

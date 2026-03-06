@@ -190,47 +190,115 @@ public class CreateImportDialog extends JDialog {
         lblTotalAmount.setText(df.format(currentTotal));
     }
 
-    private void saveImportReceipt() {
-        if (detailModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Danh sách phiếu nhập đang trống!");
-            return;
-        }
+    // private void saveImportReceipt() {
+    //     if (detailModel.getRowCount() == 0) {
+    //         JOptionPane.showMessageDialog(this, "Danh sách phiếu nhập đang trống!");
+    //         return;
+    //     }
         
-        if (cbSupplier.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhà Cung Cấp!");
-            return;
-        }
+    //     if (cbSupplier.getSelectedItem() == null) {
+    //         JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhà Cung Cấp!");
+    //         return;
+    //     }
 
-        SupplierDTO supplier = (SupplierDTO) cbSupplier.getSelectedItem();
+    //     SupplierDTO supplier = (SupplierDTO) cbSupplier.getSelectedItem();
 
-        // 1. Tạo DTO Phiếu Nhập và Lưu
-        ImportReceiptDTO importDTO = new ImportReceiptDTO();
-        importDTO.setSupplierId(supplier.getSupplierId());
-        importDTO.setEmployeeId(1); // Mặc định NV số 1 (sau này thay bằng Session người đăng nhập)
-        importDTO.setTotalAmount(currentTotal);
+    //     // 1. Tạo DTO Phiếu Nhập và Lưu
+    //     ImportReceiptDTO importDTO = new ImportReceiptDTO();
+    //     importDTO.setSupplierId(supplier.getSupplierId());
+    //     importDTO.setEmployeeId(1); // Mặc định NV số 1 (sau này thay bằng Session người đăng nhập)
+    //     importDTO.setTotalAmount(currentTotal);
         
-        int newImportId = importDAO.insert(importDTO); 
+    //     int newImportId = importDAO.insert(importDTO); 
 
-        if (newImportId > 0) {
-            // 2. Lưu Chi Tiết và Cập nhật Sách
-            ArrayList<ImportReceiptDetailDTO> listDetails = new ArrayList<>();
-            for (int i = 0; i < detailModel.getRowCount(); i++) {
-                int bId = (int) detailModel.getValueAt(i, 0);
-                double price = (double) detailModel.getValueAt(i, 2);
-                int qty = (int) detailModel.getValueAt(i, 3);
-                double subTotal = (double) detailModel.getValueAt(i, 4);
+    //     if (newImportId > 0) {
+    //         // 2. Lưu Chi Tiết và Cập nhật Sách
+    //         ArrayList<ImportReceiptDetailDTO> listDetails = new ArrayList<>();
+    //         for (int i = 0; i < detailModel.getRowCount(); i++) {
+    //             int bId = (int) detailModel.getValueAt(i, 0);
+    //             double price = (double) detailModel.getValueAt(i, 2);
+    //             int qty = (int) detailModel.getValueAt(i, 3);
+    //             double subTotal = (double) detailModel.getValueAt(i, 4);
 
-                listDetails.add(new ImportReceiptDetailDTO(newImportId, bId, qty, price, subTotal));
+    //             listDetails.add(new ImportReceiptDetailDTO(newImportId, bId, qty, price, subTotal));
                 
-                // Cập nhật Số lượng tồn kho & Giá vốn trung bình trong bảng Books
-                bookDAO.updateStockAndPrice(bId, qty, price);
-            }
-            detailDAO.insertBatch(listDetails);
+    //             // Cập nhật Số lượng tồn kho & Giá vốn trung bình trong bảng Books
+    //             bookDAO.updateStockAndPrice(bId, qty, price);
+    //         }
+    //         detailDAO.insertBatch(listDetails);
             
-            JOptionPane.showMessageDialog(this, "NHẬP HÀNG THÀNH CÔNG!\nKho sách và Giá vốn đã được hệ thống tự động cập nhật.");
-            dispose();
-        } else {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lưu Phiếu nhập vào hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+    //         JOptionPane.showMessageDialog(this, "NHẬP HÀNG THÀNH CÔNG!\nKho sách và Giá vốn đã được hệ thống tự động cập nhật.");
+    //         dispose();
+    //     } else {
+    //         JOptionPane.showMessageDialog(this, "Lỗi khi lưu Phiếu nhập vào hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+    //     }
+    // }
+   private void saveImportReceipt() {
+        try {
+            // 1. GOM DỮ LIỆU TỪ GIAO DIỆN
+            boolean hasDetails = detailModel.getRowCount() > 0;
+            
+            SupplierDTO supplier = (SupplierDTO) cbSupplier.getSelectedItem();
+            int supplierId = (supplier != null) ? supplier.getSupplierId() : 0;
+            
+            // Lấy ID nhân viên từ Session đăng nhập (Mặc định là 1 nếu chưa đăng nhập để test)
+            int employeeId = config.SessionManager.getCurrentAccount() != null ? config.SessionManager.getCurrentAccount().getEmployeeId() : 1;
+            if (config.SessionManager.getCurrentAccount() != null) {
+                employeeId = config.SessionManager.getCurrentAccount().getEmployeeId();
+            }
+
+            // Đóng gói thành DTO
+            ImportReceiptDTO importDTO = new ImportReceiptDTO();
+            importDTO.setSupplierId(supplierId);
+            importDTO.setEmployeeId(employeeId);
+            importDTO.setTotalAmount(currentTotal); // currentTotal đã được tính ở hàm updateTotal()
+
+            // Do em chưa khai báo ImportReceiptBUS ở đầu class, ta gọi tạm ở đây
+            BUS.ImportReceiptBUS importBUS = new BUS.ImportReceiptBUS();
+            
+            // 2. GỌI BUS KIỂM DUYỆT (Trả về tờ biên bản ValidationResult)
+            DTO.ValidationResult result = importBUS.addReceipt(importDTO, hasDetails);
+
+            // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ
+            if (result.isValid()) {
+                // NẾU HỢP LỆ: Tiến hành lưu các sách chi tiết vào DB
+                ArrayList<ImportReceiptDetailDTO> listDetails = new ArrayList<>();
+                for (int i = 0; i < detailModel.getRowCount(); i++) {
+                    int bId = (int) detailModel.getValueAt(i, 0);
+                    double price = (double) detailModel.getValueAt(i, 2);
+                    int qty = (int) detailModel.getValueAt(i, 3);
+                    double subTotal = (double) detailModel.getValueAt(i, 4);
+
+                    // importDTO.getReceiptId() lúc này đã mang ID mới nhất do BUS cập nhật
+                    listDetails.add(new ImportReceiptDetailDTO(importDTO.getReceiptId(), bId, qty, price, subTotal));
+                    
+                    // Cập nhật Số lượng tồn kho & Giá vốn trong bảng Books
+                    bookDAO.updateStockAndPrice(bId, qty, price);
+                }
+                detailDAO.insertBatch(listDetails);
+                
+                JOptionPane.showMessageDialog(this, "NHẬP HÀNG THÀNH CÔNG!\nKho sách và Giá vốn đã được hệ thống tự động cập nhật.");
+                dispose();
+            } else {
+                // NẾU CÓ LỖI: Gọi thợ sơn ValidationUI ra tô viền đỏ
+                
+                // Dọn sạch màu đỏ của lần bấm lỗi trước (nếu có)
+                GUI.util.ValidationUI.resetAll(cbSupplier, tblImportDetails);
+                
+                // Dò lỗi và tô đỏ đúng chỗ
+                if (result.getError("supplierId") != null) {
+                    GUI.util.ValidationUI.setError(cbSupplier, result.getError("supplierId"));
+                }
+                if (result.getError("details") != null) {
+                    GUI.util.ValidationUI.setError(tblImportDetails, result.getError("details"));
+                }
+
+                // Hiển thị thông báo tổng
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Cảnh báo Lỗi Nhập Liệu", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Đã xảy ra lỗi hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
