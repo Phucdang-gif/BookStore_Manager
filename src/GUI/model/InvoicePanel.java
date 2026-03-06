@@ -137,8 +137,9 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onRefresh() {
+        invoiceBUS.refreshData();
         loadDataToTable(invoiceBUS.getAll());
-        
+
     }
 
     @Override

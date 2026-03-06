@@ -66,4 +66,8 @@ public class DiscountServiceBUS {
         }
         return result;
     }
+        public ArrayList<DiscountServiceDTO> refreshData() {
+            this.listDiscount = dao.getAll();
+            return this.listDiscount;
+        }
 }

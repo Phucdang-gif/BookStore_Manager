@@ -122,6 +122,7 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onRefresh() {
+        customerBUS.refreshData();
         loadDataToTable(customerBUS.getAll());
     }
 

@@ -157,6 +157,7 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onRefresh() {
+        discountBUS.refreshData();
         loadDataToTable(discountBUS.getAll());
     }
 

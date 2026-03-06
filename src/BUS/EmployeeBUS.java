@@ -18,6 +18,10 @@ public class EmployeeBUS {
     public ArrayList<EmployeeDTO> getAll() {
         return this.listEmployee;
     }
+    public ArrayList<EmployeeDTO> refreshData() {
+        this.listEmployee = employeeDAO.getAll();
+        return this.listEmployee;
+    }
 
     public ValidationResult addEmployee(EmployeeDTO emp) {
         ValidationResult vr = Validator.validateEmployee(emp, this.listEmployee);

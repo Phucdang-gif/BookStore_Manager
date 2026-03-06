@@ -42,4 +42,7 @@ public class PermissionGroupBUS {
         }
         return result;
     }
+    public ArrayList<PermissionGroupDTO> refreshData() {
+        return permissionGroupDAO.getAll();
+    }
 }

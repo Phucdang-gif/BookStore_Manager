@@ -144,6 +144,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
     @Override
     public void onRefresh() {
+        importBUS.refreshData();
         loadDataToTable(importBUS.getAll());
     }
 

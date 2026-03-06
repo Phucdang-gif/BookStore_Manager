@@ -31,6 +31,9 @@ public class ImportReceiptBUS {
     public boolean cancelReceipt(int id) {
         return dao.delete(id);
     }
+    public ArrayList<ImportReceiptDTO> refreshData() {
+        return dao.getAll();
+    }
 
     public ArrayList<ImportReceiptDTO> searchByStatus(String status) {
         ArrayList<ImportReceiptDTO> result = new ArrayList<>();

@@ -3,6 +3,9 @@ package BUS;
 import DAO.CustomerDAO;
 import DTO.CustomerDTO;
 import java.util.ArrayList;
+
+import com.kitfox.svg.A;
+
 import DTO.ValidationResult;
 
 public class CustomerBUS {
@@ -69,4 +72,8 @@ public class CustomerBUS {
         }
         return result;
     }
+    public ArrayList<CustomerDTO> refreshData() {
+        this.listCustomer = customerDAO.getAll();
+        return this.listCustomer;
+}
 }

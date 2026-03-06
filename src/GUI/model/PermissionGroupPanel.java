@@ -137,6 +137,7 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
 
     @Override
     public void onRefresh() {
+        permissionGroupBUS.refreshData();
         loadDataToTable(permissionGroupBUS.getAll());
     }
 

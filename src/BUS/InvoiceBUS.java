@@ -36,6 +36,9 @@ public class InvoiceBUS {
         }
         return success;
     }
+     public ArrayList<InvoiceDTO> refreshData() {
+        return invoiceDAO.getAll();
+    }
 
     public ArrayList<InvoiceDTO> search(String text) {
         ArrayList<InvoiceDTO> result = new ArrayList<>();

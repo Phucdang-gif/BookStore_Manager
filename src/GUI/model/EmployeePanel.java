@@ -157,6 +157,7 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onRefresh() {
+        employeeBUS.refreshData();
         loadDataToTable(employeeBUS.getAll());
     }
 
