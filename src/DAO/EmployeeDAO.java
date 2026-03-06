@@ -60,7 +60,7 @@ public class EmployeeDAO {
 
     public boolean update(EmployeeDTO emp) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "UPDATE employees SET full_name=?, date_of_birth=?, gender=?, phone=?, address=?, position=?, salary=?, hire_date=?, avatar = ? WHERE employee_id=?";
+        String sql = "UPDATE employees SET full_name=?, date_of_birth=?, gender=?, phone=?, address=?, position=?, salary=?, avatar = ? WHERE employee_id=?";
         try {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, emp.getFullName());
@@ -70,9 +70,8 @@ public class EmployeeDAO {
             ps.setString(5, emp.getAddress());
             ps.setString(6, emp.getPosition());
             ps.setDouble(7, emp.getSalary());
-            ps.setDate(8, emp.getHireDate());
-            ps.setString(9, emp.getAvatar());
-            ps.setInt(10, emp.getEmployeeId());
+            ps.setString(8, emp.getAvatar());
+            ps.setInt(9, emp.getEmployeeId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

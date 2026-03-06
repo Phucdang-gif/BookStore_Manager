@@ -18,7 +18,6 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
     private JTable table;
     private DefaultTableModel tableModel;
 
-    // Bộ định dạng tiền tệ và ngày tháng cho đẹp mắt
     private DecimalFormat df = new DecimalFormat("#,###");
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
@@ -88,7 +87,9 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onAdd() {
-        DiscountDialog dialog = new DiscountDialog(null, true, "add", null, discountBUS);
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        DiscountDialog dialog = new DiscountDialog(parentFrame, true, "add", null, discountBUS);
         dialog.setVisible(true);
 
         onRefresh();
@@ -113,7 +114,8 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
         }
 
         if (selectedDiscount != null) {
-            DiscountDialog dialog = new DiscountDialog(null, true, "update", selectedDiscount, discountBUS);
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            DiscountDialog dialog = new DiscountDialog(parentFrame, true, "update", selectedDiscount, discountBUS);
             dialog.setVisible(true);
             onRefresh();
         }
@@ -145,8 +147,6 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onDetail() {
-        // Tạm thời chưa cần mở bảng chi tiết, nếu thích có thể làm bảng xem Description
-        JOptionPane.showMessageDialog(this, "Chức năng Xem chi tiết Khuyến mãi đang cập nhật!");
     }
 
     @Override
@@ -179,6 +179,6 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
         boolean canEdit = config.SessionManager.hasPermission(456, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(456, "Xóa");
 
-        return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, false, false, false };
     }
 }

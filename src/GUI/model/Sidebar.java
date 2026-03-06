@@ -13,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import BUS.AccountBUS;
+import BUS.EmployeeBUS;
 
 public class Sidebar extends JPanel {
     private ActionListener menuListener;
@@ -23,6 +24,10 @@ public class Sidebar extends JPanel {
     private JButton btnToggle; // nút ẩn hiện
     private JButton btnLogout; // nút đăng xuất
     private AccountBUS accountBUS = new AccountBUS();
+
+    private JPanel pnlHeader;
+    private String cachedUserFullName;
+    private String cachedRoleName;
 
     public Sidebar() {
         initStyle();
@@ -54,13 +59,25 @@ public class Sidebar extends JPanel {
         if (permGroup != null) {
             roleName = permGroup.getGroupName();
         }
+        String avatarFileName = null;
+        try {
+            EmployeeBUS employeeBUS = new EmployeeBUS();
+            DTO.EmployeeDTO currentEmp = employeeBUS.getById(currentUser.getEmployeeId());
+            if (currentEmp != null) {
+                avatarFileName = currentEmp.getAvatar();
+            }
+        } catch (Exception ignored) {
+        }
 
-        JPanel pnlHeader = new JPanel(new BorderLayout());
+        cachedUserFullName = userFullName;
+        cachedRoleName = roleName;
+
+        pnlHeader = new JPanel(new BorderLayout());
         pnlHeader.setOpaque(false);
         pnlHeader.setBorder(new EmptyBorder(0, 0, 10, 0));
 
         // Hiển thị tên thật lên Sidebar
-        UserProfilePanel userPanel = new UserProfilePanel(userFullName, roleName);
+        UserProfilePanel userPanel = new UserProfilePanel(userFullName, roleName, avatarFileName);
 
         btnToggle = new JButton();
         IconHelper.setIcon(btnToggle, "GUI/icon/menu.svg", 27, 27);
@@ -259,5 +276,30 @@ public class Sidebar extends JPanel {
                 btnLogout.setBackground(ThemeColor.bgPanel);
             }
         });
+    }
+
+    public void refreshUserProfile() {
+        String avatarFileName = null;
+        try {
+            EmployeeBUS employeeBUS = new EmployeeBUS();
+            DTO.EmployeeDTO currentEmp = employeeBUS.getById(
+                    config.SessionManager.getCurrentAccount().getEmployeeId());
+            if (currentEmp != null) {
+                avatarFileName = currentEmp.getAvatar();
+            }
+        } catch (Exception ignored) {
+        }
+
+        // Xóa UserProfilePanel cũ (CENTER), giữ lại btnToggle (EAST)
+        Component toggleBtn = ((BorderLayout) pnlHeader.getLayout()).getLayoutComponent(BorderLayout.EAST);
+        pnlHeader.removeAll();
+
+        UserProfilePanel newUserPanel = new UserProfilePanel(cachedUserFullName, cachedRoleName, avatarFileName);
+        pnlHeader.add(newUserPanel, BorderLayout.CENTER);
+        if (toggleBtn != null)
+            pnlHeader.add(toggleBtn, BorderLayout.EAST);
+
+        pnlHeader.revalidate();
+        pnlHeader.repaint();
     }
 }

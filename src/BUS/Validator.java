@@ -205,7 +205,6 @@ public class Validator {
                 .requireNotBlank("position", emp.getPosition(), "Vui lòng nhập chức vụ")
                 .requireNonNegative("salary", emp.getSalary(), "Lương nhân viên không được âm")
                 .requireCondition("dateOfBirth", emp.getDateOfBirth() != null, "Vui lòng chọn ngày sinh")
-                .requireCondition("hireDate", emp.getHireDate() != null, "Vui lòng chọn ngày vào làm")
                 .getResult();
     }
 
@@ -220,10 +219,6 @@ public class Validator {
                 .requirePositive("discountValue", ds.getDiscountValue(), "Giá trị giảm giá phải lớn hơn 0")
                 .requireNonNegative("minimumAmount", ds.getMinimumAmount(), "Giá trị đơn hàng tối thiểu không được âm")
                 .requireNonNegative("maximumDiscount", ds.getMaximumDiscount(), "Mức giảm tối đa không được âm")
-                .requireCondition("dates",
-                        ds.getStartDate() != null && ds.getEndDate() != null
-                                && ds.getStartDate().before(ds.getEndDate()),
-                        "Ngày kết thúc phải diễn ra sau ngày bắt đầu")
                 .getResult();
     }
 }

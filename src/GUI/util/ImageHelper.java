@@ -23,13 +23,16 @@ public class ImageHelper {
      */
     public static BufferedImage readImage(String path) {
         try {
-            URL res = ImageHelper.class.getResource(path);
+            // 1. Thử load từ classpath (hoạt động cả khi chạy từ IDE lẫn JAR)
+            URL res = ImageHelper.class.getClassLoader().getResource(path);
             if (res != null)
                 return ImageIO.read(res);
 
+            // 2. Fallback: load từ file hệ thống (dùng khi dev ngoài classpath)
             File f = new File(path);
             if (f.exists())
                 return ImageIO.read(f);
+
         } catch (Exception e) {
             System.err.println("Loi doc anh: " + path);
         }

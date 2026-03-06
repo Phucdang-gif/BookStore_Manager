@@ -2,11 +2,17 @@ package GUI.dialog;
 
 import BUS.EmployeeBUS;
 import DTO.EmployeeDTO;
+import GUI.util.IconHelper;
+import GUI.util.ImageHelper;
+
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import DTO.ValidationResult;
 
 public class EmployeeDialog extends JDialog {
 
@@ -14,12 +20,18 @@ public class EmployeeDialog extends JDialog {
     private EmployeeDTO currentEmp;
     private EmployeeBUS employeeBUS;
 
-    private JTextField txtName, txtDob, txtPhone, txtAddress, txtSalary, txtHireDate;
+    private JTextField txtName, txtPhone, txtAddress, txtSalary;
+    private JDateChooser dcDob, dcHireDate;
     private JComboBox<String> cbGender, cbPosition;
     private JButton btnSave, btnCancel;
 
-    // Định dạng ngày tháng Việt Nam
-    private SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+    // --- AVATAR ---
+    private JLabel lblAvatarPreview;
+    private JButton btnChooseAvatar;
+    private String selectedAvatarFileName = null; // Chỉ lưu tên file (ví dụ: "emp_01.png")
+
+    // Kích thước avatar hiển thị trong dialog
+    private static final int AVATAR_SIZE = 80;
 
     public EmployeeDialog(Frame owner, boolean modal, String mode, EmployeeDTO emp, EmployeeBUS bus) {
         super(owner, modal);
@@ -27,10 +39,6 @@ public class EmployeeDialog extends JDialog {
         this.currentEmp = emp;
         this.employeeBUS = bus;
 
-        // Cấu hình định dạng ngày chặt chẽ (không chấp nhận ngày 30/02...)
-        sdf.setLenient(false);
-
-        // 1. Cấu hình Tiêu đề theo chế độ
         if (mode.equals("add")) {
             setTitle("Thêm Nhân Viên Mới");
         } else if (mode.equals("update")) {
@@ -42,30 +50,54 @@ public class EmployeeDialog extends JDialog {
         initUI();
         loadData();
 
-        // 2. Xử lý riêng cho chế độ Xem Chi Tiết
         if (mode.equals("detail")) {
-            disableForm(); // Khóa toàn bộ ô nhập liệu
-            btnSave.setVisible(false); // Ẩn nút Lưu
-            btnCancel.setText("Đóng"); // Đổi tên nút Hủy thành Đóng
-            btnCancel.setBackground(new Color(108, 117, 125)); // Màu xám cho nút Đóng
+            disableForm();
+            btnSave.setVisible(false);
+            btnCancel.setText("Đóng");
+            btnCancel.setBackground(new Color(108, 117, 125));
             btnCancel.setForeground(Color.WHITE);
         }
-        setSize(450, 520);
+
+        setSize(500, 600);
         setLocationRelativeTo(null);
     }
 
     private void initUI() {
         setLayout(new BorderLayout(10, 10));
 
-        // --- Panel Form nhập liệu ---
+        // ===== PHẦN TRÊN: AVATAR =====
+        JPanel pnlAvatar = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        pnlAvatar.setBackground(new Color(245, 245, 245));
+        pnlAvatar.setBorder(BorderFactory.createEmptyBorder(10, 0, 5, 0));
+
+        lblAvatarPreview = new JLabel();
+        lblAvatarPreview.setPreferredSize(new Dimension(AVATAR_SIZE, AVATAR_SIZE));
+        lblAvatarPreview.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+        lblAvatarPreview.setHorizontalAlignment(SwingConstants.CENTER);
+        // Hiển thị icon mặc định
+        setDefaultAvatar();
+
+        btnChooseAvatar = new JButton("Chọn ảnh...");
+        btnChooseAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        btnChooseAvatar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnChooseAvatar.addActionListener(e -> chooseAvatar());
+
+        pnlAvatar.add(lblAvatarPreview);
+        pnlAvatar.add(btnChooseAvatar);
+
+        add(pnlAvatar, BorderLayout.NORTH);
+
+        // ===== PHẦN GIỮA: FORM =====
         JPanel pnlForm = new JPanel(new GridLayout(8, 2, 10, 15));
-        pnlForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        pnlForm.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         pnlForm.add(new JLabel("Họ và Tên:"));
         pnlForm.add(txtName = new JTextField());
 
-        pnlForm.add(new JLabel("Ngày Sinh (dd-MM-yyyy):"));
-        pnlForm.add(txtDob = new JTextField());
+        pnlForm.add(new JLabel("Ngày Sinh:"));
+        dcDob = new JDateChooser();
+        dcDob.setDateFormatString("dd-MM-yyyy");
+        pnlForm.add(dcDob);
 
         pnlForm.add(new JLabel("Giới Tính:"));
         pnlForm.add(cbGender = new JComboBox<>(new String[] { "Nam", "Nữ" }));
@@ -77,25 +109,26 @@ public class EmployeeDialog extends JDialog {
         pnlForm.add(txtAddress = new JTextField());
 
         pnlForm.add(new JLabel("Chức Vụ:"));
-        pnlForm.add(
-                cbPosition = new JComboBox<>(new String[] { "Quản lý", "Nhân viên bán hàng", "Thủ kho", "Kế toán" }));
+        pnlForm.add(cbPosition = new JComboBox<>(
+                new String[] { "Quản lý", "Nhân viên bán hàng", "Thủ kho", "Kế toán" }));
 
         pnlForm.add(new JLabel("Lương (VNĐ):"));
         pnlForm.add(txtSalary = new JTextField());
 
-        pnlForm.add(new JLabel("Ngày Thuê (dd-MM-yyyy):"));
-        pnlForm.add(txtHireDate = new JTextField());
+        pnlForm.add(new JLabel("Ngày Thuê:"));
+        dcHireDate = new JDateChooser();
+        dcHireDate.setDateFormatString("dd-MM-yyyy");
+        pnlForm.add(dcHireDate);
 
         add(pnlForm, BorderLayout.CENTER);
 
-        // --- Panel Nút bấm ---
+        // ===== PHẦN DƯỚI: NÚT =====
         JPanel pnlBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btnSave = new JButton("Lưu");
         btnSave.setBackground(new Color(0, 123, 255));
         btnSave.setForeground(Color.WHITE);
 
         btnCancel = new JButton("Hủy");
-
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> save());
 
@@ -104,101 +137,174 @@ public class EmployeeDialog extends JDialog {
         add(pnlBtns, BorderLayout.SOUTH);
     }
 
-    // Hàm load dữ liệu lên form (Dùng cho cả Update và Detail)
+    // ===== LOGIC CHỌN AVATAR =====
+
+    /**
+     * Mở file chooser, cho phép chọn ảnh PNG/JPG/SVG.
+     * Sau khi chọn: copy vào src/image, lưu tên file, cập nhật preview.
+     */
+    private void chooseAvatar() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Chọn ảnh đại diện");
+        chooser.setFileFilter(new FileNameExtensionFilter(
+                "Ảnh (PNG, JPG, JPEG, SVG)", "png", "jpg", "jpeg", "svg"));
+
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = chooser.getSelectedFile();
+            String ext = getExtension(selectedFile.getName()).toLowerCase();
+
+            if (ext.equals("svg")) {
+                // SVG: Không preview được bằng BufferedImage, dùng FlatLaf SVG icon
+                // Copy file vào thư mục ảnh
+                String savedName = ImageHelper.saveImageToProject(selectedFile);
+                if (savedName != null) {
+                    selectedAvatarFileName = savedName;
+                    // Hiển thị bằng FlatSVGIcon qua IconHelper
+                    IconHelper.setIcon(lblAvatarPreview,
+                            "image/" + savedName, AVATAR_SIZE, AVATAR_SIZE);
+                    lblAvatarPreview.setText("");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể lưu file ảnh!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                // PNG/JPG: Dùng BufferedImage để preview tròn đẹp
+                BufferedImage img = ImageHelper.readImage(selectedFile.getAbsolutePath());
+                if (img != null) {
+                    String savedName = ImageHelper.saveImageToProject(selectedFile);
+                    if (savedName != null) {
+                        selectedAvatarFileName = savedName;
+                        // Preview tròn
+                        BufferedImage circle = ImageHelper.makeCircle(
+                                ImageHelper.resize(img, AVATAR_SIZE, AVATAR_SIZE), AVATAR_SIZE);
+                        lblAvatarPreview.setIcon(new ImageIcon(circle));
+                        lblAvatarPreview.setText("");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không đọc được file ảnh!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+    /**
+     * Hiển thị avatar theo tên file đã lưu trong DB.
+     * Hỗ trợ cả PNG/JPG (bo tròn) và SVG (icon thẳng).
+     */
+    private void loadAvatarPreview(String avatarFileName) {
+        if (avatarFileName == null || avatarFileName.isEmpty()) {
+            setDefaultAvatar();
+            return;
+        }
+
+        String ext = getExtension(avatarFileName).toLowerCase();
+        String path = "image/" + avatarFileName;
+
+        if (ext.equals("svg")) {
+            IconHelper.setIcon(lblAvatarPreview, path, AVATAR_SIZE, AVATAR_SIZE);
+            lblAvatarPreview.setText("");
+        } else {
+            BufferedImage img = ImageHelper.readImage(path);
+            if (img != null) {
+                BufferedImage circle = ImageHelper.makeCircle(
+                        ImageHelper.resize(img, AVATAR_SIZE, AVATAR_SIZE), AVATAR_SIZE);
+                lblAvatarPreview.setIcon(new ImageIcon(circle));
+                lblAvatarPreview.setText("");
+            } else {
+                setDefaultAvatar();
+            }
+        }
+    }
+
+    /** Icon mặc định khi chưa có avatar */
+    private void setDefaultAvatar() {
+        IconHelper.setIcon(lblAvatarPreview, "GUI/icon/stafff.svg", AVATAR_SIZE, AVATAR_SIZE);
+        lblAvatarPreview.setText("");
+    }
+
+    private String getExtension(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        return (dot >= 0) ? fileName.substring(dot + 1) : "";
+    }
+
+    // ===== LOAD / SAVE DỮ LIỆU =====
+
     private void loadData() {
         if ((mode.equals("update") || mode.equals("detail")) && currentEmp != null) {
             txtName.setText(currentEmp.getFullName());
-
-            // Format ngày sinh
-            if (currentEmp.getDateOfBirth() != null) {
-                txtDob.setText(sdf.format(currentEmp.getDateOfBirth()));
-            }
-
             cbGender.setSelectedItem(currentEmp.getGender().equals("male") ? "Nam" : "Nữ");
             txtPhone.setText(currentEmp.getPhone());
             txtAddress.setText(currentEmp.getAddress());
             cbPosition.setSelectedItem(currentEmp.getPosition());
             txtSalary.setText(String.format("%.0f", currentEmp.getSalary()));
+            dcHireDate.setEnabled(false);
 
-            // Format ngày thuê
-            if (currentEmp.getHireDate() != null) {
-                txtHireDate.setText(sdf.format(currentEmp.getHireDate()));
-            }
+            if (currentEmp.getDateOfBirth() != null)
+                dcDob.setDate(currentEmp.getDateOfBirth());
+            if (currentEmp.getHireDate() != null)
+                dcHireDate.setDate(currentEmp.getHireDate());
+
+            // Load avatar hiện tại
+            selectedAvatarFileName = currentEmp.getAvatar();
+            loadAvatarPreview(currentEmp.getAvatar());
         }
     }
 
-    // Hàm khóa form (chỉ dùng cho chế độ detail)
     private void disableForm() {
         txtName.setEditable(false);
-        txtDob.setEditable(false);
         txtPhone.setEditable(false);
         txtAddress.setEditable(false);
         txtSalary.setEditable(false);
-        txtHireDate.setEditable(false);
         cbGender.setEnabled(false);
         cbPosition.setEnabled(false);
+        dcDob.setEnabled(false);
+        dcHireDate.setEnabled(false);
+        btnChooseAvatar.setVisible(false); // Ẩn nút chọn ảnh ở chế độ xem
 
-        // Tô màu nền xám nhẹ để người dùng biết không sửa được
         Color readOnlyColor = new Color(245, 245, 245);
         txtName.setBackground(readOnlyColor);
-        txtDob.setBackground(readOnlyColor);
         txtPhone.setBackground(readOnlyColor);
         txtAddress.setBackground(readOnlyColor);
         txtSalary.setBackground(readOnlyColor);
-        txtHireDate.setBackground(readOnlyColor);
     }
 
     private void save() {
         try {
-            // Validate sơ bộ
             String name = txtName.getText().trim();
-            String dobStr = txtDob.getText().trim();
-            String hireStr = txtHireDate.getText().trim();
-            String salaryStr = txtSalary.getText().trim();
-
-            if (name.isEmpty() || dobStr.isEmpty() || hireStr.isEmpty() || salaryStr.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            // Chuyển đổi Ngày tháng (dd-MM-yyyy -> SQL Date)
-            java.util.Date parsedDob = sdf.parse(dobStr);
-            Date sqlDob = new Date(parsedDob.getTime());
-
-            java.util.Date parsedHire = sdf.parse(hireStr);
-            Date sqlHire = new Date(parsedHire.getTime());
-
-            // Lấy các thông tin khác
-            String gender = cbGender.getSelectedItem().equals("Nam") ? "male" : "female";
             String phone = txtPhone.getText().trim();
             String address = txtAddress.getText().trim();
             String pos = cbPosition.getSelectedItem().toString();
-            double salary = Double.parseDouble(salaryStr);
+            String gender = cbGender.getSelectedItem().equals("Nam") ? "male" : "female";
 
-            // Tạo DTO
+            String salaryStr = txtSalary.getText().trim();
+            double salary = salaryStr.isEmpty() ? -1 : Double.parseDouble(salaryStr);
+
+            Date sqlDob = null;
+            if (dcDob.getDate() != null)
+                sqlDob = new Date(dcDob.getDate().getTime());
+
+            Date sqlHire = null;
+            if (dcHireDate.getDate() != null)
+                sqlHire = new Date(dcHireDate.getDate().getTime());
+
             EmployeeDTO emp = new EmployeeDTO(
                     mode.equals("add") ? 0 : currentEmp.getEmployeeId(),
-                    name, sqlDob, gender, phone, address, pos, salary, sqlHire, null,
-                    "active", null);
+                    name, sqlDob, gender, phone, address, pos, salary, sqlHire,
+                    null, "active",
+                    selectedAvatarFileName); // <-- Truyền tên file avatar
 
-            // Gọi BUS xử lý
-            boolean success = mode.equals("add") ? employeeBUS.addEmployee(emp) : employeeBUS.updateEmployee(emp);
+            ValidationResult result = mode.equals("add")
+                    ? employeeBUS.addEmployee(emp)
+                    : employeeBUS.updateEmployee(emp);
 
-            if (success) {
+            if (result.isValid()) {
                 JOptionPane.showMessageDialog(this, "Lưu thành công!");
                 dispose();
             } else {
-                JOptionPane.showMessageDialog(this, "Lỗi khi lưu vào cơ sở dữ liệu!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Lương phải là số hợp lệ!", "Lỗi nhập liệu", JOptionPane.ERROR_MESSAGE);
-
-        } catch (ParseException e) {
-            JOptionPane.showMessageDialog(this, "Ngày tháng phải nhập đúng định dạng dd-MM-yyyy (VD: 15-05-1990)",
-                    "Lỗi ngày tháng", JOptionPane.ERROR_MESSAGE);
-
+            JOptionPane.showMessageDialog(this, "Lương phải là số hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi hệ thống: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);

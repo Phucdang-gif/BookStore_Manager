@@ -184,15 +184,9 @@ public class GroupDashboard extends JPanel {
         } else {
 
             for (BookDTO book : books) {
-
-                String imgPath = "src/image/default_book.png";
-                if (book.getImage() != null && !book.getImage().isEmpty()) {
-                    if (book.getImage().contains(":") || book.getImage().startsWith("/"))
-                        imgPath = book.getImage();
-                    else
-                        imgPath = "BookStore_Manager\\src\\image\\" + book.getImage();
-                }
-
+                String imgPath = (book.getImage() != null && !book.getImage().isEmpty())
+                        ? "image/" + book.getImage()
+                        : "image/default_book.png";
                 ProductCard pCard = new ProductCard(
                         book.getBookTitle(),
                         imgPath,

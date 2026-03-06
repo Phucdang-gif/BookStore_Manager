@@ -26,6 +26,7 @@ public class MainFrame extends JFrame {
         content = new MainPanel();
         sidebar = new Sidebar();
         getContentPane().setBackground(ThemeColor.bgPanel);
+        content.setOnAvatarUpdated(() -> sidebar.refreshUserProfile());
     }
 
     private void setupLayout() {

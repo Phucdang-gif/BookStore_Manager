@@ -2,6 +2,7 @@ package GUI.model;
 
 import BUS.EmployeeBUS;
 import DTO.EmployeeDTO;
+import DTO.ValidationResult;
 import GUI.dialog.EmployeeDialog;
 import java.awt.*;
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
     private JTable table;
     private DefaultTableModel tableModel;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
+    private Runnable onAvatarUpdated;
+
+    public void setOnAvatarUpdated(Runnable callback) {
+        this.onAvatarUpdated = callback;
+    }
 
     public EmployeePanel() {
         initUI();
@@ -26,13 +32,16 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] columns = { "Mã NV", "Họ Tên", "Giới Tính", "Số Điện Thoại", "Chức Vụ", "Lương", "Trạng Thái" };
+        String[] columns = { "Mã NV", "Họ Tên", "Giới Tính", "Số Điện Thoại", "Chức Vụ", "Lương", "Trạng Thái",
+                "Avatar" };
+
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
+
         table = new JTable(tableModel);
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -46,18 +55,33 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
 
     private void loadDataToTable(ArrayList<EmployeeDTO> list) {
         tableModel.setRowCount(0);
-        if (list != null) {
-            for (EmployeeDTO emp : list) {
-                String genderStr = emp.getGender().equals("male") ? "Nam" : "Nữ";
-                String statusStr = (emp.getStatus() != null && emp.getStatus().equals("active")) ? "Đang làm"
-                        : "Đã nghỉ";
-                tableModel.addRow(new Object[] {
-                        emp.getEmployeeId(), emp.getFullName(), genderStr,
-                        emp.getPhone(), emp.getPosition(), df.format(emp.getSalary()), statusStr
-                });
-            }
+        if (list == null)
+            return;
+
+        for (EmployeeDTO emp : list) {
+            String avatarText = (emp.getAvatar() != null && !emp.getAvatar().isEmpty())
+                    ? emp.getAvatar()
+                    : "";
+
+            String genderStr = "male".equals(emp.getGender()) ? "Nam" : "Nữ";
+            String statusStr = emp.getStatus() != null && "active".equals(emp.getStatus())
+                    ? "Đang làm"
+                    : "Đã nghỉ";
+
+            tableModel.addRow(new Object[] {
+                    emp.getEmployeeId(),
+                    emp.getFullName(),
+                    genderStr,
+                    emp.getPhone(),
+                    emp.getPosition(),
+                    df.format(emp.getSalary()),
+                    statusStr,
+                    avatarText
+            });
         }
     }
+
+    // ===== ACTIONS =====
 
     @Override
     public void onAdd() {
@@ -73,14 +97,18 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
             JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên cần sửa!");
             return;
         }
-        int id = (int) table.getValueAt(row, 0);
-        EmployeeDTO selectedEmp = employeeBUS.getAll().stream().filter(e -> e.getEmployeeId() == id).findFirst()
-                .orElse(null);
+        int id = (int) table.getValueAt(row, 0); // Cột 0 là Mã NV
+        EmployeeDTO selectedEmp = employeeBUS.getAll().stream()
+                .filter(e -> e.getEmployeeId() == id).findFirst().orElse(null);
 
         if (selectedEmp != null) {
             EmployeeDialog dialog = new EmployeeDialog(null, true, "update", selectedEmp, employeeBUS);
             dialog.setVisible(true);
             onRefresh();
+            int currentEmpId = config.SessionManager.getCurrentAccount().getEmployeeId();
+            if (id == currentEmpId && onAvatarUpdated != null) {
+                onAvatarUpdated.run();
+            }
         }
     }
 
@@ -92,13 +120,16 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận cho nhân viên này nghỉ việc?", "Cảnh báo",
-                JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Xác nhận cho nhân viên này nghỉ việc?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             int id = (int) table.getValueAt(row, 0);
-            if (employeeBUS.deleteEmployee(id)) {
-                JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+            ValidationResult vr = employeeBUS.deleteEmployee(id);
+            if (vr.isValid()) {
+                JOptionPane.showMessageDialog(this, "Xóa thành công!");
                 onRefresh();
+            } else {
+                JOptionPane.showMessageDialog(this, vr.getSummary(), "Lỗi Xóa", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -142,12 +173,9 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         if (config.SessionManager.getCurrentAccount() == null) {
             return new boolean[] { false, false, false, false, false, false };
         }
-
-        // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
         boolean canAdd = config.SessionManager.hasPermission(457, "Thêm");
         boolean canEdit = config.SessionManager.hasPermission(457, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(457, "Xóa");
-
         return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
     }
 }

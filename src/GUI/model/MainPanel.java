@@ -148,4 +148,9 @@ public class MainPanel extends JPanel {
         }
     }
 
+    public void setOnAvatarUpdated(Runnable callback) {
+        if (pnlEmployee != null) {
+            pnlEmployee.setOnAvatarUpdated(callback);
+        }
+    }
 }
