@@ -117,10 +117,16 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
 
     @Override
     public boolean[] getButtonConfig() {
-        DTO.AccountDTO currentAcc = config.SessionManager.getCurrentAccount();
-        if (currentAcc == null)
+        if (config.SessionManager.getCurrentAccount() == null) {
             return new boolean[] { false, false, false, false, false, false };
-        return new boolean[] { true, true, true, false, false, false };
+        }
+
+        boolean canAdd = config.SessionManager.hasPermission(461, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(461, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(461, "Xóa");
+        boolean canDetail = config.SessionManager.hasPermission(461, "Xem");
+
+        return new boolean[] { canAdd, canEdit, canDelete, canDetail, false, false };
     }
 
     // ===================== UTILS =====================
