@@ -84,13 +84,23 @@ public class PermissionGroupDAO {
 
     public boolean delete(int id) {
         Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "UPDATE permission_groups SET status = 'inactive' WHERE permission_group_id = ?";
         
         try {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+           
+            String sqlDeleteDetails = "DELETE FROM permission_details WHERE permission_group_id = ?";
+            PreparedStatement psDetails = conn.prepareStatement(sqlDeleteDetails);
+            psDetails.setInt(1, id);
+            psDetails.executeUpdate(); // Chạy lệnh xóa con (Có thể trả về 0 nếu nhóm này chưa từng được phân quyền, không sao cả)
+
+            // BƯỚC 2: Xóa Nhóm quyền (Cha)
+            String sqlDeleteGroup = "DELETE FROM permission_groups WHERE permission_group_id = ?";
+            PreparedStatement psGroup = conn.prepareStatement(sqlDeleteGroup);
+            psGroup.setInt(1, id);
+            
+            return psGroup.executeUpdate() > 0; // Trả về true nếu xóa cha thành công
+            
         } catch (SQLException e) {
+            System.out.println("LỖI XÓA NHÓM QUYỀN: " + e.getMessage());
             e.printStackTrace();
         }
         return false;

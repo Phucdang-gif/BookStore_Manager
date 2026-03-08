@@ -246,4 +246,23 @@ public class AccountDAO {
         }
         return null; // Sai mật khẩu hoặc bị khóa sẽ trả về null
     }
+    // ==========================================
+    // PHỤC VỤ CHO VIỆC XÓA NHÓM QUYỀN
+    // ==========================================
+    public int countAccountsByGroupId(int permissionGroupId) {
+        int count = 0;
+        Connection con = config.DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT COUNT(*) FROM accounts WHERE permission_group_id = ?";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, permissionGroupId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
 }

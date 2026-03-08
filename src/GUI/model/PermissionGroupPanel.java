@@ -87,27 +87,32 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         onRefresh();
     }
 
-   @Override
+  @Override
     public void onDelete() {
         int row = table.getSelectedRow();
         if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần khóa!");
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần xóa!");
             return;
         }
-        int confirm = JOptionPane.showConfirmDialog(this, "Chắc chắn muốn khóa (ẩn) nhóm quyền này?", "Cảnh báo", JOptionPane.YES_NO_OPTION);
+        
+        String groupName = (String) table.getValueAt(row, 1);
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Hành động này sẽ XÓA VĨNH VIỄN nhóm quyền [" + groupName + "].\nBạn có chắc chắn muốn tiếp tục?", 
+            "Cảnh báo", JOptionPane.YES_NO_OPTION);
         
         if (confirm == JOptionPane.YES_OPTION) {
             int groupId = (int) table.getValueAt(row, 0);
             
-            // GỌI XUỐNG BUS ĐỂ XÓA THẬT
-            boolean isSuccess = permissionGroupBUS.deleteGroup(groupId); 
+            // GỌI XUỐNG BUS ĐỂ KIỂM TRA VÀ XÓA
+            DTO.ValidationResult result = permissionGroupBUS.deleteGroup(groupId); 
             
-            if (isSuccess) {
-                JOptionPane.showMessageDialog(this, "Đã khóa nhóm quyền thành công!");
+            if (result.isValid()) {
+                JOptionPane.showMessageDialog(this, "Đã xóa nhóm quyền thành công!");
+                onRefresh(); // Load lại bảng
             } else {
-                JOptionPane.showMessageDialog(this, "Lỗi: Không thể thực hiện thao tác này!");
+                // Nếu bị chặn (do còn tài khoản dùng), hiển thị câu thông báo lỗi
+                JOptionPane.showMessageDialog(this, result.getSummary(), "Từ chối thao tác", JOptionPane.ERROR_MESSAGE);
             }
-            onRefresh(); // Load lại bảng
         }
     }
 
