@@ -149,20 +149,22 @@ public class EmployeeDialog extends JDialog {
         chooser.setFileFilter(new FileNameExtensionFilter(
                 "Ảnh (PNG, JPG, JPEG, SVG)", "png", "jpg", "jpeg", "svg"));
 
+        File imageDir = new File("src/GUI/icon");
+        if (!imageDir.exists())
+            imageDir.mkdirs();
+        chooser.setCurrentDirectory(imageDir);
+
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File selectedFile = chooser.getSelectedFile();
             String ext = getExtension(selectedFile.getName()).toLowerCase();
 
             if (ext.equals("svg")) {
-                // SVG: Không preview được bằng BufferedImage, dùng FlatLaf SVG icon
-                // Copy file vào thư mục ảnh
+                // SVG: Preview trực tiếp từ file gốc qua URI (không qua classpath)
+                IconHelper.setIconFromFile(lblAvatarPreview, selectedFile, AVATAR_SIZE, AVATAR_SIZE);
+                // Copy vào project để lưu tên vào DB
                 String savedName = ImageHelper.saveImageToProject(selectedFile);
                 if (savedName != null) {
                     selectedAvatarFileName = savedName;
-                    // Hiển thị bằng FlatSVGIcon qua IconHelper
-                    IconHelper.setIcon(lblAvatarPreview,
-                            "image/" + savedName, AVATAR_SIZE, AVATAR_SIZE);
-                    lblAvatarPreview.setText("");
                 } else {
                     JOptionPane.showMessageDialog(this, "Không thể lưu file ảnh!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }

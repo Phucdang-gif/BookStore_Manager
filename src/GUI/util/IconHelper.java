@@ -41,6 +41,25 @@ public class IconHelper {
     }
 
     /**
+     * Gán SVG icon cho JLabel từ File trực tiếp (không qua classpath).
+     * Dùng khi file vừa được copy vào project, chưa có trong classpath runtime.
+     * Dùng URLClassLoader trỏ vào thư mục chứa file để FlatSVGIcon load được.
+     */
+    public static void setIconFromFile(JLabel label, java.io.File file, int width, int height) {
+        try {
+            java.net.URLClassLoader loader = new java.net.URLClassLoader(
+                    new java.net.URL[] { file.getParentFile().toURI().toURL() });
+            FlatSVGIcon icon = new FlatSVGIcon(file.getName(), width, height, loader);
+            label.setIcon(icon);
+            label.setText("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            label.setIcon(null);
+            label.setText("?");
+        }
+    }
+
+    /**
      * Gán Avatar bo tròn không viền cho JLabel
      */
     public static void setCircleAvatar(JLabel label, String path, int size) {
