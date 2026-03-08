@@ -28,8 +28,9 @@ public class EmployeeDialog extends JDialog {
     // --- AVATAR ---
     private JLabel lblAvatarPreview;
     private JButton btnChooseAvatar;
-    private String selectedAvatarFileName = null; // Chỉ lưu tên file (ví dụ: "emp_01.png")
-
+    private String selectedAvatarFileName = null;
+    private File tempAvatarFile = null;
+    private JFileChooser fileChooser;
     // Kích thước avatar hiển thị trong dialog
     private static final int AVATAR_SIZE = 80;
 
@@ -144,45 +145,29 @@ public class EmployeeDialog extends JDialog {
      * Sau khi chọn: copy vào src/image, lưu tên file, cập nhật preview.
      */
     private void chooseAvatar() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Chọn ảnh đại diện");
-        chooser.setFileFilter(new FileNameExtensionFilter(
-                "Ảnh (PNG, JPG, JPEG, SVG)", "png", "jpg", "jpeg", "svg"));
+        if (fileChooser == null) {
+            fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn ảnh đại diện");
+            fileChooser.setCurrentDirectory(new File("."));
+            fileChooser.setFileFilter(new FileNameExtensionFilter(
+                    "Ảnh (PNG, JPG, JPEG, SVG)", "png", "jpg", "jpeg", "svg"));
+        }
 
-        File imageDir = new File("src/GUI/icon");
-        if (!imageDir.exists())
-            imageDir.mkdirs();
-        chooser.setCurrentDirectory(imageDir);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            this.tempAvatarFile = selectedFile;
 
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = chooser.getSelectedFile();
             String ext = getExtension(selectedFile.getName()).toLowerCase();
 
             if (ext.equals("svg")) {
-                // SVG: Preview trực tiếp từ file gốc qua URI (không qua classpath)
                 IconHelper.setIconFromFile(lblAvatarPreview, selectedFile, AVATAR_SIZE, AVATAR_SIZE);
-                // Copy vào project để lưu tên vào DB
-                String savedName = ImageHelper.saveImageToProject(selectedFile);
-                if (savedName != null) {
-                    selectedAvatarFileName = savedName;
-                } else {
-                    JOptionPane.showMessageDialog(this, "Không thể lưu file ảnh!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
             } else {
-                // PNG/JPG: Dùng BufferedImage để preview tròn đẹp
                 BufferedImage img = ImageHelper.readImage(selectedFile.getAbsolutePath());
                 if (img != null) {
-                    String savedName = ImageHelper.saveImageToProject(selectedFile);
-                    if (savedName != null) {
-                        selectedAvatarFileName = savedName;
-                        // Preview tròn
-                        BufferedImage circle = ImageHelper.makeCircle(
-                                ImageHelper.resize(img, AVATAR_SIZE, AVATAR_SIZE), AVATAR_SIZE);
-                        lblAvatarPreview.setIcon(new ImageIcon(circle));
-                        lblAvatarPreview.setText("");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(this, "Không đọc được file ảnh!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    BufferedImage circle = ImageHelper.makeCircle(
+                            ImageHelper.resize(img, AVATAR_SIZE, AVATAR_SIZE), AVATAR_SIZE);
+                    lblAvatarPreview.setIcon(new ImageIcon(circle));
+                    lblAvatarPreview.setText("");
                 }
             }
         }
@@ -219,8 +204,8 @@ public class EmployeeDialog extends JDialog {
 
     /** Icon mặc định khi chưa có avatar */
     private void setDefaultAvatar() {
-        IconHelper.setIcon(lblAvatarPreview, "GUI/icon/stafff.svg", AVATAR_SIZE, AVATAR_SIZE);
-        lblAvatarPreview.setText("");
+        lblAvatarPreview.setIcon(null);
+        lblAvatarPreview.setText("No Image");
     }
 
     private String getExtension(String fileName) {
@@ -276,6 +261,16 @@ public class EmployeeDialog extends JDialog {
             String address = txtAddress.getText().trim();
             String pos = cbPosition.getSelectedItem().toString();
             String gender = cbGender.getSelectedItem().equals("Nam") ? "male" : "female";
+            String avatar = selectedAvatarFileName;
+            if (tempAvatarFile != null) {
+                String savedName = ImageHelper.saveImageToProject(tempAvatarFile);
+                if (savedName != null) {
+                    avatar = savedName;
+                } else {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi lưu ảnh vào dự án!");
+                    return; // Dừng lại nếu copy lỗi
+                }
+            }
 
             String salaryStr = txtSalary.getText().trim();
             double salary = salaryStr.isEmpty() ? -1 : Double.parseDouble(salaryStr);
@@ -292,7 +287,7 @@ public class EmployeeDialog extends JDialog {
                     mode.equals("add") ? 0 : currentEmp.getEmployeeId(),
                     name, sqlDob, gender, phone, address, pos, salary, sqlHire,
                     null, "active",
-                    selectedAvatarFileName); // <-- Truyền tên file avatar
+                    avatar); // <-- Truyền tên file avatar
 
             ValidationResult result = mode.equals("add")
                     ? employeeBUS.addEmployee(emp)
