@@ -222,4 +222,36 @@ public class RevenueReportDAO {
 
         return list;
     }
+    // THÊM HÀM NÀY VÀO LỚP DAO
+    public ArrayList<Object[]> get7DaysRevenue() {
+        ArrayList<Object[]> list = new ArrayList<>();
+        // Câu SQL: Tính Vốn và Doanh thu gom nhóm theo từng ngày trong 7 ngày qua
+        String sql = "SELECT DATE(i.created_at) as report_date, "
+                   + "COALESCE(SUM(id.quantity * b.import_price), 0) as total_cost, "
+                   + "COALESCE(SUM(id.subtotal), 0) as total_revenue "
+                   + "FROM invoices i "
+                   + "JOIN invoice_details id ON i.invoice_id = id.invoice_id "
+                   + "JOIN books b ON id.book_id = b.book_id "
+                   + "WHERE i.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) "
+                   + "GROUP BY DATE(i.created_at) "
+                   + "ORDER BY DATE(i.created_at) ASC";
+                   
+        try (java.sql.Connection con = DatabaseConnection.getInstance().getConnection();
+             java.sql.PreparedStatement ps = con.prepareStatement(sql);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+             
+            while (rs.next()) {
+                String date = rs.getString("report_date"); // VD: 2026-03-05
+                double cost = rs.getDouble("total_cost");
+                double revenue = rs.getDouble("total_revenue");
+                double profit = revenue - cost;
+                
+                // Gom 4 thông tin này thành 1 mảng Object và nhét vào List
+                list.add(new Object[]{date, cost, revenue, profit});
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

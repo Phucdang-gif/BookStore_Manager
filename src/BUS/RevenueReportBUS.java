@@ -37,4 +37,8 @@ public class RevenueReportBUS {
     public ArrayList<UnitsInStockDTO> getUnitsInStockReport() {
         return dao.UnitsInStockReport();
     }
+    // THÊM HÀM NÀY VÀO LỚP BUS
+    public ArrayList<Object[]> get7DaysRevenue() {
+        return dao.get7DaysRevenue();
+    }
 }
