@@ -1,7 +1,6 @@
 package BUS;
 
 import DAO.InvoiceDAO;
-import DTO.ImportReceiptDTO;
 import DTO.InvoiceDTO;
 import DTO.ValidationResult;
 

@@ -15,7 +15,6 @@ public class CreateInvoiceDialog extends JDialog {
     private BookBUS bookBUS = new BookBUS();
     private CustomerBUS customerBUS = new CustomerBUS();
     private DiscountServiceBUS discountBUS = new DiscountServiceBUS();
-    private InvoiceDAO invoiceDAO = new InvoiceDAO();
     private InvoiceDetailDAO detailDAO = new InvoiceDetailDAO();
     private InvoiceServiceDAO serviceDAO = new InvoiceServiceDAO();
     private BookDAO bookDAO = new BookDAO();
