@@ -242,7 +242,7 @@ public class BookDialogView extends JPanel {
         txtPriceImport = new JTextField();
         txtPriceExport = new JTextField();
         txtQuantity = new JTextField("0");
-        cbStatus = new JComboBox<>(new String[] { "Còn hàng", "Hết hàng", "Ngừng kinh doanh" });
+        cbStatus = new JComboBox<>(new String[] { "Còn hàng", "Ngừng kinh doanh" });
         txtLanguage = new JTextField();
         txtMinStock = new JTextField("0");
 

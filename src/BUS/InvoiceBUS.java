@@ -16,8 +16,16 @@ public class InvoiceBUS {
         this.listInvoice = invoiceDAO.getAll();
     }
 
+    public void loadDataFromDB() {
+        try {
+            listInvoice = invoiceDAO.getAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public ArrayList<InvoiceDTO> getAll() {
-        return this.listInvoice;
+        return invoiceDAO.getAll();
     }
 
     public int addInvoice(InvoiceDTO dto) {
@@ -36,33 +44,36 @@ public class InvoiceBUS {
         }
         return success;
     }
-     public ArrayList<InvoiceDTO> refreshData() {
+
+    public ArrayList<InvoiceDTO> refreshData() {
         return invoiceDAO.getAll();
     }
 
     public ArrayList<InvoiceDTO> search(String text) {
         ArrayList<InvoiceDTO> result = new ArrayList<>();
         text = text.toLowerCase().trim();
-        
-        if (text.isEmpty()) return this.listInvoice;
+
+        if (text.isEmpty())
+            return this.listInvoice;
 
         for (InvoiceDTO inv : listInvoice) {
-            if (String.valueOf(inv.getInvoiceId()).contains(text) || 
-                String.valueOf(inv.getCustomerId()).contains(text) ||
-                inv.getPaymentMethod().toLowerCase().contains(text) ||
-                inv.getStatus().toLowerCase().contains(text)) {
+            if (String.valueOf(inv.getInvoiceId()).contains(text) ||
+                    String.valueOf(inv.getCustomerId()).contains(text) ||
+                    inv.getPaymentMethod().toLowerCase().contains(text) ||
+                    inv.getStatus().toLowerCase().contains(text)) {
                 result.add(inv);
             }
         }
         return result;
     }
+
     public ValidationResult addInvoice(InvoiceDTO receipt, boolean hasDetails) {
         // 1. Gọi cảnh sát kiểm tra
         ValidationResult vr = Validator.validateInvoice(receipt, hasDetails);
-        
+
         // 2. Nếu có lỗi (isValid == false), trả biên bản về ngay lập tức
         if (!vr.isValid()) {
-            return vr; 
+            return vr;
         }
 
         // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
@@ -73,7 +84,7 @@ public class InvoiceBUS {
             // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
             receipt.setInvoiceId(newId);
         }
-        
+
         return vr;
     }
 }
