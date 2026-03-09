@@ -23,6 +23,7 @@ public class MainPanel extends JPanel {
     private InvoicePanel pnlInvoice;
     private CustomerPanel pnlCustomer;
     private DiscountPanel pnlDiscount;
+    private StatisticPanel pnlStatistic;
 
     private BookBUS bookBUS;
     private AuthorBUS authorBUS;
@@ -41,17 +42,25 @@ public class MainPanel extends JPanel {
         initComponents();
     }
 
+    // Trong file GUI/model/MainPanel.java
+
     private void initComponents() {
         header = new Header();
         add(header, BorderLayout.NORTH);
 
-        // 2. Center Panel (Dùng CardLayout để tráo đổi nội dung)
         cardLayout = new CardLayout();
         centerPanel = new JPanel(cardLayout);
         centerPanel.setOpaque(true);
         centerPanel.setBackground(ThemeColor.bgPanel);
 
-        // Khởi tạo các màn hình con
+        // --- TẠO PANEL CHÀO MỪNG (Dùng làm mặc định) ---
+        JPanel pnlWelcome = new JPanel(new GridBagLayout());
+        pnlWelcome.setBackground(Color.WHITE);
+        JLabel lblWelcome = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ NHÀ SÁCH");
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblWelcome.setForeground(new Color(100, 100, 100));
+        pnlWelcome.add(lblWelcome);
+
         pnlBook = new BookTablePanel(bookBUS);
         pnlGroup = new GroupPanel(this, bookBUS, authorBUS, categoryBUS, publisherBUS);
         pnlImport = new ImportReceiptPanel();
@@ -61,7 +70,11 @@ public class MainPanel extends JPanel {
         pnlInvoice = new InvoicePanel();
         pnlCustomer = new CustomerPanel();
         pnlDiscount = new DiscountPanel();
-        // Thêm các màn hình con vào Center Panel
+        pnlStatistic = new StatisticPanel();
+
+        centerPanel.add(pnlWelcome, "WELCOME");
+
+        // Sau đó mới add các panel khác
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
         centerPanel.add(pnlImport, "IMPORT");
@@ -71,10 +84,12 @@ public class MainPanel extends JPanel {
         centerPanel.add(pnlDiscount, "DISCOUNT");
         centerPanel.add(pnlCustomer, "CUSTOMER");
         centerPanel.add(pnlInvoice, "INVOICE");
+        centerPanel.add(pnlStatistic, "STATISTIC");
+
         add(centerPanel, BorderLayout.CENTER);
 
-        // Mặc định ban đầu Header điều khiển bảng Sách
-        header.setController(pnlBook);
+        header.setController(null);
+        setHeaderVisible(false);
     }
 
     @Override
@@ -92,18 +107,26 @@ public class MainPanel extends JPanel {
     public void showPanel(String panelName) {
         cardLayout.show(centerPanel, panelName);
         switch (panelName) {
+            case "WELCOME":
+                header.setController(null);
+                setHeaderVisible(false);
+                break;
             case "BOOK":
                 header.setController(pnlBook);
                 setHeaderVisible(true);
-
+                bookBUS.loadDataFromDB();
                 break;
             case "GROUP":
                 pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)
-                setHeaderVisible(false); // Ẩn Header chính của MainPanel vì GroupPanel có HeaderBar riêng
+                setHeaderVisible(false);
+                authorBUS.loadDataFromDB();
+                categoryBUS.loadDataFromDB();
+                publisherBUS.loadDataFromDB();
                 break;
             case "ACCOUNT":
                 header.setController(pnlAccount);
                 setHeaderVisible(true);
+
                 break;
             case "PERMISSION":
                 header.setController(pnlPermissionGroup);
@@ -129,9 +152,13 @@ public class MainPanel extends JPanel {
                 header.setController(pnlDiscount);
                 setHeaderVisible(true);
                 break;
-            default:
-                // Nếu chưa có panel nào thì set null để vô hiệu hóa nút
+            case "STATISTIC":
                 header.setController(null);
+                setHeaderVisible(false);
+                break;
+            default:
+                header.setController(null);
+                setHeaderVisible(false);
                 break;
         }
     }

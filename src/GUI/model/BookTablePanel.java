@@ -71,7 +71,7 @@ public static BookTablePanel getInstance() {
         };
 
         bookTable = new JTable(tableModel);
-        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         bookTable.setAutoCreateRowSorter(true);
         styleTable();
 
