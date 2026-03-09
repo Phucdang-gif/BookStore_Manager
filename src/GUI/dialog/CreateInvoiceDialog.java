@@ -42,6 +42,7 @@ public class CreateInvoiceDialog extends JDialog {
     }
 
     private void initUI() {
+      
         setLayout(new BorderLayout(10, 10));
         JPanel pnlMain = new JPanel(new GridLayout(1, 2, 10, 0));
         pnlMain.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -369,7 +370,12 @@ public class CreateInvoiceDialog extends JDialog {
                 }
 
                 JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + invoice.getInvoiceId());
+                if (GUI.model.BookTablePanel.getInstance() != null) {
+                    GUI.model.BookTablePanel.getInstance().refreshTable();
+                }
+                bookBUS.loadDataFromDB();
                 dispose(); 
+               
             } else {
                 // NẾU CÓ LỖI: Xử lý màu mè trên giao diện
                 

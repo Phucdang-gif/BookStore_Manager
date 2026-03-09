@@ -18,7 +18,8 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
     private JTable table;
     private DefaultTableModel tableModel;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
-
+       private BUS.CustomerBUS customerBUS = new BUS.CustomerBUS();
+    private BUS.EmployeeBUS employeeBUS = new BUS.EmployeeBUS();
     public InvoicePanel() {
         initUI();
         loadDataToTable(invoiceBUS.getAll());
@@ -55,10 +56,31 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         if (list != null) {
             for (InvoiceDTO dto : list) {
                 String statusStr = dto.getStatus().equals("Completed") ? "Hoàn Thành" : "Đã Hủy";
+                
+                // 1. Dịch Customer ID -> Tên Khách Hàng
+                String customerName = "Khách Vãng Lai"; // Mặc định nếu ID = 0
+                if (dto.getCustomerId() > 0) {
+                    for (DTO.CustomerDTO cus : customerBUS.getAll()) {
+                        if (cus.getCustomerId() == dto.getCustomerId()) {
+                            customerName = cus.getFullName();
+                            break;
+                        }
+                    }
+                }
+
+                // 2. Dịch Employee ID -> Tên Nhân Viên
+                String employeeName = "Không xác định";
+                for (DTO.EmployeeDTO emp : employeeBUS.getAll()) {
+                    if (emp.getEmployeeId() == dto.getEmployeeId()) {
+                        employeeName = emp.getFullName();
+                        break;
+                    }
+                }
+
                 tableModel.addRow(new Object[] {
                         dto.getInvoiceId(),
-                        dto.getCustomerId(), // Sau này dùng CustomerBUS để lấy Tên
-                        dto.getEmployeeId(), // Sau này dùng EmployeeBUS để lấy Tên
+                        customerName, // <--- Đã thay ID bằng Tên
+                        employeeName, // <--- Đã thay ID bằng Tên
                         dto.getCreatedAt(),
                         dto.getPaymentMethod(),
                         df.format(dto.getFinalAmount()),
@@ -137,7 +159,7 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onRefresh() {
-        invoiceBUS.refreshData();
+        InvoiceBUS invoiceBUS = new InvoiceBUS();
         loadDataToTable(invoiceBUS.getAll());
 
     }

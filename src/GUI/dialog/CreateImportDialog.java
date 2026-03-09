@@ -4,10 +4,12 @@ import BUS.*;
 import DAO.*;
 import DTO.*;
 import java.awt.*;
+import java.awt.print.Book;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.text.DecimalFormat;
+import GUI.model.BookTablePanel;
 
 public class CreateImportDialog extends JDialog {
 
@@ -17,6 +19,8 @@ public class CreateImportDialog extends JDialog {
     private ImportReceiptDAO importDAO = new ImportReceiptDAO();
     private ImportReceiptDetailDAO detailDAO = new ImportReceiptDetailDAO();
     private BookDAO bookDAO = new BookDAO();
+     
+    // Để refresh dữ liệu sách sau khi nhập hàng
 
     // Các thành phần Giao diện
     private JTable tblBooks, tblImportDetails;
@@ -278,6 +282,10 @@ public class CreateImportDialog extends JDialog {
                 detailDAO.insertBatch(listDetails);
                 
                 JOptionPane.showMessageDialog(this, "NHẬP HÀNG THÀNH CÔNG!\nKho sách và Giá vốn đã được hệ thống tự động cập nhật.");
+              if (GUI.model.BookTablePanel.getInstance() != null) {
+                    GUI.model.BookTablePanel.getInstance().refreshTable();
+                }
+                bookBUS.loadDataFromDB(); // Làm mới dữ liệu sách trong RAM của BUS
                 dispose();
             } else {
                 // NẾU CÓ LỖI: Gọi thợ sơn ValidationUI ra tô viền đỏ
