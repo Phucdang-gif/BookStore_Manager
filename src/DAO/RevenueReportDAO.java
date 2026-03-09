@@ -4,7 +4,6 @@ import config.DatabaseConnection;
 import DTO.BookRevenueDTO;
 import DTO.CustomerRevenueDTO;
 import DTO.EmployeeRevenueDTO;
-import DTO.InvoiceDTO;
 import DTO.RevenueReportDTO;
 import DTO.UnitsInStockDTO;
 
@@ -12,7 +11,8 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class RevenueReportDAO {
-    // THONG KE KHACH HANG theo ngay bat dau va ngay ket thuc (STT.ID,NAME,TOTALINVOICE,TOTALAMOUNT)
+    // THONG KE KHACH HANG theo ngay bat dau va ngay ket thuc
+    // (STT.ID,NAME,TOTALINVOICE,TOTALAMOUNT)
     public ArrayList<CustomerRevenueDTO> CustomerReport(Date startDate, Date endDate) {
         ArrayList<CustomerRevenueDTO> list = new ArrayList<>();
         String sql = "SELECT c.customer_id, c.full_name, "
@@ -25,7 +25,7 @@ public class RevenueReportDAO {
                 + "GROUP BY c.customer_id, c.full_name "
                 + "ORDER BY totalamount DESC";
         try (Connection con = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, startDate);
             ps.setDate(2, startDate);
             ps.setDate(3, endDate);
@@ -62,7 +62,7 @@ public class RevenueReportDAO {
                 + "GROUP BY e.employee_id, e.full_name "
                 + "ORDER BY totalrevenue DESC";
         try (Connection con = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, startDate);
             ps.setDate(2, startDate);
             ps.setDate(3, endDate);
@@ -100,7 +100,7 @@ public class RevenueReportDAO {
                 + "GROUP BY b.book_id, b.book_title "
                 + "ORDER BY total_quantity DESC";
         try (Connection con = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDate(1, startDate);
             ps.setDate(2, startDate);
             ps.setDate(3, endDate);
@@ -123,86 +123,103 @@ public class RevenueReportDAO {
         }
         return list;
     }
+
     // THONG KE DOANH THU THEO THANG
-public ArrayList<RevenueReportDTO> RevenueReport(int year) {
+    public ArrayList<RevenueReportDTO> RevenueReport(int year) {
 
-    ArrayList<RevenueReportDTO> list = new ArrayList<>();
+        ArrayList<RevenueReportDTO> list = new ArrayList<>();
 
-    String sql = "SELECT YEAR(i.created_at) AS year, "
-            + "MONTH(i.created_at) AS month, "
-            + "COALESCE(SUM(b.import_price * id.quantity),0) AS cost, "
-            + "COALESCE(SUM(id.subtotal),0) AS revenue, "
-            + "COALESCE(SUM(id.subtotal - (b.import_price * id.quantity)),0) AS profit "
-            + "FROM invoices i "
-            + "JOIN invoice_details id ON i.invoice_id = id.invoice_id "
-            + "JOIN books b ON id.book_id = b.book_id "
-            + "WHERE YEAR(i.created_at) = ? "
-            + "GROUP BY YEAR(i.created_at), MONTH(i.created_at) "
-            + "ORDER BY MONTH(i.created_at)";
+        String sql = "SELECT YEAR(i.created_at) AS year, "
+                + "MONTH(i.created_at) AS month, "
+                + "COALESCE(SUM(b.import_price * id.quantity),0) AS cost, "
+                + "COALESCE(SUM(id.subtotal),0) AS revenue, "
+                + "COALESCE(SUM(id.subtotal - (b.import_price * id.quantity)),0) AS profit "
+                + "FROM invoices i "
+                + "JOIN invoice_details id ON i.invoice_id = id.invoice_id "
+                + "JOIN books b ON id.book_id = b.book_id "
+                + "WHERE YEAR(i.created_at) = ? "
+                + "GROUP BY YEAR(i.created_at), MONTH(i.created_at) "
+                + "ORDER BY MONTH(i.created_at)";
 
-    try (Connection con = DatabaseConnection.getInstance().getConnection();
-         PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
-        ps.setInt(1, year);
+            ps.setInt(1, year);
 
-        try (ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+
+                    RevenueReportDTO dto = new RevenueReportDTO();
+
+                    dto.setYear(rs.getInt("year"));
+                    dto.setMonth(rs.getInt("month"));
+                    dto.setCost(rs.getDouble("cost"));
+                    dto.setRevenue(rs.getDouble("revenue"));
+                    dto.setProfit(rs.getDouble("profit"));
+
+                    list.add(dto);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public ArrayList<UnitsInStockDTO> UnitsInStockReport() {
+
+        ArrayList<UnitsInStockDTO> list = new ArrayList<>();
+
+        // SQL MỚI:
+        // 1. Dùng GROUP_CONCAT để gộp tên các tác giả (vì một sách có thể nhiều tác
+        // giả)
+        // 2. JOIN bảng categories để lấy tên thể loại
+        String sql = "SELECT b.book_id, b.book_title, "
+                + "GROUP_CONCAT(a.author_name SEPARATOR ', ') AS author, "
+                + "c.category_name AS category, "
+                + "b.stock_quantity, b.import_price, "
+                + "(b.stock_quantity * b.import_price) AS stock_value, "
+                + "b.minimum_stock "
+                + "FROM books b "
+                + "LEFT JOIN categories c ON b.category_id = c.category_id "
+                + "LEFT JOIN book_authors ba ON b.book_id = ba.book_id "
+                + "LEFT JOIN authors a ON ba.author_id = a.author_id "
+                + "GROUP BY b.book_id, b.book_title, c.category_name, "
+                + "b.stock_quantity, b.import_price, b.minimum_stock "
+                + "ORDER BY b.stock_quantity ASC";
+
+        try (Connection con = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
+                UnitsInStockDTO dto = new UnitsInStockDTO();
 
-                RevenueReportDTO dto = new RevenueReportDTO();
+                dto.setBookID(rs.getInt("book_id"));
+                dto.setBookTitle(rs.getString("book_title"));
 
-                dto.setYear(rs.getInt("year"));
-                dto.setMonth(rs.getInt("month"));
-                dto.setCost(rs.getDouble("cost"));
-                dto.setRevenue(rs.getDouble("revenue"));
-                dto.setProfit(rs.getDouble("profit"));
+                // Xử lý trường hợp sách chưa có tác giả hoặc thể loại (tránh lỗi null)
+                String authorName = rs.getString("author");
+                dto.setAuthor(authorName != null ? authorName : "Chưa cập nhật");
+
+                String categoryName = rs.getString("category");
+                dto.setCategory(categoryName != null ? categoryName : "Chưa cập nhật");
+
+                dto.setQuantity(rs.getInt("stock_quantity"));
+                dto.setImportPrice(rs.getDouble("import_price"));
+                dto.setStockValue(rs.getDouble("stock_value"));
+                dto.setMinimumStock(rs.getInt("minimum_stock"));
 
                 list.add(dto);
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return list;
     }
-
-    return list;
-}
-//thong ke ton kho
-public ArrayList<UnitsInStockDTO> UnitsInStockReport(){
-
-    ArrayList<UnitsInStockDTO> list = new ArrayList<>();
-
-    String sql = "SELECT b.book_id, b.book_title, b.author, b.category, "
-            + "b.stock_quantity, b.import_price, "
-            + "(b.stock_quantity * b.import_price) AS stock_value, "
-            + "b.minimum_stock "
-            + "FROM books b "
-            + "ORDER BY b.stock_quantity ASC";
-
-    try(Connection con = DatabaseConnection.getInstance().getConnection();
-        PreparedStatement ps = con.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery()){
-
-        while(rs.next()){
-
-            UnitsInStockDTO dto = new UnitsInStockDTO();
-
-            dto.setBookID(rs.getInt("book_id"));
-            dto.setBookTitle(rs.getString("book_title"));
-            dto.setAuthor(rs.getString("author"));
-            dto.setCategory(rs.getString("category"));
-            dto.setQuantity(rs.getInt("stock_quantity"));
-            dto.setImportPrice(rs.getDouble("import_price"));
-            dto.setStockValue(rs.getDouble("stock_value"));
-            dto.setMinimumStock(rs.getInt("minimum_stock"));
-
-            list.add(dto);
-        }
-
-    }catch(SQLException e){
-        e.printStackTrace();
-    }
-
-    return list;
-}
 }

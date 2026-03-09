@@ -23,6 +23,7 @@ public class MainPanel extends JPanel {
     private InvoicePanel pnlInvoice;
     private CustomerPanel pnlCustomer;
     private DiscountPanel pnlDiscount;
+    private StatisticPanel pnlStatistic;
 
     private BookBUS bookBUS;
     private AuthorBUS authorBUS;
@@ -61,6 +62,8 @@ public class MainPanel extends JPanel {
         pnlInvoice = new InvoicePanel();
         pnlCustomer = new CustomerPanel();
         pnlDiscount = new DiscountPanel();
+        pnlStatistic = new StatisticPanel();
+
         // Thêm các màn hình con vào Center Panel
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
@@ -71,6 +74,8 @@ public class MainPanel extends JPanel {
         centerPanel.add(pnlDiscount, "DISCOUNT");
         centerPanel.add(pnlCustomer, "CUSTOMER");
         centerPanel.add(pnlInvoice, "INVOICE");
+        centerPanel.add(pnlStatistic, "STATISTIC");
+
         add(centerPanel, BorderLayout.CENTER);
 
         // Mặc định ban đầu Header điều khiển bảng Sách
@@ -95,15 +100,19 @@ public class MainPanel extends JPanel {
             case "BOOK":
                 header.setController(pnlBook);
                 setHeaderVisible(true);
-
+                bookBUS.loadDataFromDB();
                 break;
             case "GROUP":
                 pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)
-                setHeaderVisible(false); // Ẩn Header chính của MainPanel vì GroupPanel có HeaderBar riêng
+                setHeaderVisible(false);
+                authorBUS.loadDataFromDB();
+                categoryBUS.loadDataFromDB();
+                publisherBUS.loadDataFromDB();
                 break;
             case "ACCOUNT":
                 header.setController(pnlAccount);
                 setHeaderVisible(true);
+
                 break;
             case "PERMISSION":
                 header.setController(pnlPermissionGroup);
@@ -128,6 +137,10 @@ public class MainPanel extends JPanel {
             case "DISCOUNT":
                 header.setController(pnlDiscount);
                 setHeaderVisible(true);
+                break;
+            case "STATISTIC":
+                header.setController(null);
+                setHeaderVisible(false);
                 break;
             default:
                 // Nếu chưa có panel nào thì set null để vô hiệu hóa nút
