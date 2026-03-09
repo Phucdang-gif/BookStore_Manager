@@ -64,7 +64,7 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
         };
 
         bookTable = new JTable(tableModel);
-        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        bookTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         bookTable.setAutoCreateRowSorter(true);
         styleTable();
 
