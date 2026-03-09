@@ -42,17 +42,25 @@ public class MainPanel extends JPanel {
         initComponents();
     }
 
+    // Trong file GUI/model/MainPanel.java
+
     private void initComponents() {
         header = new Header();
         add(header, BorderLayout.NORTH);
 
-        // 2. Center Panel (Dùng CardLayout để tráo đổi nội dung)
         cardLayout = new CardLayout();
         centerPanel = new JPanel(cardLayout);
         centerPanel.setOpaque(true);
         centerPanel.setBackground(ThemeColor.bgPanel);
 
-        // Khởi tạo các màn hình con
+        // --- TẠO PANEL CHÀO MỪNG (Dùng làm mặc định) ---
+        JPanel pnlWelcome = new JPanel(new GridBagLayout());
+        pnlWelcome.setBackground(Color.WHITE);
+        JLabel lblWelcome = new JLabel("CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ NHÀ SÁCH");
+        lblWelcome.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        lblWelcome.setForeground(new Color(100, 100, 100));
+        pnlWelcome.add(lblWelcome);
+
         pnlBook = new BookTablePanel(bookBUS);
         pnlGroup = new GroupPanel(this, bookBUS, authorBUS, categoryBUS, publisherBUS);
         pnlImport = new ImportReceiptPanel();
@@ -64,7 +72,9 @@ public class MainPanel extends JPanel {
         pnlDiscount = new DiscountPanel();
         pnlStatistic = new StatisticPanel();
 
-        // Thêm các màn hình con vào Center Panel
+        centerPanel.add(pnlWelcome, "WELCOME");
+
+        // Sau đó mới add các panel khác
         centerPanel.add(pnlBook, "BOOK");
         centerPanel.add(pnlGroup, "GROUP");
         centerPanel.add(pnlImport, "IMPORT");
@@ -78,8 +88,8 @@ public class MainPanel extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // Mặc định ban đầu Header điều khiển bảng Sách
-        header.setController(pnlBook);
+        header.setController(null);
+        setHeaderVisible(false);
     }
 
     @Override
@@ -97,6 +107,10 @@ public class MainPanel extends JPanel {
     public void showPanel(String panelName) {
         cardLayout.show(centerPanel, panelName);
         switch (panelName) {
+            case "WELCOME":
+                header.setController(null);
+                setHeaderVisible(false);
+                break;
             case "BOOK":
                 header.setController(pnlBook);
                 setHeaderVisible(true);
@@ -143,8 +157,8 @@ public class MainPanel extends JPanel {
                 setHeaderVisible(false);
                 break;
             default:
-                // Nếu chưa có panel nào thì set null để vô hiệu hóa nút
                 header.setController(null);
+                setHeaderVisible(false);
                 break;
         }
     }
