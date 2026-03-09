@@ -2,7 +2,7 @@ package GUI.model;
 
 import BUS.ImportReceiptBUS;
 import DTO.ImportReceiptDTO;
-import GUI.dialog.CreateImportDialog; // SỬA LỖI 1: Thêm dòng import này
+import GUI.dialog.CreateImportDialog;
 import GUI.dialog.ImportDetailDialog;
 
 import java.awt.BorderLayout;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat; // SỬA LỖI 3: Import công cụ định dạng ngày
+import java.text.SimpleDateFormat;
 
 public class ImportReceiptPanel extends JPanel implements FeatureControllerInterface {
 
@@ -43,7 +43,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(Color.WHITE);
-
+        table.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -55,7 +55,6 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         tableModel.setRowCount(0);
         if (list != null) {
             for (ImportReceiptDTO dto : list) {
-                // SỬA LỖI 4: Viết ngược lại để chống lỗi NULL
                 String statusStr = "Cancelled".equalsIgnoreCase(dto.getStatus()) ? "Đã Hủy" : "Hoàn Thành";
 
                 // SỬA LỖI 3: Format ngày tháng

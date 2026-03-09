@@ -216,7 +216,8 @@ public class Login extends JFrame {
         String password = new String(txtPassword.getPassword()).trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all fields!", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập mật khẩu hoặc tên đăng nhập!", "Warning",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -234,7 +235,8 @@ public class Login extends JFrame {
                 this.dispose();
                 SwingUtilities.invokeLater(() -> new GUI.MainFrame().setVisible(true));
             } else {
-                JOptionPane.showMessageDialog(this, "Login failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Sai mật khẩu! Vui lòng thử lại.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
             e.printStackTrace();

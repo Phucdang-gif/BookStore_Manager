@@ -265,7 +265,9 @@ INSERT INTO functions (function_name, system_function_code, function_group) VALU
 ('Khuyến mãi',         'PROMOTION',   'Bán hàng'),
 ('Quản lý nhân viên',  'EMPLOYEE',    'Quản lý hệ thống'),
 ('Quản lý tài khoản',  'ACCOUNT',     'Quản lý hệ thống'),
-('Phân quyền',         'PERMISSION',  'Quản lý hệ thống');
+('Phân quyền',         'PERMISSION',  'Quản lý hệ thống'),
+('Quản lý tác giả',    'AUTHOR',      'Quản lý kho'),
+('Quản lý nhà xuất bản','PUBLISHER',  'Quản lý kho');
 
 -- 5. PHÂN QUYỀN
 

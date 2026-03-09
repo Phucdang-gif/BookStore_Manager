@@ -29,6 +29,7 @@ public class BookDTO {
     private String categoryName;
     private List<String> authorNames; // Từ bảng book_authors
     private List<AuthorDTO> authors = new ArrayList<>();
+    private List<Integer> authorIds = new ArrayList<>();
 
     // Constructor rỗng
     public BookDTO() {
@@ -72,6 +73,14 @@ public class BookDTO {
 
     public void setAuthors(List<AuthorDTO> authors) {
         this.authors = authors;
+    }
+
+    public List<Integer> getAuthorIds() {
+        return authorIds;
+    }
+
+    public void setAuthorIds(List<Integer> authorIds) {
+        this.authorIds = authorIds;
     }
 
     public int getPublisherId() {

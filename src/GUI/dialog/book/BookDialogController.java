@@ -3,11 +3,17 @@ package GUI.dialog.book;
 import BUS.AuthorBUS;
 import BUS.BookBUS;
 import BUS.CategoryBUS;
+import BUS.ImportReceiptBUS;
+import BUS.ImportReceiptDetailBUS;
 import BUS.PublisherBUS;
+import BUS.SupplierBUS;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
+import DTO.ImportReceiptDTO;
+import DTO.ImportReceiptDetailDTO;
 import DTO.PublisherDTO;
+import DTO.SupplierDTO;
 import DTO.ValidationResult;
 import GUI.util.ImageHelper;
 
@@ -83,13 +89,28 @@ public class BookDialogController {
                 view.btnSave.setVisible(true);
                 view.btnCancel.setText("Hủy bỏ");
                 setFormEditable(true);
+
+                // Ẩn cbStatus khi ADD vì hệ thống tự tính
+                view.cbStatus.setEnabled(false);
+                view.cbStatus.setToolTipText("Trạng thái tự động tính theo tồn kho ban đầu");
                 break;
+
             case EDIT:
                 view.lblTitle.setText("Chỉnh Sửa Thông Tin Sách");
                 view.btnSave.setText("Cập nhật");
                 view.btnSave.setVisible(true);
                 setFormEditable(true);
+
+                // Khóa các field liên quan đến kho — chỉ thay đổi qua Phiếu Nhập
+                view.txtQuantity.setEditable(false);
+                view.txtQuantity.setBackground(new Color(230, 230, 230));
+                view.txtQuantity.setToolTipText("Tồn kho chỉ thay đổi qua Phiếu Nhập");
+
+                view.txtPriceImport.setEditable(false);
+                view.txtPriceImport.setBackground(new Color(230, 230, 230));
+                view.txtPriceImport.setToolTipText("Giá nhập chỉ thay đổi qua Phiếu Nhập");
                 break;
+
             case READ:
                 view.lblTitle.setText("Chi Tiết Sách");
                 setFormEditable(false);
@@ -221,15 +242,137 @@ public class BookDialogController {
     private void handleSave() {
         BookDTO temp = collectFormData();
 
-        ValidationResult vr = (mode == DialogMode.ADD)
-                ? bookBUS.addBook(temp)
-                : bookBUS.updateBook(temp);
+        if (mode == DialogMode.ADD) {
+            handleAdd(temp);
+        } else {
+            handleEdit(temp);
+        }
+    }
+
+    /**
+     * Xử lý thêm mới sách.
+     * Nếu tồn kho ban đầu > 0 → yêu cầu chọn NCC → tạo phiếu nhập tự động.
+     * Nếu tồn kho = 0 → lưu thẳng, không cần phiếu nhập.
+     */
+    private void handleAdd(BookDTO temp) {
+        ValidationResult vr = bookBUS.addBook(temp);
+
+        if (!vr.isValid()) {
+            applyValidationErrors(vr);
+            JOptionPane.showMessageDialog(view, vr.getSummary(), "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Sách đã lưu thành công, temp.getBookId() đã được BookBUS gán ID mới
+        if (temp.getStockQuantity() > 0) {
+            // Có tồn kho ban đầu → tạo phiếu nhập tự động để truy xuất nguồn gốc
+            boolean receiptCreated = createInitialImportReceipt(temp);
+            if (receiptCreated) {
+
+                JOptionPane.showMessageDialog(view,
+                        "Thêm sách thành công!\nĐã tạo Phiếu Nhập ban đầu để lưu nguồn gốc hàng hóa.",
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+
+            } else {
+                // Sách vẫn đã lưu, chỉ phiếu nhập thất bại → cảnh báo nhưng không rollback
+                JOptionPane.showMessageDialog(view,
+                        "Thêm sách thành công!\nTuy nhiên không thể tạo Phiếu Nhập ban đầu.\n"
+                                + "Vui lòng tạo thủ công trong mục Quản lý Phiếu Nhập.",
+                        "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            }
+        } else {
+            // Tồn kho = 0, không cần phiếu nhập
+            JOptionPane.showMessageDialog(view, "Thêm sách thành công!");
+        }
+
+        this.bookDTO = temp;
+        isSuccess = true;
+        ((JDialog) SwingUtilities.getWindowAncestor(view)).dispose();
+    }
+
+    /**
+     * Tạo phiếu nhập tự động cho tồn kho ban đầu của sách mới.
+     * Yêu cầu người dùng chọn Nhà Cung Cấp.
+     * 
+     * @return true nếu tạo phiếu thành công, false nếu người dùng hủy hoặc lỗi.
+     */
+    private boolean createInitialImportReceipt(BookDTO book) {
+        // Lấy danh sách NCC
+        SupplierBUS supplierBUS = new SupplierBUS();
+        List<SupplierDTO> suppliers = supplierBUS.getAll();
+
+        if (suppliers == null || suppliers.isEmpty()) {
+            JOptionPane.showMessageDialog(view,
+                    "Không có Nhà Cung Cấp nào trong hệ thống!\nKhông thể tạo Phiếu Nhập ban đầu.",
+                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        SupplierDTO[] arr = suppliers.toArray(new SupplierDTO[0]);
+
+        // Hỏi người dùng chọn NCC
+        SupplierDTO chosen = (SupplierDTO) JOptionPane.showInputDialog(
+                view,
+                "Sách có tồn kho ban đầu: " + book.getStockQuantity() + " cuốn\n"
+                        + "Vui lòng chọn Nhà Cung Cấp để lưu Phiếu Nhập nguồn gốc:",
+                "Chọn Nhà Cung Cấp",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                arr,
+                arr[0]);
+
+        // Người dùng bấm Cancel
+        if (chosen == null)
+            return false;
+
+        // Lấy employee ID từ session
+        int employeeId = 1; // mặc định
+        if (config.SessionManager.getCurrentAccount() != null) {
+            employeeId = config.SessionManager.getCurrentAccount().getEmployeeId();
+        }
+
+        double totalAmount = book.getImportPrice() * book.getStockQuantity();
+
+        // Tạo ImportReceiptDTO
+        ImportReceiptDTO receipt = new ImportReceiptDTO();
+        receipt.setSupplierId(chosen.getSupplierId());
+        receipt.setEmployeeId(employeeId);
+        receipt.setTotalAmount(totalAmount);
+        receipt.setStatus("Completed");
+
+        // Lưu phiếu nhập
+        ImportReceiptBUS importBUS = new ImportReceiptBUS();
+        int receiptId = importBUS.addReceipt(receipt);
+
+        if (receiptId <= 0)
+            return false;
+
+        // Tạo chi tiết phiếu nhập
+        ImportReceiptDetailDTO detail = new ImportReceiptDetailDTO(
+                receiptId,
+                book.getBookId(),
+                book.getStockQuantity(),
+                book.getImportPrice(),
+                totalAmount);
+
+        ArrayList<ImportReceiptDetailDTO> details = new ArrayList<>();
+        details.add(detail);
+
+        ImportReceiptDetailBUS detailBUS = new ImportReceiptDetailBUS();
+        return detailBUS.saveAllDetails(details);
+    }
+
+    /**
+     * Xử lý cập nhật sách (EDIT).
+     * Không cho phép thay đổi tồn kho, giá nhập, trạng thái.
+     */
+    private void handleEdit(BookDTO temp) {
+        ValidationResult vr = bookBUS.updateBook(temp);
 
         if (vr.isValid()) {
             this.bookDTO = temp;
             isSuccess = true;
-            JOptionPane.showMessageDialog(view,
-                    mode == DialogMode.ADD ? "Thêm sách thành công!" : "Cập nhật thành công!");
+            JOptionPane.showMessageDialog(view, "Cập nhật thành công!");
             ((JDialog) SwingUtilities.getWindowAncestor(view)).dispose();
         } else {
             applyValidationErrors(vr);
@@ -237,37 +380,54 @@ public class BookDialogController {
         }
     }
 
-    /**
-     * Gán dữ liệu từ form vào DTO
-     */
+    // ===================== THU THẬP DỮ LIỆU TỪ FORM =====================
+
     private BookDTO collectFormData() {
         BookDTO tempBook = new BookDTO();
+
         if (this.bookDTO != null && mode == DialogMode.EDIT) {
+            // EDIT: giữ nguyên ID và các field kho từ DB, không đọc từ GUI
             tempBook.setBookId(this.bookDTO.getBookId());
+            tempBook.setStockQuantity(this.bookDTO.getStockQuantity());
+            tempBook.setImportPrice(this.bookDTO.getImportPrice());
+            tempBook.setStatus(this.bookDTO.getStatus());
         }
+
+        // Các field metadata — luôn đọc từ GUI
         tempBook.setBookTitle(toTitleCase(view.txtTitle.getText()));
         tempBook.setIsbn(view.txtIsbn.getText().trim().replace("-", ""));
         tempBook.setLanguage(toTitleCase(view.txtLanguage.getText()));
         tempBook.setPublicationYear(parseInt(view.txtYear.getText()));
         tempBook.setPageCount(parseInt(view.txtPage.getText()));
-        tempBook.setImportPrice(parseDouble(view.txtPriceImport.getText()));
         tempBook.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
-        tempBook.setStockQuantity(parseInt(view.txtQuantity.getText()));
         tempBook.setMinimumStock(parseInt(view.txtMinStock.getText()));
         tempBook.setCoverType(view.cbCoverType.getSelectedItem().toString());
         tempBook.setAuthors(currentAuthors);
         tempBook.setImage(selectedImagePath);
 
-        switch (view.cbStatus.getSelectedItem().toString()) {
-            case "Hết hàng":
+        if (mode == DialogMode.ADD) {
+            // ADD: đọc tồn kho và giá nhập từ GUI
+            tempBook.setImportPrice(parseDouble(view.txtPriceImport.getText()));
+            int stock = parseInt(view.txtQuantity.getText());
+
+            // Tự tính status theo stock — không dùng cbStatus
+            if (stock <= 0) {
+                tempBook.setStockQuantity(0);
                 tempBook.setStatus("out_of_stock");
-                break;
-            case "Ngừng kinh doanh":
-                tempBook.setStatus("discontinued");
-                break;
-            default:
+            } else {
+                tempBook.setStockQuantity(stock);
                 tempBook.setStatus("in_stock");
+            }
         }
+        if (currentAuthors != null && !currentAuthors.isEmpty()) {
+            List<Integer> authorIds = currentAuthors.stream()
+                    .map(AuthorDTO::getAuthorId)
+                    .collect(Collectors.toList());
+
+            tempBook.setAuthorIds(authorIds);
+        }
+
+        // Category
         String selectedCat = view.cbCategory.getSelectedItem().toString();
         for (CategoryDTO cat : listCategories) {
             if (cat.getName().equals(selectedCat)) {
@@ -276,6 +436,8 @@ public class BookDialogController {
                 break;
             }
         }
+
+        // Publisher
         String selectedPub = view.cbPublisher.getSelectedItem().toString();
         for (PublisherDTO pub : listPublishers) {
             if (pub.getName().equals(selectedPub)) {
@@ -288,22 +450,24 @@ public class BookDialogController {
         return tempBook;
     }
 
-    /**
-     * Nhận tín hiệu từ ValidationResult, tự động highlight đúng field lỗi.
-     */
+    // ===================== VALIDATION HIGHLIGHT =====================
+
     private void applyValidationErrors(ValidationResult vr) {
-        // Khởi tạo map 1 lần
         if (fieldMap == null) {
             fieldMap = new HashMap<>();
             fieldMap.put("bookTitle", view.txtTitle);
             fieldMap.put("isbn", view.txtIsbn);
-            fieldMap.put("importPrice", view.txtPriceImport);
             fieldMap.put("sellingPrice", view.txtPriceExport);
-            fieldMap.put("stockQuantity", view.txtQuantity);
             fieldMap.put("minimumStock", view.txtMinStock);
             fieldMap.put("categoryId", view.cbCategory);
             fieldMap.put("publisherId", view.cbPublisher);
             fieldMap.put("authors", view.pnlAuthorTags);
+
+            // Chỉ validate 2 field này khi ADD
+            if (mode == DialogMode.ADD) {
+                fieldMap.put("importPrice", view.txtPriceImport);
+                fieldMap.put("stockQuantity", view.txtQuantity);
+            }
         }
 
         // Reset tất cả

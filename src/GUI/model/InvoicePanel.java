@@ -43,7 +43,7 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(Color.WHITE);
-
+        table.setAutoCreateRowSorter(true);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
@@ -100,8 +100,7 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         CreateInvoiceDialog dialog = new CreateInvoiceDialog(null, true);
         dialog.setVisible(true);
 
-        // Sau khi đóng dialog, refresh lại bảng dữ liệu
-        onRefresh();
+        loadDataToTable(invoiceBUS.getAll());
     }
 
     @Override
@@ -161,7 +160,7 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
     public void onRefresh() {
         InvoiceBUS invoiceBUS = new InvoiceBUS();
         loadDataToTable(invoiceBUS.getAll());
-
+        JOptionPane.showMessageDialog(this, "Đã làm mới dữ liệu!");
     }
 
     @Override

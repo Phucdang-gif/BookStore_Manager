@@ -42,7 +42,7 @@ public class ImageHelper {
     public static String saveImageToProject(File sourceFile) {
         try {
             String newFileName = sourceFile.getName();
-            File destFolder = new File("src/image");
+            File destFolder = new File("src/image/");
             if (!destFolder.exists()) {
                 destFolder.mkdirs();
             }

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class BookBUS {
     private BookDAO bookDAO = new BookDAO();
-    public static ArrayList<BookDTO> listBook = new ArrayList<>();
+    private ArrayList<BookDTO> listBook = new ArrayList<>();
 
     public BookBUS() {
         if (listBook.isEmpty()) {
