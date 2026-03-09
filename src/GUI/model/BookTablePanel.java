@@ -23,19 +23,26 @@ public class BookTablePanel extends JPanel implements FeatureControllerInterface
     private JTable bookTable;
     private DefaultTableModel tableModel;
     private ArrayList<BookDTO> listOriginal;
+    private static BookTablePanel instance;
+    
+    
 
     private static final String[] COLUMNS = { "ID", "ISBN", "TÊN SÁCH", "GIÁ NHẬP", "GIÁ BÁN", "TỒN KHO",
             "TỒN KHO TỐI THIỂU", "TRẠNG THÁI" };
     private static final int COL_PRICE_IMPORT = 3;
     private static final int COL_PRICE_SELLING = 4;
-
+public static BookTablePanel getInstance() {
+        return instance;
+    }
     public BookTablePanel(BookBUS bus) {
+        instance = this; 
         this.bookBUS = bus;
         setBackground(ThemeColor.bgPanel);
         setLayout(new BorderLayout(10, 10));
         initComponents();
         loadTableData();
     }
+
 
     private void initComponents() {
         tableModel = new DefaultTableModel(COLUMNS, 0) {

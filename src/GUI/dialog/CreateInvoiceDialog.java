@@ -421,8 +421,12 @@ public class CreateInvoiceDialog extends JDialog {
                 }
 
                 JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + invoice.getInvoiceId());
-                dispose();
+                if (GUI.model.BookTablePanel.getInstance() != null) {
+                    GUI.model.BookTablePanel.getInstance().refreshTable();
+                }
                 bookBUS.loadDataFromDB();
+                dispose(); 
+               
             } else {
                 // NẾU CÓ LỖI: Xử lý màu mè trên giao diện
 
