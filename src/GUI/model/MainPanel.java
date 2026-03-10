@@ -154,19 +154,10 @@ public class MainPanel extends JPanel {
                 break;
             case "STATISTIC":
                 centerPanel.remove(pnlStatistic);
-                
-                // 2. Tạo một cái Panel Thống kê mới toanh (Lúc này nó sẽ chạy lại lệnh gọi SQL mới nhất)
                 pnlStatistic = new StatisticPanel();
-                
-                // 3. Lắp cái mới vào đúng vị trí cũ trong CardLayout
                 centerPanel.add(pnlStatistic, "STATISTIC");
-                
-                // 4. Ép giao diện hiển thị cái mới lên ngay lập tức
-                cardLayout.show(centerPanel, "STATISTIC"); 
-                
-                // 5. Cập nhật thanh Header (để ẩn các nút Thêm/Sửa/Xóa đi)
-                header.setController(pnlStatistic);
-                setHeaderVisible(true);
+                cardLayout.show(centerPanel, "STATISTIC");
+                setHeaderVisible(false);
                 break;
             default:
                 header.setController(null);

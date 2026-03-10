@@ -24,16 +24,14 @@ public class DatabaseConnection {
 
     public Connection getConnection() {
         try {
-            // Logic tiết kiệm tài nguyên:
-            // Chỉ tạo mới KHI VÀ CHỈ KHI:
-            // 1. connection chưa từng được tạo (null)
-            // 2. HOẶC connection đã bị đóng (closed) do lỗi mạng hoặc tắt XAMPP
             if (connection == null || connection.isClosed()) {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 connection = DriverManager.getConnection(url, user, password);
                 System.out.println(">> Connection successful");
             }
         } catch (Exception e) {
+            System.err.println(">> Connection failed!");
+            e.printStackTrace();
             return null;
         }
         return connection;
