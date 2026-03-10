@@ -48,7 +48,7 @@ public class Header extends JPanel {
         listButtons.add(new ButtonModel("XÓA", "GUI/icon/delete.svg", "DELETE"));
         listButtons.add(new ButtonModel("CHI TIẾT", "GUI/icon/detail.svg", "DETAIL"));
         listButtons.add(new ButtonModel("XUẤT EXCEL", "GUI/icon/export_excel.svg", "EXPORT"));
-        // listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg",
+        listButtons.add(new ButtonModel("NHẬP EXCEL", "GUI/icon/import_excel.svg", "IMPORT"));
 
         toolBar = new ToolBarPanel(listButtons);
         btnRefresh = new RoundedBorderButton(

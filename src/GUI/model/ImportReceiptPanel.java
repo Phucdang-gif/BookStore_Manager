@@ -149,6 +149,7 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
     @Override
     public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachPhieuNhap");
     }
 
     @Override
@@ -165,6 +166,6 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
         boolean canAdd = config.SessionManager.hasPermission(454, "Thêm");
         boolean canDelete = config.SessionManager.hasPermission(454, "Xóa");
 
-        return new boolean[] { canAdd, false, canDelete, true, false, false };
+        return new boolean[] { canAdd, false, canDelete, true, true, false };
     }
 }

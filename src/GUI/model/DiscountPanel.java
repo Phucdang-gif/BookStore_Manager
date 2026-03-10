@@ -163,10 +163,54 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachChuongTrinhKhuyenMai");
     }
 
     @Override
     public void onImportExcel() {
+        try {
+            String msg = "File Excel cần 5 cột (Dữ liệu từ dòng 2):\n1. Tên chương trình\n2. Loại giảm (Phần trăm/Số tiền cố định)\n3. Giá trị giảm\n4. Đơn hàng tối thiểu\n5. Mức giảm tối đa";
+            if (JOptionPane.showConfirmDialog(this, msg, "Hướng dẫn Nhập Excel", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                java.io.File file = fileChooser.getSelectedFile();
+                java.io.FileInputStream fis = new java.io.FileInputStream(file);
+                org.apache.poi.ss.usermodel.Workbook wb = org.apache.poi.ss.usermodel.WorkbookFactory.create(fis);
+                org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheetAt(0);
+
+                int success = 0, fail = 0;
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    org.apache.poi.ss.usermodel.Row row = sheet.getRow(i);
+                    if (row == null) continue;
+                    try {
+                        DTO.DiscountServiceDTO discount = new DTO.DiscountServiceDTO();
+                        discount.setServiceName(row.getCell(0).getStringCellValue());
+                        discount.setDiscountType(row.getCell(1).getStringCellValue());
+                        discount.setDiscountValue(row.getCell(2).getNumericCellValue());
+                        discount.setMinimumAmount(row.getCell(3).getNumericCellValue());
+                        discount.setMaximumDiscount(row.getCell(4).getNumericCellValue());
+                        discount.setStatus("active");
+                        
+                        // Set ngày bắt đầu là hôm nay, ngày kết thúc là 30 ngày sau
+                        long currentTime = System.currentTimeMillis();
+                        discount.setStartDate(new java.sql.Timestamp(currentTime));
+                        discount.setEndDate(new java.sql.Timestamp(currentTime + (30L * 24 * 60 * 60 * 1000)));
+
+                        // Giả định hàm thêm là addDiscount trong DiscountServiceBUS
+                        if (discountBUS.addDiscount(discount)) success++;
+                        else fail++;
+                    } catch (Exception e) {
+                        fail++; 
+                    }
+                }
+                wb.close(); fis.close();
+                onRefresh();
+                JOptionPane.showMessageDialog(this, "Import hoàn tất!\n- Thành công: " + success + "\n- Lỗi/Bỏ qua: " + fail);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi định dạng file Excel!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
@@ -180,6 +224,6 @@ public class DiscountPanel extends JPanel implements FeatureControllerInterface 
         boolean canEdit = config.SessionManager.hasPermission(456, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(456, "Xóa");
 
-        return new boolean[] { canAdd, canEdit, canDelete, false, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, false, true, canAdd };
     }
 }

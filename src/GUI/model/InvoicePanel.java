@@ -165,6 +165,7 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachHoaDon");
     }
 
     @Override
@@ -182,6 +183,6 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
         boolean canDelete = config.SessionManager.hasPermission(455, "Xóa");
 
-        return new boolean[] { canAdd, false, canDelete, true, false, false };
+        return new boolean[] { canAdd, false, canDelete, true, true, false };
     }
 }

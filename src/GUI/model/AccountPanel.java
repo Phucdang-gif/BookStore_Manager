@@ -170,68 +170,7 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onExportExcel() {
-        try {
-            // 1. Mở hộp thoại cho người dùng chọn nơi lưu
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Chọn vị trí lưu file Excel");
-            fileChooser
-                    .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Excel Files (*.xlsx)", "xlsx"));
-
-            int userSelection = fileChooser.showSaveDialog(this);
-            if (userSelection == JFileChooser.APPROVE_OPTION) {
-                java.io.File fileToSave = fileChooser.getSelectedFile();
-                String filePath = fileToSave.getAbsolutePath();
-                // Tự động thêm đuôi .xlsx nếu người dùng quên gõ
-                if (!filePath.toLowerCase().endsWith(".xlsx")) {
-                    filePath += ".xlsx";
-                }
-
-                // 2. Khởi tạo Workbook và Sheet của Apache POI
-                org.apache.poi.xssf.usermodel.XSSFWorkbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
-                org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("DanhSachTaiKhoan");
-
-                // 3. Tạo dòng tiêu đề (Header) từ tên cột của JTable
-                org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(0);
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
-                    cell.setCellValue(table.getColumnName(i));
-
-                    // In đậm tiêu đề cho đẹp
-                    org.apache.poi.ss.usermodel.CellStyle style = workbook.createCellStyle();
-                    org.apache.poi.ss.usermodel.Font font = workbook.createFont();
-                    font.setBold(true);
-                    style.setFont(font);
-                    cell.setCellStyle(style);
-                }
-
-                // 4. Quét toàn bộ JTable để chép dữ liệu ra dòng Excel
-                for (int i = 0; i < table.getRowCount(); i++) {
-                    org.apache.poi.ss.usermodel.Row row = sheet.createRow(i + 1);
-                    for (int j = 0; j < table.getColumnCount(); j++) {
-                        Object val = table.getValueAt(i, j);
-                        row.createCell(j).setCellValue(val != null ? val.toString() : "");
-                    }
-                }
-
-                // Tự động căn chỉnh độ rộng các cột
-                for (int i = 0; i < table.getColumnCount(); i++) {
-                    sheet.autoSizeColumn(i);
-                }
-
-                // 5. Ghi ra file
-                java.io.FileOutputStream out = new java.io.FileOutputStream(filePath);
-                workbook.write(out);
-                out.close();
-                workbook.close();
-
-                JOptionPane.showMessageDialog(this, "Xuất file Excel thành công tại:\n" + filePath, "Thành công",
-                        JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi xuất file Excel: " + e.getMessage(), "Lỗi Nghiêm Trọng",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+       GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachTaiKhoan");
     }
 
     @Override
@@ -324,6 +263,6 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
         boolean canEdit = config.SessionManager.hasPermission(458, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(458, "Xóa");
 
-        return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, true, true, canAdd };
     }
 }

@@ -147,7 +147,9 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
     }
 
     @Override
-    public void onExportExcel() { }
+    public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachNhomQuyen");
+     }
 
     @Override
     public void onImportExcel() { }
@@ -163,6 +165,6 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         boolean canEdit = config.SessionManager.hasPermission(459, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(459, "Xóa");
 
-        return new boolean[]{canAdd, canEdit, canDelete, true, false, false}; 
+        return new boolean[]{canAdd, canEdit, canDelete, true, true, false}; 
     }
 }

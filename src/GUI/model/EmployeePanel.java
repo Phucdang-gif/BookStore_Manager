@@ -161,12 +161,58 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         loadDataToTable(employeeBUS.getAll());
     }
 
-    @Override
+   @Override
     public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachNhanVien");
     }
 
     @Override
     public void onImportExcel() {
+        try {
+            String msg = "File Excel cần 6 cột:\n1. Họ Tên\n2. Giới tính (Nam/Nữ)\n3. SĐT\n4. Địa chỉ\n5. Chức vụ\n6. Lương (Số)";
+            if (JOptionPane.showConfirmDialog(this, msg, "Hướng dẫn", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                java.io.File file = fileChooser.getSelectedFile();
+                java.io.FileInputStream fis = new java.io.FileInputStream(file);
+                org.apache.poi.ss.usermodel.Workbook wb = org.apache.poi.ss.usermodel.WorkbookFactory.create(fis);
+                org.apache.poi.ss.usermodel.Sheet sheet = wb.getSheetAt(0);
+
+                int success = 0, fail = 0;
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    org.apache.poi.ss.usermodel.Row row = sheet.getRow(i);
+                    if (row == null) continue;
+                    try {
+                        EmployeeDTO emp = new EmployeeDTO();
+                        emp.setFullName(row.getCell(0).getStringCellValue());
+                        
+                        String gender = row.getCell(1).getStringCellValue();
+                        emp.setGender(gender.equalsIgnoreCase("Nam") ? "male" : "female");
+                        
+                        org.apache.poi.ss.usermodel.Cell phoneCell = row.getCell(2);
+                        emp.setPhone(phoneCell.getCellType() == org.apache.poi.ss.usermodel.CellType.NUMERIC ? "0" + (long) phoneCell.getNumericCellValue() : phoneCell.getStringCellValue());
+                        
+                        emp.setAddress(row.getCell(3).getStringCellValue());
+                        emp.setPosition(row.getCell(4).getStringCellValue());
+                        emp.setSalary(row.getCell(5).getNumericCellValue());
+                        emp.setStatus("active");
+                        // Tạm set ngày sinh mặc định, có thể update sau
+                        emp.setDateOfBirth(new java.sql.Date(System.currentTimeMillis())); 
+
+                        if (employeeBUS.addEmployee(emp).isValid()) success++;
+                        else fail++;
+                    } catch (Exception e) {
+                        fail++; 
+                    }
+                }
+                wb.close(); fis.close();
+                onRefresh();
+                JOptionPane.showMessageDialog(this, "Import hoàn tất!\n- Thành công: " + success + "\n- Lỗi/Trùng lặp: " + fail);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi định dạng file Excel!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
@@ -177,6 +223,6 @@ public class EmployeePanel extends JPanel implements FeatureControllerInterface 
         boolean canAdd = config.SessionManager.hasPermission(457, "Thêm");
         boolean canEdit = config.SessionManager.hasPermission(457, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(457, "Xóa");
-        return new boolean[] { canAdd, canEdit, canDelete, true, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, true, true, canAdd };
     }
 }

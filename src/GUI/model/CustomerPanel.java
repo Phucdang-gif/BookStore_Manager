@@ -128,10 +128,52 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
 
     @Override
     public void onExportExcel() {
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachKhachHang");
     }
 
     @Override
     public void onImportExcel() {
+        try {
+            String msg = "File Excel cần có 2 cột (Dữ liệu bắt đầu từ dòng 2):\n1. Họ Tên Khách Hàng\n2. Số Điện Thoại";
+            if (JOptionPane.showConfirmDialog(this, msg, "Hướng dẫn", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
+
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                java.io.File file = fileChooser.getSelectedFile();
+                java.io.FileInputStream fis = new java.io.FileInputStream(file);
+                org.apache.poi.ss.usermodel.Workbook workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(fis);
+                org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(0);
+
+                int success = 0, fail = 0;
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    org.apache.poi.ss.usermodel.Row row = sheet.getRow(i);
+                    if (row == null) continue;
+                    try {
+                        String name = row.getCell(0).getStringCellValue();
+                        // Xử lý cột SĐT (nếu Excel tự hiểu là số)
+                        org.apache.poi.ss.usermodel.Cell phoneCell = row.getCell(1);
+                        String phone = phoneCell.getCellType() == org.apache.poi.ss.usermodel.CellType.NUMERIC 
+                                     ? "0" + (long) phoneCell.getNumericCellValue() 
+                                     : phoneCell.getStringCellValue();
+
+                        CustomerDTO cus = new CustomerDTO();
+                        cus.setFullName(name);
+                        cus.setPhone(phone);
+                        cus.setLoyaltyPoints(0); // Khách mới mặc định 0 điểm
+
+                        if (customerBUS.addCustomer(cus).isValid()) success++;
+                        else fail++;
+                    } catch (Exception e) {
+                        fail++; 
+                    }
+                }
+                workbook.close(); fis.close();
+                onRefresh();
+                JOptionPane.showMessageDialog(this, "Import hoàn tất!\n- Thành công: " + success + "\n- Lỗi/Trùng SĐT: " + fail);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi đọc file Excel!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
@@ -144,6 +186,6 @@ public class CustomerPanel extends JPanel implements FeatureControllerInterface 
         boolean canEdit = config.SessionManager.hasPermission(453, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(453, "Xóa");
 
-        return new boolean[] { canAdd, canEdit, canDelete, false, false, false };
+        return new boolean[] { canAdd, canEdit, canDelete, false, true, canAdd };
     }
 }
