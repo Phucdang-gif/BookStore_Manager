@@ -115,11 +115,24 @@ public class AccountBUS {
         return accountDAO.isUsernameExists(username);
     }
 
-    public AccountDTO checkLogin(String username, String password) {
-        if (username.trim().isEmpty() || password.trim().isEmpty()) {
-            return null;
+    public AccountDTO checkLogin(String username, String password) throws Exception {
+        AccountDTO acc = null;
+        for (AccountDTO a : listAccount) {
+            if (a.getUsername().equals(username)) {
+                acc = a;
+                break;
+            }
         }
-        return accountDAO.checkLogin(username, password);
+        if (acc == null) {
+            throw new Exception("Tài khoản không tồn tại trên hệ thống!");
+        }
+        if ("inactive".equals(acc.getStatus())) {
+            throw new Exception("Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động!");
+        }
+        if (!acc.getPassword().equals(password)) {
+            throw new Exception("Mật khẩu không chính xác! Vui lòng thử lại.");
+        }
+        return acc;
     }
 
     public ArrayList<AccountDTO> search(String txt, String type) {
@@ -152,4 +165,5 @@ public class AccountBUS {
         }
         return result;
     }
+
 }

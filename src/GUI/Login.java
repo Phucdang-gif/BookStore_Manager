@@ -220,15 +220,8 @@ public class Login extends JFrame {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
-
-        // Logic đăng nhập giữ nguyên như cũ
         try {
             BUS.AccountBUS accountBUS = new BUS.AccountBUS();
-            if (!accountBUS.checkDuplicateUsername(username)) {
-                JOptionPane.showMessageDialog(this, "Tài khoản không tồn tại trên hệ thống!", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
             DTO.AccountDTO loggedInAcc = accountBUS.checkLogin(username, password);
 
             if (loggedInAcc != null) {
@@ -239,11 +232,10 @@ public class Login extends JFrame {
 
                 this.dispose();
                 SwingUtilities.invokeLater(() -> new GUI.MainFrame().setVisible(true));
-            } else {
-                JOptionPane.showMessageDialog(this, "Sai mật khẩu! Vui lòng thử lại.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Lỗi đăng nhập",
+                    JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
