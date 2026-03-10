@@ -224,6 +224,11 @@ public class Login extends JFrame {
         // Logic đăng nhập giữ nguyên như cũ
         try {
             BUS.AccountBUS accountBUS = new BUS.AccountBUS();
+            if (!accountBUS.checkDuplicateUsername(username)) {
+                JOptionPane.showMessageDialog(this, "Tài khoản không tồn tại trên hệ thống!", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             DTO.AccountDTO loggedInAcc = accountBUS.checkLogin(username, password);
 
             if (loggedInAcc != null) {
