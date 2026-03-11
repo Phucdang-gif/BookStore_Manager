@@ -78,7 +78,7 @@ public class InvoiceBUS {
         // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
         int newId = invoiceDAO.insert(receipt);
         if (newId <= 0) {
-            vr.addError("system", "Lỗi CSDL: Không thể tạo Phiếu nhập (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
+            vr.addError("system", "Lỗi CSDL: Không thể tạo HÓA ĐƠN (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
         } else {
             // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
             receipt.setInvoiceId(newId);
