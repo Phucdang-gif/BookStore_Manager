@@ -299,4 +299,32 @@ public class BookBUS {
             }
         }
     }
+    public void updateStockAndPrice(int bookId, int quantityAdded, double newImportPrice) {
+        try {
+            BookDTO book = getBookDetails(bookId);
+            if (book != null) {
+                int newStock = book.getStockQuantity() + quantityAdded;
+                double newPrice = newImportPrice; // Hoặc tính trung bình gia quyền nếu muốn
+                bookDAO.updateStockAndPrice(bookId, newStock, newPrice);
+                book.setStockQuantity(newStock);
+                book.setImportPrice(newPrice);
+                checkAndUpdateStatus(book);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void updateQuantity(int bookId, int quantityChange) {
+        try {
+            BookDTO book = getBookDetails(bookId);
+            if (book != null) {
+                int newStock = book.getStockQuantity() + quantityChange;
+                bookDAO.updateQuantity(bookId, quantityChange);
+                book.setStockQuantity(newStock);
+                checkAndUpdateStatus(book);
+             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

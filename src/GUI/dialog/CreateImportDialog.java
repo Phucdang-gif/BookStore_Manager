@@ -1,7 +1,7 @@
 package GUI.dialog;
 
 import BUS.*;
-import DAO.*;
+
 import DTO.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -14,8 +14,8 @@ public class CreateImportDialog extends JDialog {
     // Các lớp xử lý dữ liệu (BUS, DAO)
     private BookBUS bookBUS = new BookBUS();
     private SupplierBUS supplierBUS = new SupplierBUS();
-    private ImportReceiptDetailDAO detailDAO = new ImportReceiptDetailDAO();
-    private BookDAO bookDAO = new BookDAO();
+    private ImportReceiptDetailBUS detailBUS = new ImportReceiptDetailBUS();
+  
 
     // Để refresh dữ liệu sách sau khi nhập hàng
 
@@ -274,9 +274,9 @@ public class CreateImportDialog extends JDialog {
                     listDetails.add(new ImportReceiptDetailDTO(importDTO.getReceiptId(), bId, qty, price, subTotal));
 
                     // Cập nhật Số lượng tồn kho & Giá vốn trong bảng Books
-                    bookDAO.updateStockAndPrice(bId, qty, price);
+                    bookBUS.updateStockAndPrice(bId, qty, price);
                 }
-                detailDAO.insertBatch(listDetails);
+                detailBUS.insertBatch(listDetails);
 
                 JOptionPane.showMessageDialog(this,
                         "NHẬP HÀNG THÀNH CÔNG!\nKho sách và Giá vốn đã được hệ thống tự động cập nhật.");

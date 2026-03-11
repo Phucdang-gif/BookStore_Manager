@@ -11,14 +11,13 @@ import java.text.DecimalFormat;
 
 public class CreateInvoiceDialog extends JDialog {
 
-    // Các BUS, DAO xử lý dữ liệu
+    // Các BUS, DAO xử lý dữ liệu (Chuẩn 3 lớp)
     private BookBUS bookBUS = new BookBUS();
     private CustomerBUS customerBUS = new CustomerBUS();
     private DiscountServiceBUS discountBUS = new DiscountServiceBUS();
-    private InvoiceDetailDAO detailDAO = new InvoiceDetailDAO();
-    private InvoiceServiceDAO serviceDAO = new InvoiceServiceDAO();
-    private BookDAO bookDAO = new BookDAO();
-    private InvoiceBUS invoiceBUS = new InvoiceBUS(); // Thêm BUS hóa đơn để gọi phương thức addInvoice đúng chuẩn 3 lớp
+    private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS(); 
+    private InvoiceServiceBUS invoiceServiceBUS = new InvoiceServiceBUS(); 
+    private InvoiceBUS invoiceBUS = new InvoiceBUS(); 
 
     // Các thành phần giao diện
     private JTable tblBooks, tblInvoiceDetails;
@@ -27,6 +26,13 @@ public class CreateInvoiceDialog extends JDialog {
     private JComboBox<DiscountServiceDTO> cbDiscount;
     private JComboBox<String> cbPaymentMethod;
     private JLabel lblTotalAmount, lblDiscountAmount, lblFinalAmount;
+
+    // --- THÊM: Các thành phần cho tính năng Điểm ---
+    private JLabel lblCurrentPoints, lblPointsEarned;
+    private JTextField txtPointsUsed;
+    private final double DIEM_TO_TIEN = 100;  // 1 điểm = 100 VNĐ
+    private final double TIEN_TO_DIEM = 10000; // 10.000 VNĐ = 1 điểm
+    // ----------------------------------------------
 
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
     private double currentTotal = 0; // Tổng tiền hàng chưa giảm
@@ -41,7 +47,6 @@ public class CreateInvoiceDialog extends JDialog {
     }
 
     private void initUI() {
-        // 1. Cài đặt giao diện hệ thống để các thành phần đẹp hơn
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -49,15 +54,15 @@ public class CreateInvoiceDialog extends JDialog {
         }
 
         setLayout(new BorderLayout(10, 10));
-        JPanel pnlMain = new JPanel(new GridLayout(1, 2, 15, 0)); // Tăng khoảng cách giữa 2 cột lớn
+        JPanel pnlMain = new JPanel(new GridLayout(1, 2, 15, 0));
         pnlMain.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         // ==========================================
-        // BÊN TRÁI: KHO SÁCH
+        // BÊN TRÁI: KHO SÁCH (Giữ nguyên gốc 100%)
         // ==========================================
         JPanel pnlLeft = new JPanel(new BorderLayout(5, 5));
         pnlLeft.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(180, 180, 180)), "KHO SÁCH")); // Viền xám nhẹ
+                BorderFactory.createLineBorder(new Color(180, 180, 180)), "KHO SÁCH")); 
 
         String[] bookCols = { "ID", "Tên Sách", "Giá Bán", "Tồn Kho" };
         bookModel = new DefaultTableModel(bookCols, 0) {
@@ -72,15 +77,13 @@ public class CreateInvoiceDialog extends JDialog {
         pnlLeft.add(new JScrollPane(tblBooks), BorderLayout.CENTER);
 
         JButton btnAddDetail = new JButton("Đưa vào Chi tiết HĐ >>");
-        btnAddDetail.setPreferredSize(new Dimension(100, 40)); // Set chiều cao nút
+        btnAddDetail.setPreferredSize(new Dimension(100, 40)); 
         btnAddDetail.setBackground(new Color(15, 108, 189));
         btnAddDetail.setForeground(Color.WHITE);
         btnAddDetail.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        // --- KHẮC PHỤC LỖI HIỂN THỊ NÚT ---
         btnAddDetail.setOpaque(true);
         btnAddDetail.setBorderPainted(false);
         btnAddDetail.setFocusPainted(false);
-        // ----------------------------------
         btnAddDetail.addActionListener(e -> addInvoiceDetail());
         pnlLeft.add(btnAddDetail, BorderLayout.SOUTH);
 
@@ -91,7 +94,6 @@ public class CreateInvoiceDialog extends JDialog {
         pnlRight.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(new Color(180, 180, 180)), "CHI TIẾT HÓA ĐƠN"));
 
-        // 1. Bảng Chi tiết
         String[] detailCols = { "ID", "Tên Sách", "Đơn Giá", "SL", "Thành Tiền" };
         detailModel = new DefaultTableModel(detailCols, 0) {
             @Override
@@ -103,7 +105,6 @@ public class CreateInvoiceDialog extends JDialog {
         tblInvoiceDetails.setRowHeight(30);
         tblInvoiceDetails.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        // Nút xóa dòng nằm ngay dưới bảng
         JButton btnRemoveDetail = new JButton("Xóa dòng đã chọn");
         btnRemoveDetail.setForeground(Color.RED);
         btnRemoveDetail.setFocusPainted(false);
@@ -115,16 +116,48 @@ public class CreateInvoiceDialog extends JDialog {
 
         pnlRight.add(pnlTableContainer, BorderLayout.CENTER);
 
-        // 2. Form Tổng kết (Sửa lại layout cho gọn)
+        // ----------------------------------------------------
+        // KHU VỰC TỔNG KẾT (Chèn thêm giao diện Điểm)
+        // ----------------------------------------------------
         JPanel pnlBottomRight = new JPanel(new BorderLayout(0, 10));
         pnlBottomRight.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // Panel chứa thông tin (Grid 6 dòng, 2 cột)
-        JPanel pnlInfo = new JPanel(new GridLayout(6, 2, 5, 10));
+        // THAY ĐỔI: Tăng Grid từ 6 dòng lên 9 dòng để đủ chỗ nhét các ô Điểm
+        JPanel pnlInfo = new JPanel(new GridLayout(9, 2, 5, 8));
 
         pnlInfo.add(new JLabel("Khách hàng:"));
         cbCustomer = new JComboBox<>();
+        // THÊM: Bắt sự kiện đổi khách hàng để hiện Điểm
+        cbCustomer.addActionListener(e -> {
+            CustomerDTO cus = (CustomerDTO) cbCustomer.getSelectedItem();
+            if (cus != null && cus.getCustomerId() > 0) {
+                lblCurrentPoints.setText(cus.getLoyaltyPoints() + " điểm");
+                txtPointsUsed.setEnabled(true); // Mở khóa ô nhập điểm
+            } else {
+                lblCurrentPoints.setText("0 điểm");
+                txtPointsUsed.setText("0");
+                txtPointsUsed.setEnabled(false); // Khóa lại nếu là khách vãng lai
+            }
+            updateTotals();
+        });
         pnlInfo.add(cbCustomer);
+
+        // --- THÊM: Hiển thị điểm hiện có ---
+        pnlInfo.add(new JLabel("Điểm hiện có:"));
+        lblCurrentPoints = new JLabel("0 điểm");
+        lblCurrentPoints.setForeground(new Color(0, 102, 204));
+        lblCurrentPoints.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        pnlInfo.add(lblCurrentPoints);
+
+        // --- THÊM: Ô nhập điểm muốn xài ---
+        pnlInfo.add(new JLabel("Dùng điểm (1đ = 100đ):"));
+        txtPointsUsed = new JTextField("0");
+        txtPointsUsed.setEnabled(false);
+        txtPointsUsed.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) { updateTotals(); }
+        });
+        pnlInfo.add(txtPointsUsed);
 
         pnlInfo.add(new JLabel("Khuyến mãi:"));
         cbDiscount = new JComboBox<>();
@@ -140,11 +173,18 @@ public class CreateInvoiceDialog extends JDialog {
         lblTotalAmount.setFont(new Font("Segoe UI", Font.BOLD, 14));
         pnlInfo.add(lblTotalAmount);
 
-        pnlInfo.add(new JLabel("Giảm giá:"));
+        pnlInfo.add(new JLabel("Giảm giá (Mã + Điểm):"));
         lblDiscountAmount = new JLabel("0 VNĐ");
         lblDiscountAmount.setForeground(Color.RED);
         lblDiscountAmount.setFont(new Font("Segoe UI", Font.BOLD, 14));
         pnlInfo.add(lblDiscountAmount);
+
+        // --- THÊM: Ô hiện điểm tích lũy mới ---
+        pnlInfo.add(new JLabel("Điểm thưởng mới:"));
+        lblPointsEarned = new JLabel("+0 điểm");
+        lblPointsEarned.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblPointsEarned.setForeground(new Color(255, 102, 0));
+        pnlInfo.add(lblPointsEarned);
 
         pnlInfo.add(new JLabel("TỔNG CỘNG:"));
         lblFinalAmount = new JLabel("0 VNĐ");
@@ -152,17 +192,14 @@ public class CreateInvoiceDialog extends JDialog {
         lblFinalAmount.setForeground(new Color(0, 153, 51));
         pnlInfo.add(lblFinalAmount);
 
-        // Nút Lưu hóa đơn to bự nằm riêng ở dưới
         JButton btnSaveInvoice = new JButton("THANH TOÁN & LƯU HÓA ĐƠN");
-        btnSaveInvoice.setPreferredSize(new Dimension(100, 30));
+        btnSaveInvoice.setPreferredSize(new Dimension(100, 35)); // Chỉnh lại size một chút cho đẹp
         btnSaveInvoice.setBackground(new Color(0, 153, 51));
         btnSaveInvoice.setForeground(Color.WHITE);
         btnSaveInvoice.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        // --- KHẮC PHỤC LỖI HIỂN THỊ NÚT ---
         btnSaveInvoice.setOpaque(true);
         btnSaveInvoice.setBorderPainted(false);
         btnSaveInvoice.setFocusPainted(false);
-        // ----------------------------------
         btnSaveInvoice.addActionListener(e -> saveInvoice());
 
         pnlBottomRight.add(pnlInfo, BorderLayout.CENTER);
@@ -176,27 +213,23 @@ public class CreateInvoiceDialog extends JDialog {
     }
 
     private void loadData() {
-        // Load Sách
         for (BookDTO b : bookBUS.getAll()) {
             if (b.getStockQuantity() > 0 && !"discontinued".equals(b.getStatus())) {
                 bookModel.addRow(
                         new Object[] { b.getBookId(), b.getBookTitle(), b.getSellingPrice(), b.getStockQuantity() });
             }
         }
-
-        // Load Khách hàng
         cbCustomer.addItem(new CustomerDTO(0, "-- Khách vãng lai --", "", 0, null));
         for (CustomerDTO c : customerBUS.getAll()) {
             cbCustomer.addItem(c);
         }
-
-        // Load Khuyến mãi
         cbDiscount.addItem(new DiscountServiceDTO(0, "-- Không áp dụng --", "", 0, 0, 0, null, null, "", ""));
         for (DiscountServiceDTO d : discountBUS.getValidPromotions()) {
             cbDiscount.addItem(d);
         }
     }
 
+    // Giữ nguyên 100% gốc
     private void addInvoiceDetail() {
         int row = tblBooks.getSelectedRow();
         if (row == -1) {
@@ -220,7 +253,6 @@ public class CreateInvoiceDialog extends JDialog {
                 return;
             }
 
-            // Gộp dòng nếu sách đã có trong danh sách chi tiết
             boolean exists = false;
             for (int i = 0; i < detailModel.getRowCount(); i++) {
                 if ((int) detailModel.getValueAt(i, 0) == bookId) {
@@ -260,6 +292,7 @@ public class CreateInvoiceDialog extends JDialog {
             currentTotal += (double) detailModel.getValueAt(i, 4);
         }
 
+        // 1. Tính giảm giá theo Khuyến mãi (Gốc)
         double discountVal = 0;
         DiscountServiceDTO selectedPromo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
 
@@ -281,82 +314,53 @@ public class CreateInvoiceDialog extends JDialog {
             }
         }
 
-        double finalAmount = currentTotal - discountVal;
-        if (finalAmount < 0)
-            finalAmount = 0;
+        // --- THÊM: Tính tiền từ Điểm ---
+        int pointsUsed = 0;
+        CustomerDTO cus = (CustomerDTO) cbCustomer.getSelectedItem();
+        int maxPoints = (cus != null && cus.getCustomerId() > 0) ? cus.getLoyaltyPoints() : 0;
+        
+        if (!txtPointsUsed.getText().trim().isEmpty()) {
+            try { pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim()); } 
+            catch (Exception e) { pointsUsed = 0; }
+        }
+        
+        // Chặn không cho xài quá số điểm đang có
+        if (pointsUsed > maxPoints) {
+            pointsUsed = maxPoints;
+            // Dùng invokeLater để tránh lỗi nháy con trỏ khi đang gõ
+            int finalPointsUsed = pointsUsed;
+            SwingUtilities.invokeLater(() -> txtPointsUsed.setText(String.valueOf(finalPointsUsed)));
+        }
+        if (pointsUsed < 0) { 
+            pointsUsed = 0; 
+            SwingUtilities.invokeLater(() -> txtPointsUsed.setText("0")); 
+        }
+        
+        double pointsValue = pointsUsed * DIEM_TO_TIEN; 
+        
+        // CỘNG GỘP TỔNG KHUYẾN MÃI = Khuyến mãi + Tiền từ điểm
+        double totalDiscount = discountVal + pointsValue;
+        // ------------------------------
+
+        double finalAmount = currentTotal - totalDiscount;
+        if (finalAmount < 0) finalAmount = 0;
+
+        // --- THÊM: Tính điểm sẽ được cộng thêm ---
+        int pointsEarned = 0;
+        if (cus != null && cus.getCustomerId() > 0) {
+            pointsEarned = (int) (finalAmount / TIEN_TO_DIEM);
+        }
+        // ----------------------------------------
 
         lblTotalAmount.setText(df.format(currentTotal));
-        lblDiscountAmount.setText("- " + df.format(discountVal));
+        lblDiscountAmount.setText("- " + df.format(totalDiscount));
         lblFinalAmount.setText(df.format(finalAmount));
+        lblPointsEarned.setText("+" + pointsEarned + " điểm");
     }
 
-    // private void saveInvoice() {
-    // if (detailModel.getRowCount() == 0) {
-    // JOptionPane.showMessageDialog(this, "Chưa có sản phẩm nào trong chi tiết hóa
-    // đơn!");
-    // return;
-    // }
-
-    // CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
-    // DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
-    // String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
-
-    // updateTotals();
-    // String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",",
-    // "").trim();
-    // String discStr = lblDiscountAmount.getText().replace("- ", "").replace("
-    // VNĐ", "").replace(",", "").trim();
-    // double finalToPay = Double.parseDouble(finalStr);
-    // double discountApplied = Double.parseDouble(discStr);
-
-    // InvoiceDTO invoice = new InvoiceDTO();
-    // invoice.setCustomerId(customer.getCustomerId());
-    // invoice.setEmployeeId(1); // TODO: Lấy ID từ session đăng nhập sau này
-    // invoice.setTotalAmount(currentTotal);
-    // invoice.setTotalDiscount(discountApplied);
-    // invoice.setFinalAmount(finalToPay);
-    // invoice.setPaymentMethod(paymentMethod);
-    // invoice.setPointsUsed(0);
-    // invoice.setPointsValue(0);
-    // invoice.setPointsEarned(0);
-
-    // int newInvoiceId = invoiceBUS.addInvoice(invoice); // Gọi đúng chuẩn 3 lớp
-
-    // if (newInvoiceId > 0) {
-    // ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
-    // for (int i = 0; i < detailModel.getRowCount(); i++) {
-    // int bId = (int) detailModel.getValueAt(i, 0);
-    // double price = (double) detailModel.getValueAt(i, 2);
-    // int qty = (int) detailModel.getValueAt(i, 3);
-    // double subTotal = (double) detailModel.getValueAt(i, 4);
-
-    // listDetails.add(new InvoiceDetailDTO(0, newInvoiceId, bId, qty, price, 0,
-    // subTotal));
-    // bookDAO.updateQuantity(bId, qty); // Trừ tồn kho
-    // }
-    // detailDAO.insertBatch(listDetails);
-
-    // if (promo != null && promo.getServiceId() != 0) {
-    // InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
-    // serviceLog.setInvoiceId(newInvoiceId);
-    // serviceLog.setServiceId(promo.getServiceId());
-    // serviceLog.setServiceType(promo.getDiscountType());
-    // serviceLog.setDiscountValue(discountApplied);
-    // serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
-    // serviceDAO.insert(serviceLog);
-    // }
-
-    // JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #"
-    // + newInvoiceId);
-    // dispose();
-    // } else {
-    // JOptionPane.showMessageDialog(this, "Lỗi khi tạo hóa đơn trong hệ thống!",
-    // "Lỗi", JOptionPane.ERROR_MESSAGE);
-    // }
-    // }
     private void saveInvoice() {
         try {
-            // 1. GOM DỮ LIỆU TỪ GIAO DIỆN
+            // 1. GOM DỮ LIỆU TỪ GIAO DIỆN (Gốc 100%)
             boolean hasDetails = detailModel.getRowCount() > 0;
 
             CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
@@ -365,38 +369,45 @@ public class CreateInvoiceDialog extends JDialog {
             int employeeId = config.SessionManager.getCurrentAccount() != null
                     ? config.SessionManager.getCurrentAccount().getEmployeeId()
                     : 1;
-            if (config.SessionManager.getCurrentAccount() != null) {
-                employeeId = config.SessionManager.getCurrentAccount().getEmployeeId();
-            }
 
             DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
             String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
 
-            // Tính toán lại tiền một lần cuối cho chắc chắn
             updateTotals();
             String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
             String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
             double finalToPay = Double.parseDouble(finalStr);
-            double discountApplied = Double.parseDouble(discStr);
+            double discountApplied = Double.parseDouble(discStr); // Tổng giảm (bao gồm cả mã + điểm)
 
-            // Đóng gói DTO
+            // --- THÊM: Lấy số liệu điểm ---
+            int pointsUsed = 0;
+            try { pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim()); } catch (Exception e) {}
+            double pointsValue = pointsUsed * DIEM_TO_TIEN;
+            
+            int pointsEarned = 0;
+            try { pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim()); } catch (Exception e) {}
+            // ------------------------------
+
+            // Đóng gói DTO (Gốc)
             InvoiceDTO invoice = new InvoiceDTO();
             invoice.setCustomerId(customerId);
             invoice.setEmployeeId(employeeId);
             invoice.setTotalAmount(currentTotal);
-            invoice.setTotalDiscount(discountApplied);
+            invoice.setTotalDiscount(discountApplied); 
             invoice.setFinalAmount(finalToPay);
             invoice.setPaymentMethod(paymentMethod);
-            invoice.setPointsUsed(0);
-            invoice.setPointsValue(0);
-            invoice.setPointsEarned(0);
+            
+            // --- THÊM: Gắn điểm vào DTO ---
+            invoice.setPointsUsed(pointsUsed);
+            invoice.setPointsValue(pointsValue);
+            invoice.setPointsEarned(pointsEarned);
+            // ------------------------------
 
-            // 2. GỌI LỚP BUS KIỂM DUYỆT
+            // 2. GỌI LỚP BUS KIỂM DUYỆT (Gốc)
             DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails);
 
-            // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ
+            // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ (Gốc)
             if (result.isValid()) {
-                // NẾU HỢP LỆ: Tiến hành lưu các chi tiết sách vào hóa đơn
                 ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
                 for (int i = 0; i < detailModel.getRowCount(); i++) {
                     int bId = (int) detailModel.getValueAt(i, 0);
@@ -405,19 +416,21 @@ public class CreateInvoiceDialog extends JDialog {
                     double subTotal = (double) detailModel.getValueAt(i, 4);
 
                     listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty, price, 0, subTotal));
-                    bookDAO.updateQuantity(bId, qty); // Trừ số lượng tồn kho
+                    
+                    bookBUS.updateQuantity(bId, qty); // Trừ tồn kho qua BUS
                 }
-                detailDAO.insertBatch(listDetails);
+                detailBUS.insertBatch(listDetails); // Lưu chi tiết qua BUS
 
-                // Lưu lại lịch sử dùng mã khuyến mãi (nếu có)
                 if (promo != null && promo.getServiceId() != 0) {
                     InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
                     serviceLog.setInvoiceId(invoice.getInvoiceId());
                     serviceLog.setServiceId(promo.getServiceId());
                     serviceLog.setServiceType(promo.getDiscountType());
-                    serviceLog.setDiscountValue(discountApplied);
+                    // Chỉ lưu tiền giảm của Mã Khuyến Mãi (Tổng giảm - Tiền của điểm)
+                    serviceLog.setDiscountValue(discountApplied - pointsValue); 
                     serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
-                    serviceDAO.insert(serviceLog);
+                    
+                    invoiceServiceBUS.insert(serviceLog); // Lưu qua BUS
                 }
 
                 JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + invoice.getInvoiceId());
@@ -428,23 +441,18 @@ public class CreateInvoiceDialog extends JDialog {
                 dispose(); 
                
             } else {
-                // NẾU CÓ LỖI: Xử lý màu mè trên giao diện
-
-                // Dọn viền đỏ cũ
+                // NẾU CÓ LỖI: Xử lý màu mè trên giao diện (Đúng chuẩn ValidationUI của em)
                 GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
 
-                // Dò lỗi để báo đỏ
                 if (result.getError("details") != null) {
                     GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
                 }
 
                 if (result.getError("employeeId") != null) {
-                    // Cảnh báo nếu nhân viên chưa đăng nhập hợp lệ
                     JOptionPane.showMessageDialog(this, result.getError("employeeId"), "Lỗi Phân Quyền",
                             JOptionPane.ERROR_MESSAGE);
                 }
 
-                // Hiển thị thông báo tổng hợp
                 JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi Thanh Toán", JOptionPane.WARNING_MESSAGE);
             }
         } catch (Exception ex) {

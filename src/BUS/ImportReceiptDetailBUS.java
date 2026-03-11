@@ -27,4 +27,8 @@ public class ImportReceiptDetailBUS {
         }
         return total;
     }
+    public boolean insertBatch(ArrayList<ImportReceiptDetailDTO> details) {
+        if (details == null || details.isEmpty()) return false;
+        return dao.insertBatch(details);
+    }
 }

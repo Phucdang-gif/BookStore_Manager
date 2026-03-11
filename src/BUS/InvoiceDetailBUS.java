@@ -18,4 +18,8 @@ public class InvoiceDetailBUS {
         if (details == null || details.isEmpty()) return false;
         return detailDAO.insertBatch(details);
     }
+    public void insertBatch(ArrayList<InvoiceDetailDTO> details) {
+        if (details == null || details.isEmpty()) return;
+        detailDAO.insertBatch(details);
+    }
 }
