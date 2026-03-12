@@ -15,9 +15,9 @@ public class CreateInvoiceDialog extends JDialog {
     private BookBUS bookBUS = new BookBUS();
     private CustomerBUS customerBUS = new CustomerBUS();
     private DiscountServiceBUS discountBUS = new DiscountServiceBUS();
-    private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS(); 
-    private InvoiceServiceBUS invoiceServiceBUS = new InvoiceServiceBUS(); 
-    private InvoiceBUS invoiceBUS = new InvoiceBUS(); 
+    private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS();
+    private InvoiceServiceBUS invoiceServiceBUS = new InvoiceServiceBUS();
+    private InvoiceBUS invoiceBUS = new InvoiceBUS();
 
     // Các thành phần giao diện
     private JTable tblBooks, tblInvoiceDetails;
@@ -30,7 +30,7 @@ public class CreateInvoiceDialog extends JDialog {
     // --- THÊM: Các thành phần cho tính năng Điểm ---
     private JLabel lblCurrentPoints, lblPointsEarned;
     private JTextField txtPointsUsed;
-    private final double DIEM_TO_TIEN = 100;  // 1 điểm = 100 VNĐ
+    private final double DIEM_TO_TIEN = 100; // 1 điểm = 100 VNĐ
     private final double TIEN_TO_DIEM = 10000; // 10.000 VNĐ = 1 điểm
     // ----------------------------------------------
 
@@ -62,7 +62,7 @@ public class CreateInvoiceDialog extends JDialog {
         // ==========================================
         JPanel pnlLeft = new JPanel(new BorderLayout(5, 5));
         pnlLeft.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(180, 180, 180)), "KHO SÁCH")); 
+                BorderFactory.createLineBorder(new Color(180, 180, 180)), "KHO SÁCH"));
 
         String[] bookCols = { "ID", "Tên Sách", "Giá Bán", "Tồn Kho" };
         bookModel = new DefaultTableModel(bookCols, 0) {
@@ -77,7 +77,7 @@ public class CreateInvoiceDialog extends JDialog {
         pnlLeft.add(new JScrollPane(tblBooks), BorderLayout.CENTER);
 
         JButton btnAddDetail = new JButton("Đưa vào Chi tiết HĐ >>");
-        btnAddDetail.setPreferredSize(new Dimension(100, 40)); 
+        btnAddDetail.setPreferredSize(new Dimension(100, 40));
         btnAddDetail.setBackground(new Color(15, 108, 189));
         btnAddDetail.setForeground(Color.WHITE);
         btnAddDetail.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -155,7 +155,9 @@ public class CreateInvoiceDialog extends JDialog {
         txtPointsUsed.setEnabled(false);
         txtPointsUsed.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
-            public void keyReleased(java.awt.event.KeyEvent e) { updateTotals(); }
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                updateTotals();
+            }
         });
         pnlInfo.add(txtPointsUsed);
 
@@ -318,12 +320,15 @@ public class CreateInvoiceDialog extends JDialog {
         int pointsUsed = 0;
         CustomerDTO cus = (CustomerDTO) cbCustomer.getSelectedItem();
         int maxPoints = (cus != null && cus.getCustomerId() > 0) ? cus.getLoyaltyPoints() : 0;
-        
+
         if (!txtPointsUsed.getText().trim().isEmpty()) {
-            try { pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim()); } 
-            catch (Exception e) { pointsUsed = 0; }
+            try {
+                pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
+            } catch (Exception e) {
+                pointsUsed = 0;
+            }
         }
-        
+
         // Chặn không cho xài quá số điểm đang có
         if (pointsUsed > maxPoints) {
             pointsUsed = maxPoints;
@@ -331,19 +336,20 @@ public class CreateInvoiceDialog extends JDialog {
             int finalPointsUsed = pointsUsed;
             SwingUtilities.invokeLater(() -> txtPointsUsed.setText(String.valueOf(finalPointsUsed)));
         }
-        if (pointsUsed < 0) { 
-            pointsUsed = 0; 
-            SwingUtilities.invokeLater(() -> txtPointsUsed.setText("0")); 
+        if (pointsUsed < 0) {
+            pointsUsed = 0;
+            SwingUtilities.invokeLater(() -> txtPointsUsed.setText("0"));
         }
-        
-        double pointsValue = pointsUsed * DIEM_TO_TIEN; 
-        
+
+        double pointsValue = pointsUsed * DIEM_TO_TIEN;
+
         // CỘNG GỘP TỔNG KHUYẾN MÃI = Khuyến mãi + Tiền từ điểm
         double totalDiscount = discountVal + pointsValue;
         // ------------------------------
 
         double finalAmount = currentTotal - totalDiscount;
-        if (finalAmount < 0) finalAmount = 0;
+        if (finalAmount < 0)
+            finalAmount = 0;
 
         // --- THÊM: Tính điểm sẽ được cộng thêm ---
         int pointsEarned = 0;
@@ -381,11 +387,17 @@ public class CreateInvoiceDialog extends JDialog {
 
             // --- THÊM: Lấy số liệu điểm ---
             int pointsUsed = 0;
-            try { pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim()); } catch (Exception e) {}
+            try {
+                pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
+            } catch (Exception e) {
+            }
             double pointsValue = pointsUsed * DIEM_TO_TIEN;
-            
+
             int pointsEarned = 0;
-            try { pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim()); } catch (Exception e) {}
+            try {
+                pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim());
+            } catch (Exception e) {
+            }
             // ------------------------------
 
             // Đóng gói DTO (Gốc)
@@ -393,10 +405,10 @@ public class CreateInvoiceDialog extends JDialog {
             invoice.setCustomerId(customerId);
             invoice.setEmployeeId(employeeId);
             invoice.setTotalAmount(currentTotal);
-            invoice.setTotalDiscount(discountApplied); 
+            invoice.setTotalDiscount(discountApplied);
             invoice.setFinalAmount(finalToPay);
             invoice.setPaymentMethod(paymentMethod);
-            
+
             // --- THÊM: Gắn điểm vào DTO ---
             invoice.setPointsUsed(pointsUsed);
             invoice.setPointsValue(pointsValue);
@@ -416,7 +428,7 @@ public class CreateInvoiceDialog extends JDialog {
                     double subTotal = (double) detailModel.getValueAt(i, 4);
 
                     listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty, price, 0, subTotal));
-                    
+
                     bookBUS.updateQuantity(bId, qty); // Trừ tồn kho qua BUS
                 }
                 detailBUS.insertBatch(listDetails); // Lưu chi tiết qua BUS
@@ -427,9 +439,9 @@ public class CreateInvoiceDialog extends JDialog {
                     serviceLog.setServiceId(promo.getServiceId());
                     serviceLog.setServiceType(promo.getDiscountType());
                     // Chỉ lưu tiền giảm của Mã Khuyến Mãi (Tổng giảm - Tiền của điểm)
-                    serviceLog.setDiscountValue(discountApplied - pointsValue); 
+                    serviceLog.setDiscountValue(discountApplied - pointsValue);
                     serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
-                    
+
                     invoiceServiceBUS.insert(serviceLog); // Lưu qua BUS
                 }
 
@@ -438,8 +450,8 @@ public class CreateInvoiceDialog extends JDialog {
                     GUI.model.BookTablePanel.getInstance().refreshTable();
                 }
                 bookBUS.loadDataFromDB();
-                dispose(); 
-               
+                dispose();
+
             } else {
                 // NẾU CÓ LỖI: Xử lý màu mè trên giao diện (Đúng chuẩn ValidationUI của em)
                 GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
