@@ -150,7 +150,7 @@ public class CreateInvoiceDialog extends JDialog {
         pnlInfo.add(lblCurrentPoints);
 
         // --- THÊM: Ô nhập điểm muốn xài ---
-        pnlInfo.add(new JLabel("Dùng điểm (1đ = 100đ):"));
+        pnlInfo.add(new JLabel("Dùng điểm (1 điểm = 100 VNĐ):"));
         txtPointsUsed = new JTextField("0");
         txtPointsUsed.setEnabled(false);
         txtPointsUsed.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -294,7 +294,7 @@ public class CreateInvoiceDialog extends JDialog {
             currentTotal += (double) detailModel.getValueAt(i, 4);
         }
 
-        // 1. Tính giảm giá theo Khuyến mãi (Gốc)
+        // 1. Tính giảm giá theo Khuyến mãi
         double discountVal = 0;
         DiscountServiceDTO selectedPromo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
 
@@ -316,10 +316,25 @@ public class CreateInvoiceDialog extends JDialog {
             }
         }
 
-        // --- THÊM: Tính tiền từ Điểm ---
+        // =======================================================
+        // FIX LOGIC: CHẶN DÙNG LỐ ĐIỂM CỦA KHÁCH HÀNG
+        // =======================================================
         int pointsUsed = 0;
         CustomerDTO cus = (CustomerDTO) cbCustomer.getSelectedItem();
-        int maxPoints = (cus != null && cus.getCustomerId() > 0) ? cus.getLoyaltyPoints() : 0;
+        int maxCustomerPoints = (cus != null && cus.getCustomerId() > 0) ? cus.getLoyaltyPoints() : 0;
+
+        // 2a. Tính số tiền còn lại phải trả (Sau khi đã trừ khuyến mãi)
+        double amountAfterPromo = currentTotal - discountVal;
+        if (amountAfterPromo < 0)
+            amountAfterPromo = 0;
+
+        // 2b. Tính số điểm TỐI ĐA cần thiết để trả cục tiền còn lại này
+        // Math.ceil để làm tròn lên, đảm bảo đủ trả số tiền lẻ
+        int maxPointsNeeded = (int) Math.ceil(amountAfterPromo / DIEM_TO_TIEN);
+
+        // 2c. Chốt "Giới hạn điểm được phép nhập" = Min(Điểm khách có, Điểm hóa đơn
+        // cần)
+        int maxAllowedPoints = Math.min(maxCustomerPoints, maxPointsNeeded);
 
         if (!txtPointsUsed.getText().trim().isEmpty()) {
             try {
@@ -329,10 +344,9 @@ public class CreateInvoiceDialog extends JDialog {
             }
         }
 
-        // Chặn không cho xài quá số điểm đang có
-        if (pointsUsed > maxPoints) {
-            pointsUsed = maxPoints;
-            // Dùng invokeLater để tránh lỗi nháy con trỏ khi đang gõ
+        // Bắt lỗi nhập lố hoặc nhập số âm
+        if (pointsUsed > maxAllowedPoints) {
+            pointsUsed = maxAllowedPoints; // Ép về mức tối đa cho phép
             int finalPointsUsed = pointsUsed;
             SwingUtilities.invokeLater(() -> txtPointsUsed.setText(String.valueOf(finalPointsUsed)));
         }
@@ -341,23 +355,21 @@ public class CreateInvoiceDialog extends JDialog {
             SwingUtilities.invokeLater(() -> txtPointsUsed.setText("0"));
         }
 
+        // 3. Tính toán các con số cuối cùng
         double pointsValue = pointsUsed * DIEM_TO_TIEN;
-
-        // CỘNG GỘP TỔNG KHUYẾN MÃI = Khuyến mãi + Tiền từ điểm
         double totalDiscount = discountVal + pointsValue;
-        // ------------------------------
 
         double finalAmount = currentTotal - totalDiscount;
         if (finalAmount < 0)
             finalAmount = 0;
 
-        // --- THÊM: Tính điểm sẽ được cộng thêm ---
+        // 4. Tính điểm thưởng mới (Chỉ được tích điểm trên phần tiền mặt thực trả)
         int pointsEarned = 0;
         if (cus != null && cus.getCustomerId() > 0) {
             pointsEarned = (int) (finalAmount / TIEN_TO_DIEM);
         }
-        // ----------------------------------------
 
+        // 5. Render lại UI
         lblTotalAmount.setText(df.format(currentTotal));
         lblDiscountAmount.setText("- " + df.format(totalDiscount));
         lblFinalAmount.setText(df.format(finalAmount));
