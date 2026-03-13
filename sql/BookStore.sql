@@ -255,7 +255,7 @@ SELECT e.employee_id, pg.permission_group_id, 'thukho01', 'tk123456', 'active' F
 INSERT INTO accounts (employee_id, permission_group_id, username, password, status)
 SELECT e.employee_id, pg.permission_group_id, 'ketoan01', 'kt123456', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Phạm Thị Dung'   AND pg.group_name='Kế toán';
 
--- 4. CHỨC NĂNG (khớp đúng với GUI)
+-- 4. CHỨC NĂNG (Bổ sung Cài đặt hệ thống)
 INSERT INTO functions (function_name, system_function_code, function_group) VALUES
 ('Quản lý sách',       'BOOK',        'Quản lý kho'),
 ('Danh mục',           'CATEGORY',    'Quản lý kho'),
@@ -267,15 +267,22 @@ INSERT INTO functions (function_name, system_function_code, function_group) VALU
 ('Quản lý tài khoản',  'ACCOUNT',     'Quản lý hệ thống'),
 ('Phân quyền',         'PERMISSION',  'Quản lý hệ thống'),
 ('Quản lý tác giả',    'AUTHOR',      'Quản lý kho'),
-('Quản lý nhà xuất bản','PUBLISHER',  'Quản lý kho');
+('Quản lý nhà xuất bản','PUBLISHER',  'Quản lý kho'),
+('Cài đặt hệ thống',   'SETTING',     'Quản lý hệ thống');
 
 -- 5. PHÂN QUYỀN
 
--- Admin: toàn quyền tất cả chức năng
+-- Admin: toàn quyền tất cả chức năng, TRỪ Cài đặt hệ thống (chỉ Xem,Sửa)
 INSERT INTO permission_details (permission_group_id, function_id, actions)
 SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa,Xóa'
 FROM permission_groups pg, functions f
-WHERE pg.group_name = 'Quản trị viên';
+WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code != 'SETTING';
+
+-- Admin: Riêng Cài đặt hệ thống chỉ cấp 'Xem,Sửa' để bảo vệ logic hệ thống
+INSERT INTO permission_details (permission_group_id, function_id, actions)
+SELECT pg.permission_group_id, f.function_id, 'Xem,Sửa'
+FROM permission_groups pg, functions f
+WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code = 'SETTING';
 
 -- Nhân viên bán hàng (152)
 INSERT INTO permission_details (permission_group_id, function_id, actions)
@@ -485,7 +492,6 @@ SELECT r.receipt_id, b.book_id, 60,  50000, 3000000 FROM import_receipts r, supp
 
 -- 19. THAM SỐ HỆ THỐNG
 INSERT INTO system_parameters (parameter_code, parameter_value, description) VALUES
-('TY_LE_TICH_DIEM',          '10',  'Tích 1 điểm cho mỗi 10,000 VNĐ'),
+('TY_LE_TICH_DIEM',          '10000',  'Tích 1 điểm cho mỗi 10,000 VNĐ'),
 ('TY_LE_QUI_DOI_DIEM',       '100', 'Đổi 1 điểm = 100 VNĐ'),
-('SO_LUONG_TOI_THIEU_CANH_BAO','10','Cảnh báo khi tồn kho < 10 cuốn'),
-('THOI_GIAN_LUU_HOA_DON',    '365', 'Lưu hóa đơn trong 365 ngày');
+('SO_LUONG_TOI_THIEU_CANH_BAO','10','Cảnh báo khi tồn kho < 10 cuốn');

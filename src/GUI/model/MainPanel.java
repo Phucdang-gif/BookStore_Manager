@@ -24,6 +24,7 @@ public class MainPanel extends JPanel {
     private CustomerPanel pnlCustomer;
     private DiscountPanel pnlDiscount;
     private StatisticPanel pnlStatistic;
+    private SystemParameterPanel pnlSystemParameter;
 
     private BookBUS bookBUS;
     private AuthorBUS authorBUS;
@@ -71,6 +72,7 @@ public class MainPanel extends JPanel {
         pnlCustomer = new CustomerPanel();
         pnlDiscount = new DiscountPanel();
         pnlStatistic = new StatisticPanel();
+        pnlSystemParameter = new SystemParameterPanel();
 
         centerPanel.add(pnlWelcome, "WELCOME");
 
@@ -85,6 +87,7 @@ public class MainPanel extends JPanel {
         centerPanel.add(pnlCustomer, "CUSTOMER");
         centerPanel.add(pnlInvoice, "INVOICE");
         centerPanel.add(pnlStatistic, "STATISTIC");
+        centerPanel.add(pnlSystemParameter, "SETTING");
 
         add(centerPanel, BorderLayout.CENTER);
 
@@ -158,6 +161,10 @@ public class MainPanel extends JPanel {
                 centerPanel.add(pnlStatistic, "STATISTIC");
                 cardLayout.show(centerPanel, "STATISTIC");
                 setHeaderVisible(false);
+                break;
+            case "SETTING":
+                header.setController(pnlSystemParameter);
+                setHeaderVisible(true);
                 break;
             default:
                 header.setController(null);

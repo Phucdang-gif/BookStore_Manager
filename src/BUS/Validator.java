@@ -241,15 +241,26 @@ public class Validator {
                 .getResult();
     }
 
-    // ========================================================
-    // LUẬT KIỂM TRA CHO HÓA ĐƠN BÁN HÀNG (INVOICE)
-    // ========================================================
-    public static ValidationResult validateInvoice(InvoiceDTO invoice, boolean hasDetails) {
-        return new Validator()
+    public static ValidationResult validateInvoice(InvoiceDTO invoice, boolean hasDetails, CustomerDTO customer) {
+        Validator v = new Validator()
                 .requirePositive("employeeId", invoice.getEmployeeId(), "Lỗi bảo mật: Không xác định được thu ngân!")
                 .requireNonNegative("totalAmount", invoice.getTotalAmount(), "Tổng tiền hóa đơn không được âm!")
+                .requireCondition("details", hasDetails, "Giỏ hàng trống! Vui lòng thêm sách trước khi thanh toán.");
 
-                .requireCondition("details", hasDetails, "Giỏ hàng trống! Vui lòng thêm sách trước khi thanh toán.")
-                .getResult();
+        // Kiểm tra logic điểm
+        v.requireNonNegative("pointsUsed", invoice.getPointsUsed(), "Số điểm sử dụng không được âm!");
+
+        // Nếu có dùng điểm, phải đảm bảo khách hàng hợp lệ và không dùng lố điểm
+        if (invoice.getPointsUsed() > 0) {
+            v.requireCondition("pointsUsed",
+                    customer != null && customer.getCustomerId() > 0,
+                    "Chỉ khách hàng thành viên mới được sử dụng điểm quy đổi!");
+
+            v.requireCondition("pointsUsed",
+                    customer != null && invoice.getPointsUsed() <= customer.getLoyaltyPoints(),
+                    "Số điểm sử dụng (" + invoice.getPointsUsed() + ") vượt quá số điểm hiện có của khách hàng!");
+        }
+        return v.getResult();
     }
+
 }

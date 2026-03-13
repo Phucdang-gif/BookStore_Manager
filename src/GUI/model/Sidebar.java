@@ -126,6 +126,8 @@ public class Sidebar extends JPanel {
         }
         if (config.SessionManager.hasPermission(460, "Xem"))
             items.add(new SidebarModel("BÁO CÁO", "GUI/icon/statistic.svg", "STATISTIC"));
+        if (config.SessionManager.hasPermission(462, "Xem"))
+            items.add(new SidebarModel("Tham số hệ thống", "GUI/icon/setting.svg", "SETTING"));
 
         // Render ra giao diện
         for (SidebarModel item : items) {

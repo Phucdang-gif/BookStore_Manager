@@ -1,7 +1,6 @@
 package GUI.dialog;
 
 import BUS.*;
-import DAO.*;
 import DTO.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -30,9 +29,6 @@ public class CreateInvoiceDialog extends JDialog {
     // --- THÊM: Các thành phần cho tính năng Điểm ---
     private JLabel lblCurrentPoints, lblPointsEarned;
     private JTextField txtPointsUsed;
-    private final double DIEM_TO_TIEN = 100; // 1 điểm = 100 VNĐ
-    private final double TIEN_TO_DIEM = 10000; // 10.000 VNĐ = 1 điểm
-    // ----------------------------------------------
 
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
     private double currentTotal = 0; // Tổng tiền hàng chưa giảm
@@ -214,6 +210,14 @@ public class CreateInvoiceDialog extends JDialog {
         add(pnlMain, BorderLayout.CENTER);
     }
 
+    private double getDiemToTien() {
+        return SystemParameterBUS.getInstance().getDouble("TY_LE_QUI_DOI_DIEM", 100);
+    }
+
+    private double getTienToDiem() {
+        return SystemParameterBUS.getInstance().getDouble("TY_LE_TICH_DIEM", 10000);
+    }
+
     private void loadData() {
         for (BookDTO b : bookBUS.getAll()) {
             if (b.getStockQuantity() > 0 && !"discontinued".equals(b.getStatus())) {
@@ -330,7 +334,7 @@ public class CreateInvoiceDialog extends JDialog {
 
         // 2b. Tính số điểm TỐI ĐA cần thiết để trả cục tiền còn lại này
         // Math.ceil để làm tròn lên, đảm bảo đủ trả số tiền lẻ
-        int maxPointsNeeded = (int) Math.ceil(amountAfterPromo / DIEM_TO_TIEN);
+        int maxPointsNeeded = (int) Math.ceil(amountAfterPromo / getDiemToTien());
 
         // 2c. Chốt "Giới hạn điểm được phép nhập" = Min(Điểm khách có, Điểm hóa đơn
         // cần)
@@ -356,7 +360,7 @@ public class CreateInvoiceDialog extends JDialog {
         }
 
         // 3. Tính toán các con số cuối cùng
-        double pointsValue = pointsUsed * DIEM_TO_TIEN;
+        double pointsValue = pointsUsed * getDiemToTien();
         double totalDiscount = discountVal + pointsValue;
 
         double finalAmount = currentTotal - totalDiscount;
@@ -366,7 +370,7 @@ public class CreateInvoiceDialog extends JDialog {
         // 4. Tính điểm thưởng mới (Chỉ được tích điểm trên phần tiền mặt thực trả)
         int pointsEarned = 0;
         if (cus != null && cus.getCustomerId() > 0) {
-            pointsEarned = (int) (finalAmount / TIEN_TO_DIEM);
+            pointsEarned = (int) (finalAmount / getTienToDiem());
         }
 
         // 5. Render lại UI
@@ -403,7 +407,7 @@ public class CreateInvoiceDialog extends JDialog {
                 pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
             } catch (Exception e) {
             }
-            double pointsValue = pointsUsed * DIEM_TO_TIEN;
+            double pointsValue = pointsUsed * getDiemToTien();
 
             int pointsEarned = 0;
             try {
@@ -428,7 +432,7 @@ public class CreateInvoiceDialog extends JDialog {
             // ------------------------------
 
             // 2. GỌI LỚP BUS KIỂM DUYỆT (Gốc)
-            DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails);
+            DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails, customer);
 
             // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ (Gốc)
             if (result.isValid()) {
@@ -465,16 +469,14 @@ public class CreateInvoiceDialog extends JDialog {
                 dispose();
 
             } else {
-                // NẾU CÓ LỖI: Xử lý màu mè trên giao diện (Đúng chuẩn ValidationUI của em)
                 GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
+                txtPointsUsed.setBorder(UIManager.getBorder("TextField.border"));
 
                 if (result.getError("details") != null) {
                     GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
                 }
-
-                if (result.getError("employeeId") != null) {
-                    JOptionPane.showMessageDialog(this, result.getError("employeeId"), "Lỗi Phân Quyền",
-                            JOptionPane.ERROR_MESSAGE);
+                if (result.getError("pointsUsed") != null) {
+                    GUI.util.ValidationUI.setError(txtPointsUsed, result.getError("pointsUsed"));
                 }
 
                 JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi Thanh Toán", JOptionPane.WARNING_MESSAGE);

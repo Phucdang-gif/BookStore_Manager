@@ -7,6 +7,7 @@ import BUS.ImportReceiptBUS;
 import BUS.ImportReceiptDetailBUS;
 import BUS.PublisherBUS;
 import BUS.SupplierBUS;
+import BUS.SystemParameterBUS;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
@@ -53,8 +54,6 @@ public class BookDialogController {
         this.allAuthors = authorBUS.getAll();
     }
 
-    // ===================== KHỞI TẠO =====================
-
     public void loadComboBoxData() {
         view.cbCategory.removeAllItems();
         view.cbPublisher.removeAllItems();
@@ -93,6 +92,8 @@ public class BookDialogController {
                 // Ẩn cbStatus khi ADD vì hệ thống tự tính
                 view.cbStatus.setEnabled(false);
                 view.cbStatus.setToolTipText("Trạng thái tự động tính theo tồn kho ban đầu");
+                int defaultMinStock = SystemParameterBUS.getInstance().getInt("SO_LUONG_TOI_THIEU_CANH_BAO", 10);
+                view.txtMinStock.setText(String.valueOf(defaultMinStock));
                 break;
 
             case EDIT:
