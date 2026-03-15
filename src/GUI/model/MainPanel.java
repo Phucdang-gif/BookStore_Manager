@@ -150,7 +150,6 @@ public class MainPanel extends JPanel {
             case "INVOICE":
                 header.setController(pnlInvoice);
                 setHeaderVisible(true);
-                activePanel = pnlInvoice;
                 break;
             case "CUSTOMER":
                 header.setController(pnlCustomer);
