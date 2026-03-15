@@ -1,67 +1,55 @@
----
-config:
-  layout: elk
----
 erDiagram
-    direction TB
-
-    %% =============================================
-    %% 1. EMPLOYEE & ACCOUNT MANAGEMENT
-    %% =============================================
     employees {
         int employee_id PK
-        string full_name
+        varchar full_name
         date date_of_birth
         enum gender
-        string phone
-        string address
-        string position
+        varchar phone
+        varchar address
+        varchar position
         decimal salary
         date hire_date
         date termination_date
         enum status
-        string avatar
+        varchar avatar
+    }
+
+    permission_groups {
+        int permission_group_id PK
+        varchar group_name
+        enum status
+        datetime created_at
     }
 
     accounts {
         int account_id PK
         int employee_id FK
         int permission_group_id FK
-        string username
-        string password
-        enum status
-        datetime created_at
-    }
-
-    permission_groups {
-        int permission_group_id PK
-        string group_name
+        varchar username
+        varchar password
         enum status
         datetime created_at
     }
 
     functions {
         int function_id PK
-        string function_name
-        string system_function_code
-        string function_group
+        varchar function_name
+        varchar system_function_code
+        varchar function_group
     }
 
     permission_details {
         int detail_id PK
         int permission_group_id FK
         int function_id FK
-        string actions
+        varchar actions
         datetime assigned_at
     }
 
-    %% =============================================
-    %% 2. CUSTOMER MANAGEMENT
-    %% =============================================
     customers {
         int customer_id PK
-        string full_name
-        string phone
+        varchar full_name
+        varchar phone
         int loyalty_points
         date registration_date
     }
@@ -72,22 +60,19 @@ erDiagram
         int points_redeemed
         decimal value_received
         datetime redemption_date
-        string redemption_type
+        varchar redemption_type
     }
 
-    %% =============================================
-    %% 3. BOOK MANAGEMENT
-    %% =============================================
     publishers {
         int publisher_id PK
-        string publisher_name
-        string phone
+        varchar publisher_name
+        varchar phone
         enum status
     }
 
     categories {
         int category_id PK
-        string category_name
+        varchar category_name
         int display_order
         enum status
     }
@@ -96,24 +81,24 @@ erDiagram
         int book_id PK
         int publisher_id FK
         int category_id FK
-        string isbn
-        string book_title
+        varchar isbn
+        varchar book_title
         int page_count
-        string language
+        varchar language
         int publication_year
-        string cover_type
+        varchar cover_type
         decimal import_price
         decimal selling_price
         int stock_quantity
         int minimum_stock
-        string image
+        varchar image
         enum status
         datetime added_at
     }
 
     authors {
         int author_id PK
-        string author_name
+        varchar author_name
     }
 
     book_authors {
@@ -123,9 +108,6 @@ erDiagram
         int display_order
     }
 
-    %% =============================================
-    %% 4. SALES MANAGEMENT
-    %% =============================================
     invoices {
         int invoice_id PK
         int customer_id FK
@@ -136,8 +118,8 @@ erDiagram
         decimal points_used
         decimal points_value
         decimal final_amount
-        string payment_method
-        string status
+        varchar payment_method
+        varchar status
         int points_earned
     }
 
@@ -151,13 +133,10 @@ erDiagram
         decimal subtotal
     }
 
-    %% =============================================
-    %% 5. DISCOUNT SERVICE
-    %% =============================================
     discount_services {
         int service_id PK
-        string service_name
-        string discount_type
+        varchar service_name
+        varchar discount_type
         decimal discount_value
         decimal minimum_value
         decimal maximum_discount
@@ -171,18 +150,15 @@ erDiagram
         int invoice_service_id PK
         int invoice_id FK
         int service_id FK
-        string service_type
+        varchar service_type
         decimal discount_value
         text description
     }
 
-    %% =============================================
-    %% 6. SUPPLIER & IMPORT MANAGEMENT
-    %% =============================================
     suppliers {
         int supplier_id PK
-        string supplier_name
-        string phone
+        varchar supplier_name
+        varchar phone
         enum status
     }
 
@@ -190,11 +166,9 @@ erDiagram
         int receipt_id PK
         int supplier_id FK
         int employee_id FK
-        datetime import_date
         datetime receipt_date
         decimal total_amount
-        string status
-        text notes
+        varchar status
     }
 
     import_receipt_details {
@@ -204,49 +178,31 @@ erDiagram
         int quantity
         decimal unit_price
         decimal subtotal
-        date expiry_date
     }
 
-    %% =============================================
-    %% SYSTEM PARAMETERS
-    %% =============================================
     system_parameters {
-        string parameter_code PK
-        string parameter_value
-        string description
+        varchar parameter_code PK
+        varchar parameter_value
+        varchar description
     }
 
-    %% =============================================
-    %% RELATIONSHIPS
-    %% =============================================
-
-    %% Employee & Auth
-    employees ||--o| accounts : "has"
-    permission_groups ||--o{ accounts : "assigned_to"
-    permission_groups ||--o{ permission_details : "has"
-    functions ||--o{ permission_details : "defined_in"
-
-    %% Customer
-    customers ||--o{ point_redemption_history : "redeems"
-    customers |o--o{ invoices : "purchases"
-
-    %% Books
-    publishers ||--o{ books : "publishes"
-    categories ||--o{ books : "categorizes"
-    books ||--o{ book_authors : "has"
-    authors ||--o{ book_authors : "writes"
-
-    %% Sales
-    employees ||--o{ invoices : "processes"
-    invoices ||--|{ invoice_details : "contains"
-    books ||--o{ invoice_details : "listed_in"
-    
-    %% Services/Discounts
-    invoices ||--o{ invoice_services : "applies"
-    discount_services ||--o{ invoice_services : "used_in"
-
-    %% Imports
-    suppliers ||--o{ import_receipts : "supplies"
-    employees ||--o{ import_receipts : "manages"
-    import_receipts ||--|{ import_receipt_details : "contains"
-    books ||--o{ import_receipt_details : "imported_in"
+    %% Relationships
+    employees ||--o{ accounts : "có"
+    permission_groups ||--o{ accounts : "gán cho"
+    permission_groups ||--o{ permission_details : "bao gồm"
+    functions ||--o{ permission_details : "thuộc"
+    customers ||--o{ point_redemption_history : "đổi điểm"
+    customers ||--o{ invoices : "mua"
+    employees ||--o{ invoices : "tạo"
+    invoices ||--o{ invoice_details : "gồm"
+    invoices ||--o{ invoice_services : "áp dụng"
+    discount_services ||--o{ invoice_services : "dùng trong"
+    books ||--o{ invoice_details : "bán qua"
+    books ||--o{ book_authors : "viết bởi"
+    authors ||--o{ book_authors : "viết"
+    publishers ||--o{ books : "xuất bản"
+    categories ||--o{ books : "phân loại"
+    suppliers ||--o{ import_receipts : "cung cấp"
+    employees ||--o{ import_receipts : "nhận"
+    import_receipts ||--o{ import_receipt_details : "gồm"
+    books ||--o{ import_receipt_details : "nhập qua"
