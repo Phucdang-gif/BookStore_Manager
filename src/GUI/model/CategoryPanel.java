@@ -120,7 +120,7 @@ public class CategoryPanel extends JPanel implements FeatureControllerInterface 
     @Override
     public boolean[] getButtonConfig() {
         if (config.SessionManager.getCurrentAccount() == null) {
-            return new boolean[] { false, false, false, false, false, false };
+            return new boolean[] { true, true, true, true, false, false };
         }
 
         boolean canAdd = config.SessionManager.hasPermission(452, "Thêm");
