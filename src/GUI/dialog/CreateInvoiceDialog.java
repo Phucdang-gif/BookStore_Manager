@@ -43,11 +43,6 @@ public class CreateInvoiceDialog extends JDialog {
     }
 
     private void initUI() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         setLayout(new BorderLayout(10, 10));
         JPanel pnlMain = new JPanel(new GridLayout(1, 2, 15, 0));

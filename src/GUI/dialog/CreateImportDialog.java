@@ -15,7 +15,6 @@ public class CreateImportDialog extends JDialog {
     private BookBUS bookBUS = new BookBUS();
     private SupplierBUS supplierBUS = new SupplierBUS();
     private ImportReceiptDetailBUS detailBUS = new ImportReceiptDetailBUS();
-  
 
     // Để refresh dữ liệu sách sau khi nhập hàng
 
@@ -38,11 +37,6 @@ public class CreateImportDialog extends JDialog {
     }
 
     private void initUI() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         setLayout(new BorderLayout(10, 10));
         JPanel pnlMain = new JPanel(new GridLayout(1, 2, 15, 0)); // Tăng khoảng cách cột

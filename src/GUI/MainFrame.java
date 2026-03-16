@@ -57,7 +57,6 @@ public class MainFrame extends JFrame {
             ThemeColor.applyTheme(false); // Luôn gọi theme sáng
             UIManager.setLookAndFeel(new FlatLightLaf());
 
-            // Cập nhật giao diện hệ thống
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception ex) {
             ex.printStackTrace();
