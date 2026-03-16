@@ -268,7 +268,8 @@ INSERT INTO functions (function_name, system_function_code, function_group) VALU
 ('Phân quyền',         'PERMISSION',  'Quản lý hệ thống'),
 ('Quản lý tác giả',    'AUTHOR',      'Quản lý kho'),
 ('Quản lý nhà xuất bản','PUBLISHER',  'Quản lý kho'),
-('Cài đặt hệ thống',   'SETTING',     'Quản lý hệ thống');
+('Cài đặt hệ thống',   'SETTING',     'Quản lý hệ thống'),
+('Thống kê báo cáo', 'STATISTIC', 'Báo cáo');
 
 -- 5. PHÂN QUYỀN
 
@@ -283,6 +284,12 @@ INSERT INTO permission_details (permission_group_id, function_id, actions)
 SELECT pg.permission_group_id, f.function_id, 'Xem,Sửa'
 FROM permission_groups pg, functions f
 WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code = 'SETTING';
+
+INSERT INTO permission_details (permission_group_id, function_id, actions)
+SELECT pg.permission_group_id, f.function_id, 'Xem'
+FROM permission_groups pg, functions f
+WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code = 'STATISTIC';
+
 
 -- Nhân viên bán hàng (152)
 INSERT INTO permission_details (permission_group_id, function_id, actions)
