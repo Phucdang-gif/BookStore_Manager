@@ -109,7 +109,6 @@ public class MainPanel extends JPanel {
     // Hàm chuyển tab (Được gọi từ MainFrame)
     public void showPanel(String panelName) {
         cardLayout.show(centerPanel, panelName);
-        JPanel activePanel = null;
         switch (panelName) {
             case "WELCOME":
                 header.setController(null);
@@ -130,22 +129,18 @@ public class MainPanel extends JPanel {
             case "ACCOUNT":
                 header.setController(pnlAccount);
                 setHeaderVisible(true);
-                activePanel = pnlAccount;
                 break;
             case "PERMISSION":
                 header.setController(pnlPermissionGroup);
                 setHeaderVisible(true);
-                activePanel = pnlPermissionGroup;
                 break;
             case "IMPORT":
                 header.setController(pnlImport);
                 setHeaderVisible(true);
-                activePanel = pnlImport;
                 break;
             case "EMPLOYEE":
                 header.setController(pnlEmployee);
                 setHeaderVisible(true);
-                activePanel = pnlEmployee;
                 break;
             case "INVOICE":
                 header.setController(pnlInvoice);
@@ -154,31 +149,29 @@ public class MainPanel extends JPanel {
             case "CUSTOMER":
                 header.setController(pnlCustomer);
                 setHeaderVisible(true);
-                activePanel = pnlCustomer;
                 break;
             case "DISCOUNT":
                 header.setController(pnlDiscount);
                 setHeaderVisible(true);
-                activePanel = pnlImport;
+
                 break;
             case "STATISTIC":
                 header.setController(pnlStatistic);
                 setHeaderVisible(false);
-                activePanel = pnlImport;
+                if (pnlStatistic instanceof FeatureControllerInterface) {
+                    ((FeatureControllerInterface) pnlStatistic).onRefresh();
+                }
                 break;
             case "SETTING":
                 header.setController(pnlSystemParameter);
                 setHeaderVisible(true);
-                activePanel = pnlImport;
                 break;
             default:
                 header.setController(null);
                 setHeaderVisible(false);
                 break;
         }
-        if (activePanel instanceof FeatureControllerInterface) {
-            ((FeatureControllerInterface) activePanel).onRefresh();
-        }
+
     }
 
     public Header getHeader() {

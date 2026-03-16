@@ -1,7 +1,6 @@
 package GUI.model;
 
 import BUS.RevenueReportBUS;
-import BUS.SystemParameterBUS;
 import DTO.*;
 
 import org.jfree.chart.ChartFactory;
