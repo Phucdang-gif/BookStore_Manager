@@ -53,7 +53,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         tabbedPane.addTab(" Tổng Quan", createOverviewTab());
         tabbedPane.addTab(" Doanh Thu", createRevenueTab());
         tabbedPane.addTab(" Sách Bán Chạy", createTopBooksTab());
-        tabbedPane.addTab("Nhập hàng", createImportTab());
+        tabbedPane.addTab(" Nhập hàng", createImportTab());
         tabbedPane.addTab(" Khách Hàng", createCustomerTab());
         tabbedPane.addTab(" Nhân Viên", createEmployeeTab());
 
@@ -130,20 +130,16 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
     }
 
     // ====================================================================
-    // TAB TỔNG QUAN (CÓ BIỂU ĐỒ ĐƯỜNG - KẾT HỢP FILTER CHUNG)
+    // TAB TỔNG QUAN (CÓ BIỂU ĐỒ ĐƯỜNG - KẾT HỢP FILTER CHUNG CÓ XEM THEO)
     // ====================================================================
     private JPanel createOverviewTab() {
         JPanel panel = new JPanel(new BorderLayout(15, 15));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // ----------------------------------------------------------------
-        // 1. KHU VỰC PHÍA TRÊN (TOP PANEL): CHỨA THẺ THỐNG KÊ VÀ BỘ LỌC
-        // ----------------------------------------------------------------
         JPanel topPanel = new JPanel(new BorderLayout(0, 15));
         topPanel.setBackground(Color.WHITE);
 
-        // 1.1. Dãy Thẻ (Cards) Tóm tắt
         JPanel pnlCards = new JPanel(new GridLayout(1, 3, 20, 0));
         pnlCards.setBackground(Color.WHITE);
         pnlCards.setPreferredSize(new Dimension(0, 120));
@@ -165,18 +161,14 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
         topPanel.add(pnlCards, BorderLayout.NORTH);
 
-        // ----------------------------------------------------------------
-        // 2. KHU VỰC BIỂU ĐỒ (CENTER PANEL)
-        // ----------------------------------------------------------------
         DefaultCategoryDataset lineDataset = new DefaultCategoryDataset();
         JFreeChart lineChart = ChartFactory.createLineChart(
                 "THỐNG KÊ DOANH THU THEO THỜI GIAN",
-                "Ngày", "Số tiền (VNĐ)",
+                "Thời gian", "Số tiền (VNĐ)",
                 lineDataset, PlotOrientation.VERTICAL, true, true, false);
 
         applyChartTheme(lineChart);
 
-        // Custom đường kẻ
         CategoryPlot plot = lineChart.getCategoryPlot();
         LineAndShapeRenderer renderer = new LineAndShapeRenderer();
         renderer.setSeriesPaint(0, new Color(51, 153, 255)); // Xanh - Doanh thu
@@ -191,51 +183,54 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         chartPanel.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         panel.add(chartPanel, BorderLayout.CENTER);
 
-        // ----------------------------------------------------------------
-        // 3. TÍCH HỢP BỘ LỌC CHUNG VÀO TOP PANEL (CHỈ BẬT LỌC THỜI GIAN)
-        // ----------------------------------------------------------------
-        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, false,
+        // Khởi tạo mảng để gán filter nhằm lấy ra ViewMode bên trong lambda
+        final GUI.components.StatisticFilterPanel[] filterHolder = new GUI.components.StatisticFilterPanel[1];
+        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, true,
                 (startDate, endDate, catId, auId, pubId) -> {
-                    // Gọi DB lấy dữ liệu theo khoảng thời gian được chọn
-                    ArrayList<Object[]> dailyStats = reportBUS.getRevenueByDateRange(startDate, endDate);
 
-                    lineDataset.clear(); // Xóa sạch dữ liệu cũ trên biểu đồ
+                    String mode = filterHolder[0].getViewMode();
+                    ArrayList<Object[]> list = new ArrayList<>();
 
-                    if (dailyStats != null && !dailyStats.isEmpty()) {
-                        for (Object[] row : dailyStats) {
-                            String fullDate = row[0].toString(); // Định dạng: yyyy-MM-dd
+                    if (mode.equals("Theo Ngày")) {
+                        list = reportBUS.getRevenueByDateRange(startDate, endDate);
+                    } else if (mode.equals("Theo Tháng")) {
+                        list = reportBUS.getRevenueByMonthRange(startDate, endDate);
+                    } else if (mode.equals("Theo Năm")) {
+                        list = reportBUS.getRevenueByYearRange(startDate, endDate);
+                    }
 
-                            // Cắt chuỗi để hiện lên Biểu đồ cho gọn (VD: 2026-03-10 -> 10/03)
-                            String displayDate = fullDate;
-                            String[] parts = fullDate.split("-");
-                            if (parts.length == 3) {
-                                displayDate = parts[2] + "/" + parts[1];
+                    lineDataset.clear();
+
+                    if (list != null && !list.isEmpty()) {
+                        for (Object[] row : list) {
+                            String timeLabel = row[0].toString();
+
+                            if (mode.equals("Theo Ngày")) {
+                                String[] parts = timeLabel.split("-");
+                                if (parts.length == 3) {
+                                    timeLabel = parts[2] + "/" + parts[1]; // Hiển thị trên biểu đồ gọn hơn (VD: 10/03)
+                                }
                             }
 
                             double cost = (double) row[1];
                             double revenue = (double) row[2];
                             double profit = (double) row[3];
 
-                            // Đẩy dữ liệu vào Dataset theo đúng thứ tự màu đã set
-                            lineDataset.addValue(revenue, "Doanh Thu", displayDate);
-                            lineDataset.addValue(cost, "Vốn", displayDate);
-                            lineDataset.addValue(profit, "Lợi Nhuận", displayDate);
+                            lineDataset.addValue(revenue, "Doanh Thu", timeLabel);
+                            lineDataset.addValue(cost, "Vốn", timeLabel);
+                            lineDataset.addValue(profit, "Lợi Nhuận", timeLabel);
                         }
                     } else {
-                        // Nếu Không có dữ liệu trong khoảng thời gian này
                         lineDataset.addValue(0, "Doanh Thu", "Không có dữ liệu");
                         lineDataset.addValue(0, "Vốn", "Không có dữ liệu");
                         lineDataset.addValue(0, "Lợi Nhuận", "Không có dữ liệu");
                     }
                 });
 
-        topPanel.add(filterPanel, BorderLayout.CENTER);
+        topPanel.add(filterHolder[0], BorderLayout.CENTER);
         panel.add(topPanel, BorderLayout.NORTH);
 
-        // ----------------------------------------------------------------
-        // 4. KÍCH HOẠT SỰ KIỆN CLICK LẦN ĐẦU ĐỂ TỰ ĐỘNG LOAD DỮ LIỆU
-        // ----------------------------------------------------------------
-        SwingUtilities.invokeLater(() -> filterPanel.triggerFilter());
+        SwingUtilities.invokeLater(() -> filterHolder[0].triggerFilter());
 
         return panel;
     }
@@ -257,20 +252,18 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
     }
 
     // ====================================================================
-    // TAB 1: DOANH THU THEO NĂM (CÓ BIỂU ĐỒ CỘT - BAR CHART)
+    // TAB DOANH THU (CÓ BIỂU ĐỒ CỘT - KẾT HỢP FILTER CÓ XEM THEO)
     // ====================================================================
     private JPanel createRevenueTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(Color.WHITE);
 
-        // Chuẩn bị Biểu đồ Cột dọc
         DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
         JFreeChart barChart = ChartFactory.createBarChart("DOANH THU THEO THỜI GIAN", "Thời Gian", "VNĐ", barDataset,
                 PlotOrientation.VERTICAL, true, true, false);
         applyChartTheme(barChart);
 
-        // Chuẩn bị Bảng
-        String[] cols = { "Ngày/Tháng", "Chi Phí (Vốn)", "Doanh Thu", "Lợi Nhuận" };
+        String[] cols = { "Thời Gian", "Chi Phí (Vốn)", "Doanh Thu", "Lợi Nhuận" };
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         JTable table = createCustomTable(model);
 
@@ -279,41 +272,59 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         splitPane.setResizeWeight(0.6);
         panel.add(splitPane, BorderLayout.CENTER);
 
-        // Áp dụng StatisticFilterPanel chung (Chỉ hiển thị Time)
-        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, false,
+        final GUI.components.StatisticFilterPanel[] filterHolder = new GUI.components.StatisticFilterPanel[1];
+        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, true,
                 (startDate, endDate, catId, auId, pubId) -> {
-                    ArrayList<Object[]> list = reportBUS.getRevenueByDateRange(startDate, endDate);
+
+                    String mode = filterHolder[0].getViewMode();
+                    ArrayList<Object[]> list = new ArrayList<>();
+
+                    if (mode.equals("Theo Ngày")) {
+                        list = reportBUS.getRevenueByDateRange(startDate, endDate);
+                    } else if (mode.equals("Theo Tháng")) {
+                        list = reportBUS.getRevenueByMonthRange(startDate, endDate);
+                    } else if (mode.equals("Theo Năm")) {
+                        list = reportBUS.getRevenueByYearRange(startDate, endDate);
+                    }
+
                     model.setRowCount(0);
                     barDataset.clear();
                     if (list != null) {
                         for (Object[] row : list) {
                             String timeLabel = row[0].toString();
+
+                            // Format ngày dd/mm/yyyy hiển thị trên bảng cho đẹp
+                            if (mode.equals("Theo Ngày")) {
+                                String[] parts = timeLabel.split("-");
+                                if (parts.length == 3)
+                                    timeLabel = parts[2] + "/" + parts[1] + "/" + parts[0];
+                            }
+
                             double cost = (double) row[1], rev = (double) row[2], prof = (double) row[3];
                             model.addRow(new Object[] { timeLabel, df.format(cost), df.format(rev), df.format(prof) });
                             barDataset.addValue(cost, "Vốn", timeLabel);
                             barDataset.addValue(rev, "Doanh Thu", timeLabel);
                             barDataset.addValue(prof, "Lợi Nhuận", timeLabel);
                         }
+                    } else {
+                        barDataset.addValue(0, "Vốn", "Không có dữ liệu");
+                        barDataset.addValue(0, "Doanh Thu", "Không có dữ liệu");
+                        barDataset.addValue(0, "Lợi Nhuận", "Không có dữ liệu");
                     }
                 });
-        panel.add(filterPanel, BorderLayout.NORTH);
+        panel.add(filterHolder[0], BorderLayout.NORTH);
 
-        SwingUtilities.invokeLater(() -> filterPanel.triggerFilter());
+        SwingUtilities.invokeLater(() -> filterHolder[0].triggerFilter());
         return panel;
     }
 
     // ====================================================================
-    // CÁC TAB CÒN LẠI (TỒN KHO, SÁCH, KHÁCH, NHÂN VIÊN) GIỮ NGUYÊN BẢNG
-    // ====================================================================
-    // ====================================================================
-    // TAB NHẬP HÀNG (Hiển thị từng phiếu nhập & Nút xem chi tiết)
+    // CÁC TAB CÒN LẠI GIỮ NGUYÊN (Không ảnh hưởng bởi Xem theo)
     // ====================================================================
     private JPanel createImportTab() {
-        // Thêm khoảng cách 10px giữa các thành phần
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(Color.WHITE);
 
-        // 1. TẠO BẢNG HIỂN THỊ DANH SÁCH PHIẾU NHẬP
         String[] cols = { "Mã Phiếu", "Ngày Nhập", "Mã NCC", "Mã NV", "Tổng Tiền (VNĐ)", "Trạng Thái" };
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override
@@ -322,12 +333,13 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
             }
         };
         JTable table = createCustomTable(model);
+        table.setAutoCreateRowSorter(true);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         pnlBottom.setBackground(Color.WHITE);
         JButton btnViewDetail = new JButton("Xem Chi Tiết Phiếu Nhập");
-        btnViewDetail.setBackground(new Color(40, 167, 69)); // Màu xanh lá cho nổi bật
+        btnViewDetail.setBackground(new Color(40, 167, 69));
         btnViewDetail.setForeground(Color.WHITE);
         btnViewDetail.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnViewDetail.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -349,26 +361,28 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
             new GUI.dialog.ImportDetailDialog(parentFrame, true, receiptId).setVisible(true);
         });
 
-        // 4. SỬ DỤNG BỘ LỌC CHUNG (Chỉ bật bộ lọc Thời gian)
+        // Sử dụng bộ lọc cũ (không có showViewMode -> tự ẩn đi)
         GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, false,
                 (startDate, endDate, catId, auId, pubId) -> {
 
-                    // Gọi BUS lấy tất cả phiếu nhập
                     BUS.ImportReceiptBUS importBus = new BUS.ImportReceiptBUS();
                     ArrayList<DTO.ImportReceiptDTO> allReceipts = importBus.getAll();
 
-                    model.setRowCount(0); // Xóa dữ liệu cũ trên bảng
+                    model.setRowCount(0);
 
                     if (allReceipts != null) {
                         for (DTO.ImportReceiptDTO receipt : allReceipts) {
-                            // Ép kiểu Date của Phiếu nhập sang java.sql.Date để so sánh
-                            java.sql.Date receiptDate = new java.sql.Date(receipt.getReceiptDate().getTime());
+                            java.util.Calendar cal = java.util.Calendar.getInstance();
+                            cal.setTime(receipt.getReceiptDate());
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            cal.set(java.util.Calendar.MILLISECOND, 0);
+                            java.sql.Date receiptDate = new java.sql.Date(cal.getTimeInMillis());
 
-                            // Kiểm tra xem phiếu nhập này có nằm trong khoảng thời gian đang lọc không?
                             boolean passStart = (startDate == null) || !receiptDate.before(startDate);
                             boolean passEnd = (endDate == null) || !receiptDate.after(endDate);
 
-                            // Nếu thỏa mãn ngày tháng thì nạp vào bảng
                             if (passStart && passEnd) {
                                 model.addRow(new Object[] {
                                         receipt.getReceiptId(),
@@ -392,7 +406,6 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
 
-        // Biểu đồ CỘT NGANG (Horizontal Bar Chart)
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         JFreeChart barChart = ChartFactory.createBarChart(
                 "TOP SÁCH BÁN CHẠY", "Tên Sách", "Số Lượng (Cuốn)",
@@ -400,7 +413,6 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
         applyChartTheme(barChart);
 
-        // ================== CODE NÀY ĐỂ ĐỔI MÀU CỘT ==================
         CategoryPlot plot = barChart.getCategoryPlot();
         org.jfree.chart.renderer.category.BarRenderer renderer = (org.jfree.chart.renderer.category.BarRenderer) plot
                 .getRenderer();
@@ -409,9 +421,10 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         renderer.setMaximumBarWidth(0.15);
 
         panel.add(new ChartPanel(barChart), BorderLayout.CENTER);
+
+        // Sử dụng bộ lọc cũ (không có showViewMode)
         GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, true,
                 (startDate, endDate, catId, auId, pubId) -> {
-                    // ... (Phần logic đổ dữ liệu giữ nguyên như cũ của bạn) ...
                     ArrayList<BookRevenueDTO> list = reportBUS.getBookReport(startDate, endDate, catId, pubId, auId);
                     dataset.clear();
                     if (list != null) {
@@ -511,13 +524,12 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
     @Override
     public void onSearch(String text) {
-
     }
 
     @Override
     public void onRefresh() {
-        // 1. Xóa sạch toàn bộ giao diện (các Tab) cũ
         this.removeAll();
+        this.reportBUS = new RevenueReportBUS();
 
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -530,7 +542,6 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         this.repaint();
     }
 
-    // Các tính năng dưới đây không được phép sử dụng ở màn hình này, để trống hàm
     @Override
     public void onAdd() {
     }

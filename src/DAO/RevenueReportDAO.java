@@ -315,4 +315,70 @@ public class RevenueReportDAO {
         }
         return list;
     }
+
+    // Lấy doanh thu gom nhóm theo từng THÁNG
+    public ArrayList<Object[]> getRevenueByMonthRange(Date startDate, Date endDate) {
+        ArrayList<Object[]> list = new ArrayList<>();
+        String sql = "SELECT DATE_FORMAT(i.created_at, '%m/%Y') as report_month, "
+                + "COALESCE(SUM(id.quantity * b.import_price), 0) as total_cost, "
+                + "COALESCE(SUM(id.subtotal), 0) as total_revenue "
+                + "FROM invoices i "
+                + "JOIN invoice_details id ON i.invoice_id = id.invoice_id "
+                + "JOIN books b ON id.book_id = b.book_id "
+                + "WHERE (? IS NULL OR DATE(i.created_at) >= ?) "
+                + "AND (? IS NULL OR DATE(i.created_at) <= ?) "
+                + "GROUP BY YEAR(i.created_at), MONTH(i.created_at) "
+                + "ORDER BY YEAR(i.created_at) ASC, MONTH(i.created_at) ASC";
+
+        try (Connection con = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, startDate);
+            ps.setDate(2, startDate);
+            ps.setDate(3, endDate);
+            ps.setDate(4, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[] { rs.getString("report_month"), rs.getDouble("total_cost"),
+                            rs.getDouble("total_revenue"),
+                            rs.getDouble("total_revenue") - rs.getDouble("total_cost") });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // Lấy doanh thu gom nhóm theo từng NĂM
+    public ArrayList<Object[]> getRevenueByYearRange(Date startDate, Date endDate) {
+        ArrayList<Object[]> list = new ArrayList<>();
+        String sql = "SELECT YEAR(i.created_at) as report_year, "
+                + "COALESCE(SUM(id.quantity * b.import_price), 0) as total_cost, "
+                + "COALESCE(SUM(id.subtotal), 0) as total_revenue "
+                + "FROM invoices i "
+                + "JOIN invoice_details id ON i.invoice_id = id.invoice_id "
+                + "JOIN books b ON id.book_id = b.book_id "
+                + "WHERE (? IS NULL OR DATE(i.created_at) >= ?) "
+                + "AND (? IS NULL OR DATE(i.created_at) <= ?) "
+                + "GROUP BY YEAR(i.created_at) "
+                + "ORDER BY YEAR(i.created_at) ASC";
+
+        try (Connection con = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, startDate);
+            ps.setDate(2, startDate);
+            ps.setDate(3, endDate);
+            ps.setDate(4, endDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Object[] { String.valueOf(rs.getInt("report_year")), rs.getDouble("total_cost"),
+                            rs.getDouble("total_revenue"),
+                            rs.getDouble("total_revenue") - rs.getDouble("total_cost") });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
