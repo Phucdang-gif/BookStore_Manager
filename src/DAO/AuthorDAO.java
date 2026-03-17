@@ -86,18 +86,18 @@ public class AuthorDAO {
         }
     }
 
-    // Kiểm tra trùng tên (để validation)
-    public boolean isNameExists(String name) throws SQLException {
-        Connection connection = DatabaseConnection.getInstance().getConnection();
-        String sql = "SELECT COUNT(*) FROM authors WHERE author_name = ?";
-        try (PreparedStatement pst = connection.prepareStatement(sql)) {
-            pst.setString(1, name);
-            try (ResultSet rs = pst.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
+    // // Kiểm tra trùng tên (để validation)
+    // public boolean isNameExists(String name) throws SQLException {
+    // Connection connection = DatabaseConnection.getInstance().getConnection();
+    // String sql = "SELECT COUNT(*) FROM authors WHERE author_name = ?";
+    // try (PreparedStatement pst = connection.prepareStatement(sql)) {
+    // pst.setString(1, name);
+    // try (ResultSet rs = pst.executeQuery()) {
+    // if (rs.next()) {
+    // return rs.getInt(1) > 0;
+    // }
+    // }
+    // }
+    // return false;
+    // }
 }

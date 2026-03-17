@@ -42,16 +42,11 @@ public class AuthorBUS {
     // ===================== THÊM MỚI =====================
 
     public ValidationResult addAuthor(AuthorDTO author) {
-        ValidationResult vr = Validator.validateAuthor(author);
+        ValidationResult vr = Validator.validateAuthor(author, listAuthor);
         if (!vr.isValid())
             return vr;
 
         try {
-            if (authorDAO.isNameExists(author.getAuthorName())) {
-                vr.addError("authorName", "Tên tác giả \"" + author.getAuthorName() + "\" đã tồn tại");
-                return vr;
-            }
-
             boolean inserted = authorDAO.insert(author);
             if (inserted) {
                 listAuthor.add(0, author);
@@ -68,18 +63,9 @@ public class AuthorBUS {
     // ===================== CẬP NHẬT =====================
 
     public ValidationResult updateAuthor(AuthorDTO author) {
-        ValidationResult vr = Validator.validateAuthor(author);
+        ValidationResult vr = Validator.validateAuthor(author, listAuthor);
         if (!vr.isValid())
             return vr;
-
-        // Kiểm tra trùng tên (trừ chính nó)
-        boolean isDuplicate = listAuthor.stream()
-                .anyMatch(a -> a.getAuthorName().equalsIgnoreCase(author.getAuthorName())
-                        && a.getAuthorId() != author.getAuthorId());
-        if (isDuplicate) {
-            vr.addError("authorName", "Tên tác giả \"" + author.getAuthorName() + "\" đã tồn tại");
-            return vr;
-        }
 
         try {
             boolean updated = authorDAO.update(author);
