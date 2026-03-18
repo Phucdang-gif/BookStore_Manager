@@ -123,10 +123,10 @@ public class CategoryPanel extends JPanel implements FeatureControllerInterface 
             return new boolean[] { true, true, true, true, false, false };
         }
 
-        boolean canAdd = config.SessionManager.hasPermission(452, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(452, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(452, "Xóa");
-        boolean canDetail = config.SessionManager.hasPermission(452, "Xem");
+        boolean canAdd = config.SessionManager.hasPermission(451, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(451, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(451, "Xóa");
+        boolean canDetail = config.SessionManager.hasPermission(451, "Xem");
 
         return new boolean[] { canAdd, canEdit, canDelete, canDetail, false, false };
     }

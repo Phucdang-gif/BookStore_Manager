@@ -15,7 +15,6 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
     private JTextField txtMaThamSo;
     private JTextField txtGiaTri;
     private JTextArea txtMoTa;
-    private JButton btnCapNhat;
 
     public SystemParameterPanel() {
         initComponents();
@@ -51,8 +50,10 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
                 fillFormFromSelectedRow();
             }
         });
+
         JPanel formPanel = new JPanel(new BorderLayout(10, 10));
-        formPanel.setBorder(BorderFactory.createTitledBorder("Chi Tiết Cấu Hình (Chỉ cho phép sửa Giá Trị)"));
+        formPanel.setBorder(BorderFactory
+                .createTitledBorder("Chi Tiết Cấu Hình (Chọn trên bảng rồi nhấn 'Sửa' trên thanh công cụ)"));
 
         // Lưới chứa các ô nhập liệu
         JPanel inputPanel = new JPanel(new GridBagLayout());
@@ -90,7 +91,7 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
         txtMoTa.setWrapStyleWord(true);
         inputPanel.add(new JScrollPane(txtMoTa), gbc);
 
-        // Hàng 3: Giá trị (Cho phép nhập)
+        // Hàng 3: Giá trị (Cho phép nhập để chuẩn bị Sửa)
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.1;
@@ -104,20 +105,9 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
         txtGiaTri.setForeground(Color.RED);
         inputPanel.add(txtGiaTri, gbc);
 
-        // Nút Cập nhật
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnCapNhat = new JButton("Lưu Cập Nhật Cấu Hình");
-        btnCapNhat.setFont(new Font("Arial", Font.BOLD, 14));
-        btnCapNhat.setBackground(new Color(50, 150, 250));
-        btnCapNhat.setForeground(Color.WHITE);
-        btnCapNhat.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        buttonPanel.add(btnCapNhat);
-
-        // Bắt sự kiện nút Cập nhật
-        btnCapNhat.addActionListener(e -> updateParameter());
-
         formPanel.add(inputPanel, BorderLayout.CENTER);
-        formPanel.add(buttonPanel, BorderLayout.EAST);
+
+        // Đã xóa nút btnCapNhat và buttonPanel ở đây vì logic chuyển xuống onEdit()
 
         // ==========================================
         // GẮN VÀO PANEL CHÍNH
@@ -126,9 +116,6 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
         this.add(formPanel, BorderLayout.SOUTH);
     }
 
-    /**
-     * Tải dữ liệu từ DB (thông qua BUS) lên JTable
-     */
     private void loadDataToTable() {
         tableModel.setRowCount(0); // Xóa dữ liệu cũ trên bảng
         List<SystemParameterDTO> list = SystemParameterBUS.getInstance().getAll();
@@ -142,9 +129,6 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
         }
     }
 
-    /**
-     * Lấy dữ liệu từ dòng được chọn đổ xuống Form chỉnh sửa
-     */
     private void fillFormFromSelectedRow() {
         int row = table.getSelectedRow();
         if (row >= 0) {
@@ -154,10 +138,113 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
         }
     }
 
-    /**
-     * Xử lý logic khi bấm nút Cập nhật
-     */
-    private void updateParameter() {
+    // =====================================================================
+    // IMPLEMENTS FEATURE CONTROLLER INTERFACE
+    // =====================================================================
+
+    @Override
+    public boolean[] getButtonConfig() {
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[] { false, false, false, false, false, false };
+        }
+        boolean canAdd = config.SessionManager.hasPermission(459, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(459, "Sửa");
+        return new boolean[] { canAdd, canEdit, false, false, false, false };
+    }
+
+    @Override
+    public boolean hasSearch() {
+        return true;
+    }
+
+    @Override
+    public boolean hasRefresh() {
+        return true;
+    }
+
+    @Override
+    public void onSearch(String text) {
+        tableModel.setRowCount(0);
+        List<SystemParameterDTO> list = SystemParameterBUS.getInstance().getAll();
+        String keyword = text.toLowerCase().trim();
+
+        for (SystemParameterDTO p : list) {
+            if (p.getParameterCode().toLowerCase().contains(keyword) ||
+                    p.getDescription().toLowerCase().contains(keyword)) {
+
+                tableModel.addRow(new Object[] {
+                        p.getParameterCode(),
+                        p.getParameterValue(),
+                        p.getDescription()
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onRefresh() {
+        SystemParameterBUS.getInstance().reloadCache();
+        loadDataToTable();
+
+        txtMaThamSo.setText("");
+        txtGiaTri.setText("");
+        txtMoTa.setText("");
+        table.clearSelection();
+    }
+
+    @Override
+    public void onAdd() {
+        // Tạo hộp thoại để nhập tham số mới
+        JTextField txtNewCode = new JTextField();
+        JTextField txtNewValue = new JTextField();
+        JTextArea txtNewDesc = new JTextArea(3, 20);
+        txtNewDesc.setLineWrap(true);
+        txtNewDesc.setWrapStyleWord(true);
+
+        Object[] message = {
+                "Mã Tham Số (Code):", txtNewCode,
+                "Giá Trị:", txtNewValue,
+                "Mô Tả:", new JScrollPane(txtNewDesc)
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Thêm Tham Số Cấu Hình Mới",
+                JOptionPane.OK_CANCEL_OPTION);
+
+        if (option == JOptionPane.OK_OPTION) {
+            String code = txtNewCode.getText().trim();
+            String value = txtNewValue.getText().trim();
+            String desc = txtNewDesc.getText().trim();
+
+            if (code.isEmpty() || value.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Mã tham số và giá trị không được để trống!", "Lỗi nhập liệu",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Kiểm tra trùng lặp mã tham số
+            if (SystemParameterBUS.getInstance().getString(code) != null) {
+                JOptionPane.showMessageDialog(this, "Mã tham số này đã tồn tại trong hệ thống!", "Lỗi trùng lặp",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            SystemParameterDTO newParam = new SystemParameterDTO(code, value, desc);
+            boolean success = SystemParameterBUS.getInstance().insert(newParam);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Thêm tham số thành công!", "Hoàn tất",
+                        JOptionPane.INFORMATION_MESSAGE);
+                loadDataToTable(); // Tải lại bảng
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi kết nối cơ sở dữ liệu. Không thể thêm!", "Lỗi hệ thống",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    @Override
+    public void onEdit() {
+        // Chuyển toàn bộ logic của updateParameter() cũ vào đây
         int row = table.getSelectedRow();
         if (row == -1) {
             JOptionPane.showMessageDialog(this,
@@ -204,73 +291,6 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
                         "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
             }
         }
-    }
-
-    // =====================================================================
-    // IMPLEMENTS FEATURE CONTROLLER INTERFACE
-    // =====================================================================
-
-    /**
-     * Ẩn toàn bộ 6 nút trên thanh Toolbar (Add, Edit, Delete, Detail, Import,
-     * Export)
-     * Vì màn hình cấu hình này sử dụng nút "Lưu Cập Nhật" trực tiếp trên Panel.
-     */
-    @Override
-    public boolean[] getButtonConfig() {
-        return new boolean[] { false, false, false, false, false, false };
-    }
-
-    @Override
-    public boolean hasSearch() {
-        return true;
-    }
-
-    @Override
-    public boolean hasRefresh() {
-        return true;
-    }
-
-    @Override
-    public void onSearch(String text) {
-        tableModel.setRowCount(0); // Xóa dữ liệu cũ
-        List<SystemParameterDTO> list = SystemParameterBUS.getInstance().getAll();
-        String keyword = text.toLowerCase().trim();
-
-        // Lọc theo Mã hoặc Mô tả
-        for (SystemParameterDTO p : list) {
-            if (p.getParameterCode().toLowerCase().contains(keyword) ||
-                    p.getDescription().toLowerCase().contains(keyword)) {
-
-                tableModel.addRow(new Object[] {
-                        p.getParameterCode(),
-                        p.getParameterValue(),
-                        p.getDescription()
-                });
-            }
-        }
-    }
-
-    @Override
-    public void onRefresh() {
-        // Yêu cầu BUS tải lại cấu hình từ CSDL (Phòng trường hợp Admin khác vừa đổi)
-        SystemParameterBUS.getInstance().reloadCache();
-
-        loadDataToTable();
-
-        // Làm sạch form bên dưới
-        txtMaThamSo.setText("");
-        txtGiaTri.setText("");
-        txtMoTa.setText("");
-        table.clearSelection();
-    }
-
-    // Các tính năng dưới đây không được phép sử dụng ở màn hình này, để trống hàm
-    @Override
-    public void onAdd() {
-    }
-
-    @Override
-    public void onEdit() {
     }
 
     @Override

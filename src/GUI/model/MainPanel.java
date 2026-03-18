@@ -120,7 +120,7 @@ public class MainPanel extends JPanel {
                 bookBUS.loadDataFromDB();
                 break;
             case "GROUP":
-                pnlGroup.resetToDashboard(); // Reset về màn hình 3 nút (Author, Publisher, Category)
+                pnlGroup.resetToDashboard();
                 setHeaderVisible(false);
                 authorBUS.loadDataFromDB();
                 categoryBUS.loadDataFromDB();

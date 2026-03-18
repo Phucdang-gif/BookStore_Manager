@@ -121,10 +121,10 @@ public class PublisherPanel extends JPanel implements FeatureControllerInterface
             return new boolean[] { false, false, false, false, false, false };
         }
 
-        boolean canAdd = config.SessionManager.hasPermission(461, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(461, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(461, "Xóa");
-        boolean canDetail = config.SessionManager.hasPermission(461, "Xem");
+        boolean canAdd = config.SessionManager.hasPermission(451, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(451, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(451, "Xóa");
+        boolean canDetail = config.SessionManager.hasPermission(451, "Xem");
 
         return new boolean[] { canAdd, canEdit, canDelete, canDetail, false, false };
     }
