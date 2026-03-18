@@ -38,6 +38,20 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0) {
+                    return Integer.class;
+                }
+                if (columnIndex == 1) {
+                    return Integer.class;
+                }
+                if (columnIndex == 2) {
+                    return Integer.class;
+                }
+                return String.class;
+            }
         };
         table = new JTable(tableModel);
         table.setRowHeight(35);

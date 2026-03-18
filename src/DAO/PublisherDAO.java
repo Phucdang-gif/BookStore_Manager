@@ -21,7 +21,7 @@ public class PublisherDAO {
                 list.add(new PublisherDTO(
                         rs.getInt("publisher_id"),
                         rs.getString("publisher_name"),
-                        rs.getString("phone"), // Lấy thêm số điện thoại
+                        rs.getString("phone"),
                         rs.getString("status")));
             }
         } catch (SQLException e) {
