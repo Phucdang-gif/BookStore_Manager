@@ -144,9 +144,12 @@ public class SystemParameterPanel extends JPanel implements FeatureControllerInt
 
     @Override
     public boolean[] getButtonConfig() {
-        // Bật index 0 (Thêm) và index 1 (Sửa). Mảng cấu hình thường là {Add, Edit,
-        // Delete, View, Export, Import}
-        return new boolean[] { true, true, false, false, false, false };
+        if (config.SessionManager.getCurrentAccount() == null) {
+            return new boolean[] { false, false, false, false, false, false };
+        }
+        boolean canAdd = config.SessionManager.hasPermission(459, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(459, "Sửa");
+        return new boolean[] { canAdd, canEdit, false, false, false, false };
     }
 
     @Override
