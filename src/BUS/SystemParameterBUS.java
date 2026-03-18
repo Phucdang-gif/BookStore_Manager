@@ -2,6 +2,7 @@ package BUS;
 
 import DAO.SystemParameterDAO;
 import DTO.SystemParameterDTO;
+import DTO.ValidationResult;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,9 +71,26 @@ public class SystemParameterBUS {
     }
 
     public boolean update(SystemParameterDTO param) {
+        ValidationResult result = Validator.validateSystemParameter(param, getAll(), true);
+        if (!result.isValid()) {
+            throw new IllegalArgumentException(result.getErrors().values().iterator().next());
+        }
         boolean ok = dao.update(param);
         if (ok) {
-            cache.put(param.getParameterCode(), param); // cập nhật cache ngay
+            cache.put(param.getParameterCode(), param);
+        }
+        return ok;
+    }
+
+    public boolean insert(SystemParameterDTO param) {
+        ValidationResult result = Validator.validateSystemParameter(param, getAll(), false);
+        if (!result.isValid()) {
+            // Ném lỗi đầu tiên tìm thấy lên cho GUI xử lý
+            throw new IllegalArgumentException(result.getErrors().values().iterator().next());
+        }
+        boolean ok = dao.insert(param);
+        if (ok) {
+            cache.put(param.getParameterCode(), param);
         }
         return ok;
     }

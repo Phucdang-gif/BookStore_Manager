@@ -561,7 +561,8 @@ public class BookDialogController {
         view.btnUpload.setEnabled(editable);
         view.txtAuthorSearch.setVisible(editable);
         view.btnAuthorAdd.setVisible(editable);
-        view.lblAddNewAuthor.setVisible(editable);
+        boolean canAddAuthor = editable && config.SessionManager.hasPermission(451, "Thêm");
+        view.lblAddNewAuthor.setVisible(canAddAuthor);
         renderAuthorTags(editable);
     }
 

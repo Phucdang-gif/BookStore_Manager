@@ -271,9 +271,14 @@ INSERT INTO accounts (employee_id, permission_group_id, username, password, stat
 SELECT e.employee_id, pg.permission_group_id, 'ketoan01', 'kt123456', 'active' FROM employees e, permission_groups pg WHERE e.full_name='Phạm Thị Dung'   AND pg.group_name='Kế toán';
 
 -- 4. CHỨC NĂNG
+-- Chỉ định rõ function_id để đảm bảo khớp với mã phân quyền trong code
+-- 460 (AUTHOR) và 461 (PUBLISHER) đã được gộp vào 451 (BOOK)
+-- 452 (CATEGORY), 460 (AUTHOR), 461 (PUBLISHER) đã gộp vào BOOK(451), không insert riêng
+-- AUTO_INCREMENT=451 → ID tăng tuần tự:
+-- 451=BOOK, 452=CUSTOMER, 453=IMPORT, 454=INVOICE, 455=PROMOTION
+-- 456=EMPLOYEE, 457=ACCOUNT, 458=PERMISSION, 459=SETTING, 460=STATISTIC
 INSERT INTO functions (function_name, system_function_code, function_group) VALUES
 ('Quản lý sách',       'BOOK',        'Quản lý kho'),
-('Danh mục',           'CATEGORY',    'Quản lý kho'),
 ('Quản lý khách hàng', 'CUSTOMER',    'Bán hàng'),
 ('Quản lý nhập hàng',  'IMPORT',      'Quản lý kho'),
 ('Quản lý hóa đơn',    'INVOICE',     'Bán hàng'),
@@ -281,46 +286,39 @@ INSERT INTO functions (function_name, system_function_code, function_group) VALU
 ('Quản lý nhân viên',  'EMPLOYEE',    'Quản lý hệ thống'),
 ('Quản lý tài khoản',  'ACCOUNT',     'Quản lý hệ thống'),
 ('Phân quyền',         'PERMISSION',  'Quản lý hệ thống'),
-('Quản lý tác giả',    'AUTHOR',      'Quản lý kho'),
-('Quản lý nhà xuất bản','PUBLISHER',  'Quản lý kho'),
 ('Cài đặt hệ thống',   'SETTING',     'Quản lý hệ thống'),
 ('Thống kê báo cáo',   'STATISTIC',   'Báo cáo');
 
 -- 5. PHÂN QUYỀN
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups pg, functions f WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code != 'SETTING';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code = 'SETTING';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem' FROM permission_groups pg, functions f WHERE pg.group_name = 'Quản trị viên' AND f.system_function_code = 'STATISTIC';
+-- 451=BOOK, 452=CUSTOMER, 453=IMPORT, 454=INVOICE, 455=PROMOTION
+-- 456=EMPLOYEE, 457=ACCOUNT, 458=PERMISSION, 459=SETTING, 460=STATISTIC
+
+-- Quản trị viên: full quyền (trừ SETTING chỉ Xem+Sửa, STATISTIC chỉ Xem)
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 451, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- BOOK
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 452, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- CUSTOMER
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 453, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- IMPORT
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 454, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- INVOICE
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 455, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- PROMOTION
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 456, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- EMPLOYEE
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 457, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- ACCOUNT
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 458, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- PERMISSION
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 459, 'Xem,Sửa'          FROM permission_groups WHERE group_name='Quản trị viên'; -- SETTING
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 460, 'Xem'              FROM permission_groups WHERE group_name='Quản trị viên'; -- STATISTIC
 
 -- Nhân viên bán hàng
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='BOOK';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='CATEGORY';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='CUSTOMER';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm'     FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='INVOICE';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Nhân viên bán hàng' AND f.system_function_code='PROMOTION';
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 451, 'Xem'          FROM permission_groups WHERE group_name='Nhân viên bán hàng'; -- BOOK
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 452, 'Xem,Thêm,Sửa' FROM permission_groups WHERE group_name='Nhân viên bán hàng'; -- CUSTOMER
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 454, 'Xem,Thêm'     FROM permission_groups WHERE group_name='Nhân viên bán hàng'; -- INVOICE
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 455, 'Xem'          FROM permission_groups WHERE group_name='Nhân viên bán hàng'; -- PROMOTION
 
 -- Thủ kho
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='BOOK';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='CATEGORY';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Thủ kho' AND f.system_function_code='IMPORT';
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 451, 'Xem,Thêm,Sửa' FROM permission_groups WHERE group_name='Thủ kho'; -- BOOK
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 453, 'Xem,Thêm,Sửa' FROM permission_groups WHERE group_name='Thủ kho'; -- IMPORT
 
 -- Kế toán
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='IMPORT';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem'          FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='INVOICE';
-INSERT INTO permission_details (permission_group_id, function_id, actions)
-SELECT pg.permission_group_id, f.function_id, 'Xem,Thêm,Sửa' FROM permission_groups pg, functions f WHERE pg.group_name='Kế toán' AND f.system_function_code='PROMOTION';
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 453, 'Xem'          FROM permission_groups WHERE group_name='Kế toán'; -- IMPORT
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 454, 'Xem'          FROM permission_groups WHERE group_name='Kế toán'; -- INVOICE
+INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 455, 'Xem,Thêm,Sửa' FROM permission_groups WHERE group_name='Kế toán'; -- PROMOTION
 
 -- 6. KHÁCH HÀNG (20)
 INSERT INTO customers (full_name, phone, loyalty_points, registration_date) VALUES

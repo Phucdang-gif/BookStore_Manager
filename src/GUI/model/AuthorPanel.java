@@ -128,10 +128,10 @@ public class AuthorPanel extends JPanel implements FeatureControllerInterface {
             return new boolean[] { false, false, false, false, false, false };
         }
 
-        boolean canAdd = config.SessionManager.hasPermission(460, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(460, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(460, "Xóa");
-        boolean canDetail = config.SessionManager.hasPermission(460, "Xem");
+        boolean canAdd = config.SessionManager.hasPermission(451, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(451, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(451, "Xóa");
+        boolean canDetail = config.SessionManager.hasPermission(451, "Xem");
 
         return new boolean[] { canAdd, canEdit, canDelete, canDetail, false, false };
     }

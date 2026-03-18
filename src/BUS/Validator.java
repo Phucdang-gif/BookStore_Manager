@@ -267,4 +267,19 @@ public class Validator {
         return v.getResult();
     }
 
+    public static ValidationResult validateSystemParameter(DTO.SystemParameterDTO param,
+            List<DTO.SystemParameterDTO> existingList, boolean isUpdate) {
+        // Nếu là THÊM MỚI (!isUpdate), kiểm tra xem mã đã tồn tại chưa
+        boolean isCodeDuplicate = false;
+        if (!isUpdate && existingList != null) {
+            isCodeDuplicate = existingList.stream()
+                    .anyMatch(p -> p.getParameterCode().equalsIgnoreCase(param.getParameterCode()));
+        }
+
+        return new Validator()
+                .requireNotBlank("parameterCode", param.getParameterCode(), "Mã tham số cấu hình không được để trống!")
+                .requireUnique("parameterCode", isCodeDuplicate, "Mã tham số này đã tồn tại trong hệ thống!")
+                .requireNotBlank("parameterValue", param.getParameterValue(), "Giá trị tham số không được để trống!")
+                .getResult();
+    }
 }

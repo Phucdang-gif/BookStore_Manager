@@ -76,9 +76,9 @@ public class GroupDashboard extends JPanel {
         // --- A. PHẦN TOP: CÁC CARD THỐNG KÊ ---
         JPanel pnlCards = new JPanel(new GridLayout(1, 3, 20, 0));
         pnlCards.setOpaque(false);
-        boolean canViewAuthor = SessionManager.hasPermission(460, "Xem");
-        boolean canViewPublisher = SessionManager.hasPermission(461, "Xem");
-        boolean canViewCategory = SessionManager.hasPermission(452, "Xem");
+        boolean canViewAuthor = SessionManager.hasPermission(451, "Xem");
+        boolean canViewPublisher = SessionManager.hasPermission(451, "Xem");
+        boolean canViewCategory = SessionManager.hasPermission(451, "Xem");
         if (canViewAuthor) {
             cardAuthor = new DashboardCard("Tổng Tác Giả", "0", "GUI/icon/author.svg", new Color(65, 105, 225),
                     () -> sendCommand("AUTHOR"));

@@ -100,37 +100,34 @@ public class Sidebar extends JPanel {
         if (config.SessionManager.hasPermission(451, "Xem")) {
             items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
         }
-        boolean canViewCategory = config.SessionManager.hasPermission(452, "Xem");
-        boolean canViewAuthor = config.SessionManager.hasPermission(460, "Xem");
-        boolean canViewPublisher = config.SessionManager.hasPermission(461, "Xem");
-        if (canViewCategory || canViewAuthor || canViewPublisher) {
-            items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
+        if (config.SessionManager.hasPermission(451, "Xem")) {
+            items.add(new SidebarModel("KHO SÁCH", "GUI/icon/category.svg", "GROUP"));
         }
-        if (config.SessionManager.hasPermission(453, "Xem")) {
+        if (config.SessionManager.hasPermission(452, "Xem")) {
             items.add(new SidebarModel("QL KHÁCH HÀNG", "GUI/icon/customer.svg", "CUSTOMER"));
         }
-        if (config.SessionManager.hasPermission(454, "Xem")) {
+        if (config.SessionManager.hasPermission(453, "Xem")) {
             items.add(new SidebarModel("QL NHẬP HÀNG", "GUI/icon/import.svg", "IMPORT"));
         }
-        if (config.SessionManager.hasPermission(455, "Xem")) {
+        if (config.SessionManager.hasPermission(454, "Xem")) {
             items.add(new SidebarModel("QL HÓA ĐƠN", "GUI/icon/invoice.svg", "INVOICE"));
         }
-        if (config.SessionManager.hasPermission(456, "Xem")) {
+        if (config.SessionManager.hasPermission(455, "Xem")) {
             items.add(new SidebarModel("KHUYẾN MÃI", "GUI/icon/discount.svg", "DISCOUNT"));
         }
-        if (config.SessionManager.hasPermission(457, "Xem")) {
+        if (config.SessionManager.hasPermission(456, "Xem")) {
             items.add(new SidebarModel("QL NHÂN VIÊN", "GUI/icon/employee.svg", "EMPLOYEE"));
         }
-        if (config.SessionManager.hasPermission(458, "Xem")) {
+        if (config.SessionManager.hasPermission(457, "Xem")) {
             items.add(new SidebarModel("QL TÀI KHOẢN", "GUI/icon/account.svg", "ACCOUNT"));
         }
-        if (config.SessionManager.hasPermission(459, "Xem")) {
+        if (config.SessionManager.hasPermission(458, "Xem")) {
             items.add(new SidebarModel("PHÂN QUYỀN", "GUI/icon/permission.svg", "PERMISSION"));
         }
+        if (config.SessionManager.hasPermission(459, "Xem"))
+            items.add(new SidebarModel("THAM SỐ HỆ THỐNG", "GUI/icon/setting.svg", "SETTING"));
         if (config.SessionManager.hasPermission(460, "Xem"))
             items.add(new SidebarModel("THỐNG KÊ", "GUI/icon/statistic.svg", "STATISTIC"));
-        if (config.SessionManager.hasPermission(462, "Xem"))
-            items.add(new SidebarModel("THAM SỐ HỆ THỐNG", "GUI/icon/setting.svg", "SETTING"));
 
         // Render ra giao diện
         for (SidebarModel item : items) {

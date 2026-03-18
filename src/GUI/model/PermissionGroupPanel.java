@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class PermissionGroupPanel extends JPanel implements FeatureControllerInterface {
 
-    private PermissionGroupBUS permissionGroupBUS = new PermissionGroupBUS(); 
+    private PermissionGroupBUS permissionGroupBUS = new PermissionGroupBUS();
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -28,32 +28,33 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Đã xóa cột Mô tả, thay bằng Trạng thái cho khớp DB
-        String[] columns = {"ID Nhóm Quyền", "Tên Nhóm Quyền", "Trạng Thái"};
+        String[] columns = { "ID Nhóm Quyền", "Tên Nhóm Quyền", "Trạng Thái" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; 
+                return false;
             }
         };
         table = new JTable(tableModel);
         table.setRowHeight(35);
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(Color.WHITE);
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
-        
+
         this.add(scrollPane, BorderLayout.CENTER);
     }
 
     private void loadDataToTable(ArrayList<PermissionGroupDTO> list) {
-        tableModel.setRowCount(0); 
+        tableModel.setRowCount(0);
         if (list != null) {
             for (PermissionGroupDTO group : list) {
-                String statusStr = (group.getStatus() != null && group.getStatus().equals("active")) ? "Hoạt động" : "Bị khóa";
-                tableModel.addRow(new Object[]{
-                    group.getPermissionGroupId(), group.getGroupName(), statusStr
+                String statusStr = (group.getStatus() != null && group.getStatus().equals("active")) ? "Hoạt động"
+                        : "Bị khóa";
+                tableModel.addRow(new Object[] {
+                        group.getPermissionGroupId(), group.getGroupName(), statusStr
                 });
             }
         }
@@ -63,14 +64,15 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
     public void onAdd() {
         PermissionGroupDialog dialog = new PermissionGroupDialog(null, true, "add", null);
         dialog.setVisible(true);
-        onRefresh(); 
+        onRefresh();
     }
 
     @Override
     public void onEdit() {
         int row = table.getSelectedRow();
-        if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần sửa!", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -87,25 +89,25 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         onRefresh();
     }
 
-  @Override
+    @Override
     public void onDelete() {
         int row = table.getSelectedRow();
-        if(row == -1) {
+        if (row == -1) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền cần xóa!");
             return;
         }
-        
+
         String groupName = (String) table.getValueAt(row, 1);
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Hành động này sẽ XÓA VĨNH VIỄN nhóm quyền [" + groupName + "].\nBạn có chắc chắn muốn tiếp tục?", 
-            "Cảnh báo", JOptionPane.YES_NO_OPTION);
-        
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Hành động này sẽ XÓA VĨNH VIỄN nhóm quyền [" + groupName + "].\nBạn có chắc chắn muốn tiếp tục?",
+                "Cảnh báo", JOptionPane.YES_NO_OPTION);
+
         if (confirm == JOptionPane.YES_OPTION) {
             int groupId = (int) table.getValueAt(row, 0);
-            
+
             // GỌI XUỐNG BUS ĐỂ KIỂM TRA VÀ XÓA
-            DTO.ValidationResult result = permissionGroupBUS.deleteGroup(groupId); 
-            
+            DTO.ValidationResult result = permissionGroupBUS.deleteGroup(groupId);
+
             if (result.isValid()) {
                 JOptionPane.showMessageDialog(this, "Đã xóa nhóm quyền thành công!");
                 onRefresh(); // Load lại bảng
@@ -119,13 +121,14 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
     @Override
     public void onDetail() {
         int row = table.getSelectedRow();
-        if(row == -1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền để cấu hình chi tiết!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn Nhóm quyền để cấu hình chi tiết!", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
         int groupId = (int) table.getValueAt(row, 0);
         String groupName = (String) table.getValueAt(row, 1);
-        
+
         PermissionDialog pDialog = new PermissionDialog(null, true, groupId, groupName);
         pDialog.setVisible(true);
     }
@@ -135,7 +138,7 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         // Xóa dòng hiển thị JOptionPane cũ đi
         // Gọi hàm search từ BUS để lấy danh sách đã lọc
         ArrayList<PermissionGroupDTO> result = permissionGroupBUS.search(text);
-        
+
         // Đẩy danh sách kết quả lên bảng
         loadDataToTable(result);
     }
@@ -149,22 +152,23 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
     @Override
     public void onExportExcel() {
         GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachNhomQuyen");
-     }
+    }
 
     @Override
-    public void onImportExcel() { }
+    public void onImportExcel() {
+    }
 
-   @Override
+    @Override
     public boolean[] getButtonConfig() {
         if (config.SessionManager.getCurrentAccount() == null) {
-            return new boolean[]{false, false, false, false, false, false}; 
+            return new boolean[] { false, false, false, false, false, false };
         }
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
-        boolean canAdd = config.SessionManager.hasPermission(459, "Thêm");
-        boolean canEdit = config.SessionManager.hasPermission(459, "Sửa");
-        boolean canDelete = config.SessionManager.hasPermission(459, "Xóa");
+        boolean canAdd = config.SessionManager.hasPermission(458, "Thêm");
+        boolean canEdit = config.SessionManager.hasPermission(458, "Sửa");
+        boolean canDelete = config.SessionManager.hasPermission(458, "Xóa");
 
-        return new boolean[]{canAdd, canEdit, canDelete, true, true, false}; 
+        return new boolean[] { canAdd, canEdit, canDelete, true, true, false };
     }
 }
