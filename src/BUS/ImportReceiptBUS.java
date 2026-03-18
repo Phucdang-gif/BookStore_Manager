@@ -65,4 +65,20 @@ public class ImportReceiptBUS {
         
         return vr;
     }
+    public ArrayList<ImportReceiptDTO> search(String text) {
+        ArrayList<ImportReceiptDTO> result = new ArrayList<>();
+        text = text.toLowerCase().trim();
+
+        if (text.isEmpty())
+            return this.getAll();
+        for (ImportReceiptDTO r : getAll()) {
+            if (String.valueOf(r.getReceiptId()).contains(text) ||
+                    String.valueOf(r.getEmployeeId()).contains(text) ||
+                    String.valueOf(r.getSupplierId()).contains(text) ||
+                    r.getStatus().toLowerCase().contains(text)) {
+                result.add(r);
+            }
+        }
+        return result;
+}
 }

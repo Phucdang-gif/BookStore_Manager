@@ -55,7 +55,6 @@ public class InvoiceBUS {
 
         if (text.isEmpty())
             return this.listInvoice;
-
         for (InvoiceDTO inv : listInvoice) {
             if (String.valueOf(inv.getInvoiceId()).contains(text) ||
                     String.valueOf(inv.getCustomerId()).contains(text) ||

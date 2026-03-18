@@ -542,6 +542,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         this.repaint();
     }
 
+
     @Override
     public void onAdd() {
     }

@@ -136,9 +136,9 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     @Override
     public void onSearch(String text) {
         // Có thể gọi hàm search của BUS ở đây
-        // ArrayList<ImportReceiptDTO> result = importBUS.search(text);
-        // loadDataToTable(result);
-        JOptionPane.showMessageDialog(this, "Tìm kiếm phiếu nhập: " + text);
+        ArrayList<ImportReceiptDTO> result = importBUS.search(text);
+        loadDataToTable(result);
+       
     }
 
     @Override
