@@ -134,11 +134,15 @@ public class Validator {
                 .getResult();
     }
 
-    public static ValidationResult validateAuthor(AuthorDTO author) {
+    public static ValidationResult validateAuthor(AuthorDTO author, List<AuthorDTO> existingList) {
+        boolean isNameDuplicate = existingList != null && existingList.stream()
+                .anyMatch(a -> a.getAuthorName().equalsIgnoreCase(author.getAuthorName())
+                        && a.getAuthorId() != author.getAuthorId());
         return new Validator()
                 .requireNotBlank("authorName", author.getAuthorName(), "Tên tác giả không được để trống")
                 .requireMaxLength("authorName", author.getAuthorName(), 100,
                         "Tên tác giả không được vượt quá 100 ký tự")
+                .requireUnique("authorName", isNameDuplicate, "Tên tác giả đã tồn tại")
                 .getResult();
     }
 

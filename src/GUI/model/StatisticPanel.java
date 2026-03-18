@@ -160,77 +160,67 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
                 createSummaryCard("Nhân viên đang hoạt động", String.valueOf(totalEmployees), new Color(23, 162, 184)));
 
         topPanel.add(pnlCards, BorderLayout.NORTH);
+        panel.add(topPanel, BorderLayout.NORTH);
+
+        // Tự động load doanh thu theo từng ngày trong tháng hiện tại (không có filter)
+        LocalDate today = LocalDate.now();
+        LocalDate firstDay = today.withDayOfMonth(1);
+        LocalDate lastDay = today.withDayOfMonth(today.lengthOfMonth());
+
+        java.sql.Date startDate = java.sql.Date.valueOf(firstDay);
+        java.sql.Date endDate = java.sql.Date.valueOf(lastDay);
 
         DefaultCategoryDataset lineDataset = new DefaultCategoryDataset();
+
+        String monthTitle = String.format("DOANH THU THÁNG %d/%d (THEO NGÀY)", today.getMonthValue(), today.getYear());
         JFreeChart lineChart = ChartFactory.createLineChart(
-                "THỐNG KÊ DOANH THU THEO THỜI GIAN",
-                "Thời gian", "Số tiền (VNĐ)",
-                lineDataset, PlotOrientation.VERTICAL, true, true, false);
+                monthTitle, "Ngày", "Số tiền (VNĐ)",
+                lineDataset, PlotOrientation.VERTICAL, true, true, true);
 
         applyChartTheme(lineChart);
 
         CategoryPlot plot = lineChart.getCategoryPlot();
         LineAndShapeRenderer renderer = new LineAndShapeRenderer();
-        renderer.setSeriesPaint(0, new Color(51, 153, 255)); // Xanh - Doanh thu
-        renderer.setSeriesPaint(1, new Color(255, 153, 51)); // Cam - Vốn
-        renderer.setSeriesPaint(2, new Color(102, 51, 153)); // Tím - Lợi nhuận
+        renderer.setSeriesPaint(0, new Color(51, 153, 255));
+        renderer.setSeriesPaint(1, new Color(255, 153, 51));
+        renderer.setSeriesPaint(2, new Color(102, 51, 153));
         renderer.setSeriesStroke(0, new BasicStroke(3.0f));
         renderer.setSeriesStroke(1, new BasicStroke(3.0f));
         renderer.setSeriesStroke(2, new BasicStroke(3.0f));
+        renderer.setDefaultToolTipGenerator(new org.jfree.chart.labels.StandardCategoryToolTipGenerator());
         plot.setRenderer(renderer);
 
         ChartPanel chartPanel = new ChartPanel(lineChart);
+        chartPanel.setDisplayToolTips(true);
         chartPanel.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230)));
         panel.add(chartPanel, BorderLayout.CENTER);
 
-        // Khởi tạo mảng để gán filter nhằm lấy ra ViewMode bên trong lambda
-        final GUI.components.StatisticFilterPanel[] filterHolder = new GUI.components.StatisticFilterPanel[1];
-        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, true,
-                (startDate, endDate, catId, auId, pubId) -> {
-
-                    String mode = filterHolder[0].getViewMode();
-                    ArrayList<Object[]> list = new ArrayList<>();
-
-                    if (mode.equals("Theo Ngày")) {
-                        list = reportBUS.getRevenueByDateRange(startDate, endDate);
-                    } else if (mode.equals("Theo Tháng")) {
-                        list = reportBUS.getRevenueByMonthRange(startDate, endDate);
-                    } else if (mode.equals("Theo Năm")) {
-                        list = reportBUS.getRevenueByYearRange(startDate, endDate);
+        // Load dữ liệu ngay khi khởi tạo
+        SwingUtilities.invokeLater(() -> {
+            try {
+                ArrayList<Object[]> list = reportBUS.getRevenueByDateRange(startDate, endDate);
+                lineDataset.clear();
+                if (list != null && !list.isEmpty()) {
+                    for (Object[] row : list) {
+                        String timeLabel = row[0].toString();
+                        String[] parts = timeLabel.split("-");
+                        if (parts.length == 3)
+                            timeLabel = parts[2] + "/" + parts[1]; // VD: 05/03
+                        double cost = (double) row[1];
+                        double revenue = (double) row[2];
+                        double profit = (double) row[3];
+                        lineDataset.addValue(revenue, "Doanh Thu", timeLabel);
+                        lineDataset.addValue(cost, "Vốn", timeLabel);
+                        lineDataset.addValue(profit, "Lợi Nhuận", timeLabel);
                     }
-
-                    lineDataset.clear();
-
-                    if (list != null && !list.isEmpty()) {
-                        for (Object[] row : list) {
-                            String timeLabel = row[0].toString();
-
-                            if (mode.equals("Theo Ngày")) {
-                                String[] parts = timeLabel.split("-");
-                                if (parts.length == 3) {
-                                    timeLabel = parts[2] + "/" + parts[1]; // Hiển thị trên biểu đồ gọn hơn (VD: 10/03)
-                                }
-                            }
-
-                            double cost = (double) row[1];
-                            double revenue = (double) row[2];
-                            double profit = (double) row[3];
-
-                            lineDataset.addValue(revenue, "Doanh Thu", timeLabel);
-                            lineDataset.addValue(cost, "Vốn", timeLabel);
-                            lineDataset.addValue(profit, "Lợi Nhuận", timeLabel);
-                        }
-                    } else {
-                        lineDataset.addValue(0, "Doanh Thu", "Không có dữ liệu");
-                        lineDataset.addValue(0, "Vốn", "Không có dữ liệu");
-                        lineDataset.addValue(0, "Lợi Nhuận", "Không có dữ liệu");
-                    }
-                });
-
-        topPanel.add(filterHolder[0], BorderLayout.CENTER);
-        panel.add(topPanel, BorderLayout.NORTH);
-
-        SwingUtilities.invokeLater(() -> filterHolder[0].triggerFilter());
+                } else {
+                    lineDataset.addValue(0, "Doanh Thu", "Không có dữ liệu");
+                    lineDataset.addValue(0, "Vốn", "Không có dữ liệu");
+                    lineDataset.addValue(0, "Lợi Nhuận", "Không có dữ liệu");
+                }
+            } catch (Exception ex) {
+                /* silent */ }
+        });
 
         return panel;
     }
@@ -260,14 +250,16 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
         DefaultCategoryDataset barDataset = new DefaultCategoryDataset();
         JFreeChart barChart = ChartFactory.createBarChart("DOANH THU THEO THỜI GIAN", "Thời Gian", "VNĐ", barDataset,
-                PlotOrientation.VERTICAL, true, true, false);
+                PlotOrientation.VERTICAL, true, true, true); // tooltips = true
         applyChartTheme(barChart);
 
         String[] cols = { "Thời Gian", "Chi Phí (Vốn)", "Doanh Thu", "Lợi Nhuận" };
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         JTable table = createCustomTable(model);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new ChartPanel(barChart),
+        ChartPanel barChartPanel = new ChartPanel(barChart);
+        barChartPanel.setDisplayToolTips(true);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, barChartPanel,
                 new JScrollPane(table));
         splitPane.setResizeWeight(0.6);
         panel.add(splitPane, BorderLayout.CENTER);
@@ -331,9 +323,30 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
             public boolean isCellEditable(int r, int c) {
                 return false;
             }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                switch (columnIndex) {
+                    case 0:
+                        return Integer.class; // Mã Phiếu → sort số đúng
+                    case 4:
+                        return Double.class; // Tổng Tiền → sort số đúng
+                    default:
+                        return String.class;
+                }
+            }
         };
         JTable table = createCustomTable(model);
         table.setAutoCreateRowSorter(true);
+
+        // Renderer hiển thị Tổng Tiền dạng #,### VNĐ dù lưu kiểu Double
+        table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public void setValue(Object value) {
+                setText(value instanceof Number ? df.format(((Number) value).doubleValue()) : "");
+                setHorizontalAlignment(JLabel.RIGHT);
+            }
+        });
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -354,7 +367,9 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
                         "Thông báo", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            int receiptId = (int) table.getValueAt(selectedRow, 0);
+            // Convert view index → model index để lấy đúng ID khi đang sort
+            int modelRow = table.convertRowIndexToModel(selectedRow);
+            int receiptId = (int) model.getValueAt(modelRow, 0);
             Window parentWindow = SwingUtilities.getWindowAncestor(panel);
             Frame parentFrame = (parentWindow instanceof Frame) ? (Frame) parentWindow : null;
 
@@ -389,7 +404,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
                                         sdf.format(receipt.getReceiptDate()),
                                         "NCC " + receipt.getSupplierId(),
                                         "NV " + receipt.getEmployeeId(),
-                                        df.format(receipt.getTotalAmount()),
+                                        receipt.getTotalAmount(), // Double → sort đúng
                                         receipt.getStatus()
                                 });
                             }
@@ -409,7 +424,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         JFreeChart barChart = ChartFactory.createBarChart(
                 "TOP SÁCH BÁN CHẠY", "Tên Sách", "Số Lượng (Cuốn)",
-                dataset, PlotOrientation.HORIZONTAL, false, true, false);
+                dataset, PlotOrientation.HORIZONTAL, false, true, true); // tooltips = true
 
         applyChartTheme(barChart);
 
@@ -419,8 +434,12 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
         renderer.setSeriesPaint(0, new Color(15, 108, 189));
         renderer.setMaximumBarWidth(0.15);
+        // Đảm bảo tooltip generator không bị mất sau khi tuỳ chỉnh renderer
+        renderer.setDefaultToolTipGenerator(new org.jfree.chart.labels.StandardCategoryToolTipGenerator());
 
-        panel.add(new ChartPanel(barChart), BorderLayout.CENTER);
+        ChartPanel booksChartPanel = new ChartPanel(barChart);
+        booksChartPanel.setDisplayToolTips(true);
+        panel.add(booksChartPanel, BorderLayout.CENTER);
 
         // Sử dụng bộ lọc cũ (không có showViewMode)
         GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, true,

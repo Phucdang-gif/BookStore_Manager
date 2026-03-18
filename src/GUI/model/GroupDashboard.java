@@ -17,7 +17,7 @@ import GUI.dialog.book.BookDialog;
 import GUI.dialog.book.DialogMode;
 import GUI.components.RoundedBorderButton;
 import GUI.util.ThemeColor;
-
+import config.SessionManager;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,23 +76,26 @@ public class GroupDashboard extends JPanel {
         // --- A. PHẦN TOP: CÁC CARD THỐNG KÊ ---
         JPanel pnlCards = new JPanel(new GridLayout(1, 3, 20, 0));
         pnlCards.setOpaque(false);
+        boolean canViewAuthor = SessionManager.hasPermission(460, "Xem");
+        boolean canViewPublisher = SessionManager.hasPermission(461, "Xem");
+        boolean canViewCategory = SessionManager.hasPermission(452, "Xem");
+        if (canViewAuthor) {
+            cardAuthor = new DashboardCard("Tổng Tác Giả", "0", "GUI/icon/author.svg", new Color(65, 105, 225),
+                    () -> sendCommand("AUTHOR"));
+            pnlCards.add(cardAuthor);
+        }
 
-        // --- GIỮ NGUYÊN LOGIC CHUYỂN TAB KHI NHẤN CARD ---
-        // Card 1: Tác giả -> Gửi lệnh chuyển sang màn hình Quản lý Tác giả
-        cardAuthor = new DashboardCard("Tổng Tác Giả", "0", "GUI/icon/author.svg", new Color(65, 105, 225),
-                () -> sendCommand("AUTHOR"));
+        if (canViewPublisher) {
+            cardPublisher = new DashboardCard("Nhà Xuất Bản", "0", "GUI/icon/publisher.svg", new Color(147, 112, 219),
+                    () -> sendCommand("PUBLISHER"));
+            pnlCards.add(cardPublisher);
+        }
 
-        // Card 2: NXB -> Gửi lệnh chuyển sang màn hình Quản lý NXB
-        cardPublisher = new DashboardCard("Nhà Xuất Bản", "0", "GUI/icon/publisher.svg", new Color(147, 112, 219),
-                () -> sendCommand("PUBLISHER"));
-
-        // Card 3: Thể Loại -> Gửi lệnh chuyển sang màn hình Quản lý Thể loại
-        cardCategory = new DashboardCard("Thể Loại Sách", "0", "GUI/icon/genre.svg", new Color(255, 165, 0),
-                () -> sendCommand("CATEGORY"));
-
-        pnlCards.add(cardAuthor);
-        pnlCards.add(cardPublisher);
-        pnlCards.add(cardCategory);
+        if (canViewCategory) {
+            cardCategory = new DashboardCard("Thể Loại Sách", "0", "GUI/icon/genre.svg", new Color(255, 165, 0),
+                    () -> sendCommand("CATEGORY"));
+            pnlCards.add(cardCategory);
+        }
         add(pnlCards, BorderLayout.NORTH);
 
         // --- B. PHẦN CENTER: THANH LỌC + LƯỚI SÁCH ---
@@ -160,12 +163,15 @@ public class GroupDashboard extends JPanel {
     }
 
     public void refreshData(ArrayList<BookDTO> dataList) {
-        // 1. Cập nhật số liệu trên Cards
         try {
-            cardAuthor.setValue(String.valueOf(authorBUS.getAll().size()));
-            cardPublisher.setValue(String.valueOf(publisherBUS.getAll().size()));
-            cardCategory.setValue(String.valueOf(categoryBUS.getAll().size()));
+            if (cardAuthor != null)
+                cardAuthor.setValue(String.valueOf(authorBUS.getAll().size()));
+            if (cardPublisher != null)
+                cardPublisher.setValue(String.valueOf(publisherBUS.getAll().size()));
+            if (cardCategory != null)
+                cardCategory.setValue(String.valueOf(categoryBUS.getAll().size()));
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // 2. Render lại Grid Sách

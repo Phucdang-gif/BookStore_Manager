@@ -100,7 +100,10 @@ public class Sidebar extends JPanel {
         if (config.SessionManager.hasPermission(451, "Xem")) {
             items.add(new SidebarModel("QUẢN LÝ SÁCH", "GUI/icon/book.svg", "BOOK"));
         }
-        if (config.SessionManager.hasPermission(452, "Xem")) {
+        boolean canViewCategory = config.SessionManager.hasPermission(452, "Xem");
+        boolean canViewAuthor = config.SessionManager.hasPermission(460, "Xem");
+        boolean canViewPublisher = config.SessionManager.hasPermission(461, "Xem");
+        if (canViewCategory || canViewAuthor || canViewPublisher) {
             items.add(new SidebarModel("DANH MỤC", "GUI/icon/category.svg", "GROUP"));
         }
         if (config.SessionManager.hasPermission(453, "Xem")) {

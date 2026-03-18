@@ -33,8 +33,6 @@ public class CategoryBUS {
         return cat != null ? cat.getName() : "";
     }
 
-    // ===================== THÊM MỚI =====================
-
     public ValidationResult add(CategoryDTO category) {
         ValidationResult vr = Validator.validateCategory(category, this.categoryList);
         if (!vr.isValid())
@@ -60,7 +58,7 @@ public class CategoryBUS {
         int result = categoryDAO.update(category);
         if (result > 0) {
             loadDataFromDB();
-            return vr; // isValid() == true
+            return vr;
         } else {
             vr.addError("system", "Lỗi hệ thống khi cập nhật thể loại!");
         }

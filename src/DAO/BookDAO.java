@@ -75,9 +75,9 @@ public class BookDAO {
                 "FROM books b " +
                 "LEFT JOIN publishers p ON b.publisher_id = p.publisher_id " +
                 "LEFT JOIN categories c ON b.category_id = c.category_id " +
-                "LEFT JOIN book_authors ba ON b.book_id = ba.book_id " + // <--- MỚI
-                "LEFT JOIN authors a ON ba.author_id = a.author_id " + // <--- MỚI
-                "GROUP BY b.book_id " + // <--- MỚI
+                "LEFT JOIN book_authors ba ON b.book_id = ba.book_id " +
+                "LEFT JOIN authors a ON ba.author_id = a.author_id " +
+                "GROUP BY b.book_id " +
                 "ORDER BY b.book_id ASC";
         if (conn == null) {
             return books;

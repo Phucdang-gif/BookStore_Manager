@@ -96,35 +96,4 @@ public class CategoryDAO {
         }
         return 0;
     }
-
-    public boolean checkDuplicate(String name) {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "SELECT COUNT(*) FROM categories WHERE category_name = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean checkDuplicateExclude(String name, int excludeId) {
-        Connection conn = DatabaseConnection.getInstance().getConnection();
-        String sql = "SELECT COUNT(*) FROM categories WHERE category_name = ? AND category_id != ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, name);
-            pstmt.setInt(2, excludeId);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 }
