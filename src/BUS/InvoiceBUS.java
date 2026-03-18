@@ -5,6 +5,7 @@ import DTO.CustomerDTO;
 import DTO.InvoiceDTO;
 import DTO.ValidationResult;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 public class InvoiceBUS {
@@ -55,6 +56,7 @@ public class InvoiceBUS {
 
         if (text.isEmpty())
             return this.listInvoice;
+
         for (InvoiceDTO inv : listInvoice) {
             if (String.valueOf(inv.getInvoiceId()).contains(text) ||
                     String.valueOf(inv.getCustomerId()).contains(text) ||
@@ -66,21 +68,52 @@ public class InvoiceBUS {
         return result;
     }
 
-    public ValidationResult addInvoice(InvoiceDTO invoice, boolean hasDetails, CustomerDTO customer) {
-        ValidationResult vr = Validator.validateInvoice(invoice, hasDetails, customer);
+    public ValidationResult addInvoice(InvoiceDTO receipt, boolean hasDetails,CustomerDTO customer) {
+        // 1. Gọi cảnh sát kiểm tra
+        ValidationResult vr = Validator.validateInvoice(receipt, hasDetails,customer);
 
+        // 2. Nếu có lỗi (isValid == false), trả biên bản về ngay lập tức
         if (!vr.isValid()) {
             return vr;
         }
 
-        int newId = invoiceDAO.insert(invoice);
+        // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
+        int newId = invoiceDAO.insert(receipt);
         if (newId <= 0) {
-            vr.addError("system", "Lỗi CSDL: Không thể tạo HÓA ĐƠN (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
+            vr.addError("system", "Lỗi CSDL: Không thể tạo Phiếu nhập (Kiểm tra lại khóa ngoại hoặc cấu trúc DB)!");
         } else {
-            // Gán ID mới vào DTO
-            invoice.setInvoiceId(newId);
+            // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
+            receipt.setInvoiceId(newId);
         }
 
         return vr;
+    }
+    // Cac ham tim kiem theo ngay gio
+    public ArrayList<InvoiceDTO> searchByCustomerID( int ID, Date s, Date e){
+        try {
+           
+            return invoiceDAO.searchByCustomerID(s, e, ID);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    public ArrayList<InvoiceDTO> searchByemployeeID( int ID , Date s, Date e){
+        try {
+            
+            return invoiceDAO.searchByEmployeeID(s, e, ID);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    public ArrayList<InvoiceDTO> searchByDate (Date s, Date e){
+        return invoiceDAO.searchByDate(s, e);
+    }
+    public ArrayList<InvoiceDTO> searchByInvoiceID(int ID, Date s, Date e){
+        try {
+           
+            return invoiceDAO.searchByInvoiceID(s, e, ID);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
     }
 }

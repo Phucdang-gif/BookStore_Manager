@@ -265,7 +265,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         panel.add(splitPane, BorderLayout.CENTER);
 
         final GUI.components.StatisticFilterPanel[] filterHolder = new GUI.components.StatisticFilterPanel[1];
-        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, true,
+        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, false,
                 (startDate, endDate, catId, auId, pubId) -> {
 
                     String mode = filterHolder[0].getViewMode();
@@ -419,44 +419,35 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
     private JPanel createTopBooksTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        JTextField txtStart = new JTextField(firstDayOfMonth), txtEnd = new JTextField(lastDayOfMonth);
+        JButton btnFilter = new JButton("Lọc Sách Bán Chạy");
+        panel.add(createFilterFrame(new JLabel("Từ ngày:"), txtStart, new JLabel("Đến ngày:"), txtEnd, btnFilter),
+                BorderLayout.WEST);
 
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        JFreeChart barChart = ChartFactory.createBarChart(
-                "TOP SÁCH BÁN CHẠY", "Tên Sách", "Số Lượng (Cuốn)",
-                dataset, PlotOrientation.HORIZONTAL, false, true, true); // tooltips = true
+        String[] cols = { "Thứ Hạng", "Mã Sách", "Tên Sách", "Số Lượng Đã Bán", "Doanh Thu Thu Về" };
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        JTable table = createCustomTable(model);
+        panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        applyChartTheme(barChart);
-
-        CategoryPlot plot = barChart.getCategoryPlot();
-        org.jfree.chart.renderer.category.BarRenderer renderer = (org.jfree.chart.renderer.category.BarRenderer) plot
-                .getRenderer();
-        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
-        renderer.setSeriesPaint(0, new Color(15, 108, 189));
-        renderer.setMaximumBarWidth(0.15);
-        // Đảm bảo tooltip generator không bị mất sau khi tuỳ chỉnh renderer
-        renderer.setDefaultToolTipGenerator(new org.jfree.chart.labels.StandardCategoryToolTipGenerator());
-
-        ChartPanel booksChartPanel = new ChartPanel(barChart);
-        booksChartPanel.setDisplayToolTips(true);
-        panel.add(booksChartPanel, BorderLayout.CENTER);
-
-        // Sử dụng bộ lọc cũ (không có showViewMode)
-        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, true,
-                (startDate, endDate, catId, auId, pubId) -> {
-                    ArrayList<BookRevenueDTO> list = reportBUS.getBookReport(startDate, endDate, catId, pubId, auId);
-                    dataset.clear();
-                    if (list != null) {
-                        int limit = Math.min(list.size(), 10);
-                        for (int i = 0; i < limit; i++) {
-                            BookRevenueDTO dto = list.get(i);
-                            dataset.addValue(dto.getTotalSold(), "Đã Bán", dto.getBookTitle());
-                        }
-                    }
-                });
-        panel.add(filterPanel, BorderLayout.NORTH);
-
-        SwingUtilities.invokeLater(() -> filterPanel.triggerFilter());
+        btnFilter.addActionListener(e -> {
+            try {
+                ArrayList<BookRevenueDTO> list = reportBUS.getBookReport(
+                        new java.sql.Date(sdf.parse(txtStart.getText()).getTime()),
+                        new java.sql.Date(sdf.parse(txtEnd.getText()).getTime()));
+                model.setRowCount(0);
+                for (BookRevenueDTO dto : list)
+                    model.addRow(new Object[] { "Top " + dto.getOrdinalNumber(), dto.getBookID(), dto.getBookTitle(),
+                            dto.getTotalSold() + " Cuốn", df.format(dto.getTotalRevenue()) });
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Ngày không hợp lệ!");
+            }
+        });
+        btnFilter.doClick();
         return panel;
     }
 

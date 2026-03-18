@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.sql.Statement;
+import java.sql.*;
+
 
 public class ImportReceiptDAO {
 
@@ -74,4 +76,109 @@ public class ImportReceiptDAO {
         }
         return false;
     }
+   public ArrayList<ImportReceiptDTO> searchByImportID(int ID, Date s, Date eDate){
+        ArrayList<ImportReceiptDTO> result = new ArrayList<>();
+        Connection con = DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM import_receipts WHERE receipt_id = ? AND receipt_date BETWEEN ? AND ? ORDER BY receipt_date DESC";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, ID);
+            ps.setDate(2, s);
+            ps.setDate(3, eDate);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ImportReceiptDTO dto = new ImportReceiptDTO();
+                dto.setReceiptId(rs.getInt("receipt_id"));
+                dto.setSupplierId(rs.getInt("supplier_id"));
+                dto.setEmployeeId(rs.getInt("employee_id"));
+                dto.setReceiptDate(rs.getTimestamp("receipt_date"));
+                dto.setTotalAmount(rs.getDouble("total_amount"));
+                dto.setStatus(rs.getString("status"));
+
+                result.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); 
+        
+        }
+        return result;
+}
+public ArrayList<ImportReceiptDTO> searchByDate(Date s, Date eDate){
+        ArrayList<ImportReceiptDTO> result = new ArrayList<>();
+        Connection con = DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM import_receipts WHERE receipt_date BETWEEN ? AND ? ORDER BY receipt_date DESC";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setDate(1, s);
+            ps.setDate(2, eDate);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ImportReceiptDTO dto = new ImportReceiptDTO();
+                dto.setReceiptId(rs.getInt("receipt_id"));
+                dto.setSupplierId(rs.getInt("supplier_id"));
+                dto.setEmployeeId(rs.getInt("employee_id"));
+                dto.setReceiptDate(rs.getTimestamp("receipt_date"));
+                dto.setTotalAmount(rs.getDouble("total_amount"));
+                dto.setStatus(rs.getString("status"));
+
+                result.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+
+}
+public ArrayList<ImportReceiptDTO> searchBySupplierID(Date s, Date eDate, int ID){
+        ArrayList<ImportReceiptDTO> result = new ArrayList<>();
+        Connection con = DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM import_receipts WHERE supplier_id = ? AND receipt_date BETWEEN ? AND ? ORDER BY receipt_date DESC";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, ID);
+            ps.setDate(2, s);
+            ps.setDate(3, eDate);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ImportReceiptDTO dto = new ImportReceiptDTO();
+                dto.setReceiptId(rs.getInt("receipt_id"));
+                dto.setSupplierId(rs.getInt("supplier_id"));
+                dto.setEmployeeId(rs.getInt("employee_id"));
+                dto.setReceiptDate(rs.getTimestamp("receipt_date"));
+                dto.setTotalAmount(rs.getDouble("total_amount"));
+                dto.setStatus(rs.getString("status"));
+
+                result.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+}
+public ArrayList<ImportReceiptDTO> searchByEmployeeID(Date s, Date eDate, int ID){
+        ArrayList<ImportReceiptDTO> result = new ArrayList<>();
+        Connection con = DatabaseConnection.getInstance().getConnection();
+        String sql = "SELECT * FROM import_receipts WHERE employee_id = ? AND receipt_date BETWEEN ? AND ? ORDER BY receipt_date DESC";
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, ID);
+            ps.setDate(2, s);
+            ps.setDate(3, eDate);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ImportReceiptDTO dto = new ImportReceiptDTO();
+                dto.setReceiptId(rs.getInt("receipt_id"));
+                dto.setSupplierId(rs.getInt("supplier_id"));
+                dto.setEmployeeId(rs.getInt("employee_id"));
+                dto.setReceiptDate(rs.getTimestamp("receipt_date"));
+                dto.setTotalAmount(rs.getDouble("total_amount"));
+                dto.setStatus(rs.getString("status"));
+
+                result.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+}
 }

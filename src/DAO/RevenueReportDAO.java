@@ -381,4 +381,43 @@ public class RevenueReportDAO {
         }
         return list;
     }
+    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate) {
+        ArrayList<BookRevenueDTO> list = new ArrayList<>();
+        String sql = "SELECT b.book_id, b.book_title, "
+                + "SUM(id.quantity) AS total_quantity, "
+                + "SUM(id.subtotal) AS total_revenue "
+                + "FROM books b "
+                + "JOIN invoice_details id ON b.book_id = id.book_id "
+                + "JOIN invoices i ON id.invoice_id = i.invoice_id "
+                + "WHERE (? IS NULL OR DATE(i.created_at) >= ?) "
+                + "AND (? IS NULL OR DATE(i.created_at) <= ?) "
+                + "GROUP BY b.book_id, b.book_title "
+                + "ORDER BY total_quantity DESC";
+        try (Connection con = DatabaseConnection.getInstance().getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            // Set params Ngày
+            ps.setDate(1, startDate);
+            ps.setDate(2, startDate);
+            ps.setDate(3, endDate);
+            ps.setDate(4, endDate);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                int number = 1;
+                while (rs.next()) {
+                    BookRevenueDTO dto = new BookRevenueDTO();
+                    dto.setBookID(rs.getInt("book_id"));
+                    dto.setBookTitle(rs.getString("book_title"));
+                    dto.setTotalSold(rs.getInt("total_quantity"));
+                    dto.setTotalRevenue(rs.getDouble("total_revenue"));
+                    dto.setOrdinalNumber(number++);
+                    list.add(dto);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    
+    }
 }
