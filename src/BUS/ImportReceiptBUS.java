@@ -2,7 +2,9 @@ package BUS;
 
 import DAO.ImportReceiptDAO;
 import DTO.ImportReceiptDTO;
+import DTO.InvoiceDTO;
 import DTO.ValidationResult;
+import java.sql.Date;
 
 import java.util.ArrayList;
 
@@ -81,4 +83,32 @@ public class ImportReceiptBUS {
         }
         return result;
 }
+  // Cac ham tim kiem theo ngay gio
+    public ArrayList<ImportReceiptDTO> searchBySupplierID( int ID, Date s, Date e){
+        try {
+           
+            return dao.searchBySupplierID(s, e, ID);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    public ArrayList<ImportReceiptDTO> searchByEmployeeID( int ID , Date s, Date e){
+        try {
+            
+            return dao.searchByEmployeeID(s, e, ID);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
+    public ArrayList<ImportReceiptDTO> searchByDate (Date s, Date e){
+        return dao.searchByDate(s, e);
+    }
+    public ArrayList<ImportReceiptDTO> searchByImportID(int ID, Date s, Date e){
+        try {
+           
+            return dao.searchByImportID(ID, s, e);
+        } catch (Exception ex) {
+            return new ArrayList<>();
+        }
+    }
 }

@@ -38,95 +38,38 @@ public class InvoiceDAO {
     }
 
     // LƯU Ý: Hàm này phải trả về INT (Mã hóa đơn tự tăng)
-    // LƯU Ý: Hàm này phải trả về INT (Mã hóa đơn tự tăng)
     public int insert(InvoiceDTO dto) {
         int generatedId = -1;
         Connection con = DatabaseConnection.getInstance().getConnection();
-
-        // 1. Câu lệnh lưu Hóa đơn
-        String sqlInvoice = "INSERT INTO invoices (customer_id, employee_id, created_at, total_amount, total_discount, points_used, points_value, final_amount, payment_method, status, points_earned) "
-                + "VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, 'Completed', ?)";
-
-        // 2. Câu lệnh Cập nhật điểm Khách hàng (Trừ điểm đã dùng, Cộng điểm mới thưởng)
-        String sqlUpdatePoints = "UPDATE customers SET loyalty_points = loyalty_points - ? + ? WHERE customer_id = ?";
-
-        // 3. Câu lệnh Lưu Lịch sử quy đổi điểm (Vào bảng point_redemption_history)
-        String sqlHistory = "INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_type, redemption_date) "
-                + "VALUES (?, ?, ?, 'Giảm giá hóa đơn', NOW())";
+        String sql = "INSERT INTO invoices (customer_id, employee_id, created_at, total_amount, total_discount, points_used, points_value, final_amount, payment_method, status, points_earned) "
+                +
+                "VALUES (?, ?, NOW(), ?, ?, ?, ?, ?, ?, 'Completed', ?)";
 
         try {
-            // BẬT CHẾ ĐỘ TRANSACTION: Đảm bảo nếu bị lỗi giữa chừng thì không bị lệch điểm
-            con.setAutoCommit(false);
-
-            // BƯỚC 1: LƯU HÓA ĐƠN
-            PreparedStatement ps = con.prepareStatement(sqlInvoice, Statement.RETURN_GENERATED_KEYS);
-            if (dto.getCustomerId() > 0) {
-                ps.setInt(1, dto.getCustomerId());
-            } else {
-                ps.setNull(1, Types.INTEGER); // Khách vãng lai
-            }
-
+            // Statement.RETURN_GENERATED_KEYS là chìa khóa để xin lại ID vừa tạo
+            PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, dto.getCustomerId());
             ps.setInt(2, dto.getEmployeeId());
             ps.setDouble(3, dto.getTotalAmount());
             ps.setDouble(4, dto.getTotalDiscount());
-            ps.setInt(5, dto.getPointsUsed()); // Chèn số điểm dùng
-            ps.setDouble(6, dto.getPointsValue()); // Chèn số tiền tương ứng
+            ps.setInt(5, dto.getPointsUsed());
+            ps.setDouble(6, dto.getPointsValue());
             ps.setDouble(7, dto.getFinalAmount());
             ps.setString(8, dto.getPaymentMethod());
-            ps.setInt(9, dto.getPointsEarned()); // Chèn số điểm thưởng
+            ps.setInt(9, dto.getPointsEarned());
 
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
-                    generatedId = rs.getInt(1);
+                    generatedId = rs.getInt(1); // Lấy ID hóa đơn tự tăng từ MySQL
                 }
             }
-
-            // BƯỚC 2 & 3: CẬP NHẬT ĐIỂM (Chỉ chạy nếu có Khách Hàng)
-            if (dto.getCustomerId() > 0) {
-
-                // BƯỚC 2: Cập nhật ví điểm của Khách (Cộng/Trừ)
-                PreparedStatement psUpdatePoint = con.prepareStatement(sqlUpdatePoints);
-                psUpdatePoint.setInt(1, dto.getPointsUsed()); // Trừ điểm dùng
-                psUpdatePoint.setInt(2, dto.getPointsEarned()); // Cộng điểm mới
-                psUpdatePoint.setInt(3, dto.getCustomerId());
-                psUpdatePoint.executeUpdate();
-
-                // BƯỚC 3: Lưu Lịch sử dùng điểm (Chỉ lưu nếu khách có XÀI điểm)
-                if (dto.getPointsUsed() > 0) {
-                    PreparedStatement psHistory = con.prepareStatement(sqlHistory);
-                    psHistory.setInt(1, dto.getCustomerId());
-                    psHistory.setInt(2, dto.getPointsUsed());
-                    psHistory.setDouble(3, dto.getPointsValue());
-                    psHistory.executeUpdate();
-                }
-            }
-
-            // CHỐT GIAO DỊCH: Lưu cứng mọi thay đổi vào Database
-            con.commit();
-
         } catch (SQLException e) {
-            try {
-                // NẾU CÓ LỖI BẤT KỲ: Quay ngược thời gian, không lưu gì cả
-                if (con != null)
-                    con.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            System.out.println("========== LỖI SQL LƯU HÓA ĐƠN & ĐIỂM ==========");
+            System.out.println("========== LỖI SQL LƯU INVOICES ==========");
             System.out.println("Nguyên nhân: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                // Trả kết nối về chế độ bình thường
-                if (con != null)
-                    con.setAutoCommit(true);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-
         return generatedId;
     }
 
@@ -144,4 +87,114 @@ public class InvoiceDAO {
         }
         return false;
     }
+   // 1. Sửa hàm tìm kiếm theo ID Hóa đơn
+public ArrayList<InvoiceDTO> searchByInvoiceID(Date sDate, Date eDate, int id) {
+    ArrayList<InvoiceDTO> list = new ArrayList<>();
+    Connection con = DatabaseConnection.getInstance().getConnection();
+    // Thêm logic: Nếu ngày NULL thì bỏ qua điều kiện ngày
+    String sql = "SELECT * FROM invoices WHERE invoice_id = ? " +
+                 "AND ((? IS NULL OR ? IS NULL) OR (created_at BETWEEN ? AND ?)) " +
+                 "ORDER BY created_at DESC";
+    try {
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ps.setDate(2, sDate);
+        ps.setDate(3, eDate);
+        ps.setDate(4, sDate);
+        ps.setDate(5, eDate); // Đảm bảo dùng eDate ở đây
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(mapResultSetToDTO(rs));
+        }
+    } catch (SQLException e) { e.printStackTrace(); }
+    return list;
 }
+
+// 2. Sửa hàm tìm kiếm theo ID Khách hàng
+public ArrayList<InvoiceDTO> searchByCustomerID(Date sDate, Date eDate, int id) {
+    ArrayList<InvoiceDTO> list = new ArrayList<>();
+    Connection con = DatabaseConnection.getInstance().getConnection();
+    String sql = "SELECT * FROM invoices WHERE customer_id = ? " +
+                 "AND ((? IS NULL OR ? IS NULL) OR (created_at BETWEEN ? AND ?)) " +
+                 "ORDER BY created_at DESC";
+    try {
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ps.setDate(2, sDate);
+        ps.setDate(3, eDate);
+        ps.setDate(4, sDate);
+        ps.setDate(5, eDate); // SỬA TỪ sDate THÀNH eDate
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(mapResultSetToDTO(rs));
+        }
+    } catch (SQLException e) { e.printStackTrace(); }
+    return list;
+}
+
+// 3. Sửa hàm tìm kiếm theo ID Nhân viên (Tương tự Khách hàng)
+public ArrayList<InvoiceDTO> searchByEmployeeID(Date sDate, Date eDate, int id) {
+    ArrayList<InvoiceDTO> list = new ArrayList<>();
+    Connection con = DatabaseConnection.getInstance().getConnection();
+    String sql = "SELECT * FROM invoices WHERE employee_id = ? " +
+                 "AND ((? IS NULL OR ? IS NULL) OR (created_at BETWEEN ? AND ?)) " +
+                 "ORDER BY created_at DESC";
+    try {
+        PreparedStatement ps = con.prepareStatement(sql);
+        ps.setInt(1, id);
+        ps.setDate(2, sDate);
+        ps.setDate(3, eDate);
+        ps.setDate(4, sDate);
+        ps.setDate(5, eDate); // SỬA TỪ sDate THÀNH eDate
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(mapResultSetToDTO(rs));
+        }
+    } catch (SQLException e) { e.printStackTrace(); }
+    return list;
+}
+
+// Hàm phụ trợ để tránh lặp code (Helper method)
+private InvoiceDTO mapResultSetToDTO(ResultSet rs) throws SQLException {
+    InvoiceDTO dto = new InvoiceDTO();
+    dto.setInvoiceId(rs.getInt("invoice_id"));
+    dto.setCustomerId(rs.getInt("customer_id"));
+    dto.setEmployeeId(rs.getInt("employee_id"));
+    dto.setCreatedAt(rs.getTimestamp("created_at"));
+    dto.setTotalAmount(rs.getDouble("total_amount"));
+    dto.setTotalDiscount(rs.getDouble("total_discount"));
+    dto.setPointsUsed(rs.getInt("points_used"));
+    dto.setPointsValue(rs.getDouble("points_value"));
+    dto.setFinalAmount(rs.getDouble("final_amount"));
+    dto.setPaymentMethod(rs.getString("payment_method"));
+    dto.setStatus(rs.getString("status"));
+    dto.setPointsEarned(rs.getInt("points_earned"));
+    return dto;
+}
+    public ArrayList<InvoiceDTO> searchByDate(Date sDate, Date eDate) {
+    ArrayList<InvoiceDTO> list = new ArrayList<>();
+    Connection con = DatabaseConnection.getInstance().getConnection();
+    
+    // Sử dụng DATE(created_at) để bỏ qua phần giờ phút giây khi so sánh
+    String sql = "SELECT * FROM invoices WHERE DATE(created_at) BETWEEN ? AND ? ORDER BY created_at DESC";
+    
+    try {
+        PreparedStatement ps = con.prepareStatement(sql);
+        
+        // Kiểm tra nếu ngày null để tránh lỗi NullPointerException
+        ps.setDate(1, sDate);
+        ps.setDate(2, eDate);
+        
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            // Gọi hàm mapResultSetToDTO để gán dữ liệu, tránh viết lại 12 dòng set
+            list.add(mapResultSetToDTO(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+    }
+    
+

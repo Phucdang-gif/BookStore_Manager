@@ -7,7 +7,11 @@ import GUI.dialog.CreateInvoiceDialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.Date;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.text.DecimalFormat;
@@ -17,8 +21,13 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
     private InvoiceBUS invoiceBUS = new InvoiceBUS();
     private JTable table;
     private DefaultTableModel tableModel;
+    private JComboBox<String> cbSearchType;
+    private JTextField txtSearch;
+private com.toedter.calendar.JDateChooser dateStart;
+private com.toedter.calendar.JDateChooser dateEnd;
+private JButton btnSearch;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
-       private BUS.CustomerBUS customerBUS = new BUS.CustomerBUS();
+    private BUS.CustomerBUS customerBUS = new BUS.CustomerBUS();
     private BUS.EmployeeBUS employeeBUS = new BUS.EmployeeBUS();
     public InvoicePanel() {
         initUI();
@@ -47,8 +56,75 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.getViewport().setBackground(Color.WHITE);
+      // ===== PANEL TÌM KIẾM =====
+JPanel topPanel = new JPanel(new BorderLayout());
+topPanel.setBackground(Color.WHITE);
 
-        this.add(scrollPane, BorderLayout.CENTER);
+// Tạo sub-panel chứa các thành phần và Label
+JPanel searchContainer = new JPanel(new GridBagLayout());
+searchContainer.setBackground(Color.WHITE);
+GridBagConstraints gbc = new GridBagConstraints();
+gbc.insets = new java.awt.Insets(5, 8, 5, 2); // Khoảng cách giữa Label và Component
+gbc.fill = GridBagConstraints.VERTICAL;
+gbc.anchor = GridBagConstraints.WEST;
+
+// 1. Nhóm ComboBox "Tìm theo"
+gbc.gridx = 0;
+searchContainer.add(new JLabel("Tìm theo:"), gbc);
+String[] searchTypes = {"Invoice ID", "Customer ID", "Employee ID"};
+cbSearchType = new JComboBox<>(searchTypes);
+cbSearchType.setPreferredSize(new java.awt.Dimension(120, 30));
+gbc.gridx = 1;
+gbc.insets = new java.awt.Insets(5, 2, 5, 15); // Khoảng cách rộng hơn sau mỗi nhóm
+searchContainer.add(cbSearchType, gbc);
+
+// 2. Nhóm Ô nhập "ID"
+gbc.gridx = 2;
+gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+searchContainer.add(new JLabel("ID:"), gbc);
+txtSearch = new JTextField(10);
+txtSearch.setPreferredSize(new java.awt.Dimension(100, 30));
+gbc.gridx = 3;
+gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+searchContainer.add(txtSearch, gbc);
+
+// 3. Nhóm "Từ ngày"
+gbc.gridx = 4;
+gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+searchContainer.add(new JLabel("Từ:"), gbc);
+dateStart = new com.toedter.calendar.JDateChooser();
+dateStart.setPreferredSize(new java.awt.Dimension(130, 30));
+gbc.gridx = 5;
+gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+searchContainer.add(dateStart, gbc);
+
+// 4. Nhóm "Đến ngày"
+gbc.gridx = 6;
+gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+searchContainer.add(new JLabel("Đến:"), gbc);
+dateEnd = new com.toedter.calendar.JDateChooser();
+dateEnd.setPreferredSize(new java.awt.Dimension(130, 30));
+gbc.gridx = 7;
+gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+searchContainer.add(dateEnd, gbc);
+
+// 5. Nút tìm
+btnSearch = new JButton("Tìm");
+btnSearch.setBackground(new Color(0, 123, 255));
+btnSearch.setForeground(Color.WHITE);
+btnSearch.setFocusPainted(false);
+btnSearch.setPreferredSize(new java.awt.Dimension(80, 30));
+btnSearch.addActionListener(e -> executeSearch());
+gbc.gridx = 8;
+gbc.insets = new java.awt.Insets(5, 5, 5, 5);
+searchContainer.add(btnSearch, gbc);
+
+// Đưa toàn bộ cụm sang bên phải
+topPanel.add(searchContainer, BorderLayout.EAST);
+topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+
+this.add(topPanel, BorderLayout.NORTH);this.add(scrollPane, BorderLayout.CENTER);
+
     }
 
     private void loadDataToTable(ArrayList<InvoiceDTO> list) {
@@ -79,8 +155,8 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
                 tableModel.addRow(new Object[] {
                         dto.getInvoiceId(),
-                        customerName, // <--- Đã thay ID bằng Tên
-                        employeeName, // <--- Đã thay ID bằng Tên
+                        dto.getCustomerId(), // <--- Đã thay ID bằng Tên
+                        dto.getEmployeeId(), // <--- Đã thay ID bằng Tên
                         dto.getCreatedAt(),
                         dto.getPaymentMethod(),
                         df.format(dto.getFinalAmount()),
@@ -150,6 +226,44 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         InvoiceDetailDialog dialog = new InvoiceDetailDialog(null, true, invoiceId);
         dialog.setVisible(true);
     }
+    //Tim kiem theo ID, ngay gio
+    private void executeSearch() {
+        String text = txtSearch.getText().trim();
+        
+        Date s = dateStart.getDate();
+        Date eDate = dateEnd.getDate();
+        String type = (String) cbSearchType.getSelectedItem();
+        
+        // Chuyển đổi sang java.sql.Date để làm việc với DB
+        java.sql.Date sqlStart = (s != null) ? new java.sql.Date(s.getTime()) : null;
+        java.sql.Date sqlEnd = (eDate != null) ? new java.sql.Date(eDate.getTime()) : null;
+
+        ArrayList<InvoiceDTO> result;
+
+        if (txtSearch.getText().trim().isEmpty()) {
+            // Nếu ID trống, lọc theo ngày (nếu có chọn ngày)
+            if (s != null && eDate != null) {
+                result = invoiceBUS.searchByDate(sqlStart, sqlEnd);
+            } else {
+                result = invoiceBUS.getAll();
+            }
+        } else {
+            int ID = Integer.valueOf(text);
+            // Tùy theo lựa chọn trong ComboBox mà gọi hàm tương ứng
+            switch (type) {
+                case "Customer ID":
+                    result = invoiceBUS.searchByCustomerID(ID, sqlStart, sqlEnd);
+                    break;
+                case "Employee ID":
+                    result = invoiceBUS.searchByemployeeID(ID, sqlStart, sqlEnd);
+                    break;
+                default: // Mặc định là Invoice ID
+                    result = invoiceBUS.searchByInvoiceID(ID, sqlStart, sqlEnd);
+                    break;
+            }
+        }
+        loadDataToTable(result);
+}
 
     @Override
     public void onSearch(String text) {
@@ -185,4 +299,8 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
 
         return new boolean[] { canAdd, false, canDelete, true, true, false };
     }
+    @Override
+public boolean hasSearch(){
+    return false;
+}
 }

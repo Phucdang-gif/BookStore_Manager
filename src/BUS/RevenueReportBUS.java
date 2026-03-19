@@ -59,4 +59,7 @@ public class RevenueReportBUS {
     public ArrayList<Object[]> getRevenueByYearRange(Date startDate, Date endDate) {
         return dao.getRevenueByYearRange(startDate, endDate);
     }
+    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate) {
+        return dao.getBookReport(startDate, endDate);
+    }
 }
