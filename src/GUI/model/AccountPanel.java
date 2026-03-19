@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import config.SessionManager;
 
 public class AccountPanel extends JPanel implements FeatureControllerInterface {
 
@@ -121,12 +122,11 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
             int accountId = (int) table.getValueAt(row, 0);
 
             // Xóa thật (Tạm thời để tham số người đang đăng nhập là -1)
-            DTO.ValidationResult result = accountBUS.deleteAccount(accountId, -1);
+            DTO.ValidationResult result = accountBUS.deleteAccount(accountId,
+                    SessionManager.getCurrentAccount().getAccountId());
             if (result.showAlert(this)) {
                 JOptionPane.showMessageDialog(this, "Xóa thành công");
                 onRefresh();
-            } else {
-                JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -170,7 +170,7 @@ public class AccountPanel extends JPanel implements FeatureControllerInterface {
 
     @Override
     public void onExportExcel() {
-       GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachTaiKhoan");
+        GUI.util.ExcelExporter.exportJTableToExcel(table, "DanhSachTaiKhoan");
     }
 
     @Override
