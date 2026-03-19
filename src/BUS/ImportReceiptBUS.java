@@ -2,7 +2,6 @@ package BUS;
 
 import DAO.ImportReceiptDAO;
 import DTO.ImportReceiptDTO;
-import DTO.InvoiceDTO;
 import DTO.ValidationResult;
 import java.sql.Date;
 
@@ -33,6 +32,7 @@ public class ImportReceiptBUS {
     public boolean cancelReceipt(int id) {
         return dao.delete(id);
     }
+
     public ArrayList<ImportReceiptDTO> refreshData() {
         return dao.getAll();
     }
@@ -47,13 +47,14 @@ public class ImportReceiptBUS {
         }
         return result;
     }
+
     public ValidationResult addReceipt(ImportReceiptDTO receipt, boolean hasDetails) {
         // 1. Gọi cảnh sát kiểm tra
         ValidationResult vr = Validator.validateImportReceipt(receipt, hasDetails);
-        
+
         // 2. Nếu có lỗi (isValid == false), trả biên bản về ngay lập tức
         if (!vr.isValid()) {
-            return vr; 
+            return vr;
         }
 
         // 3. Nếu an toàn, mới gọi DAO lưu xuống DB
@@ -64,9 +65,10 @@ public class ImportReceiptBUS {
             // (Tùy chọn) Em có thể gán ID mới vào DTO nếu cần dùng tiếp
             receipt.setReceiptId(newId);
         }
-        
+
         return vr;
     }
+
     public ArrayList<ImportReceiptDTO> search(String text) {
         ArrayList<ImportReceiptDTO> result = new ArrayList<>();
         text = text.toLowerCase().trim();
@@ -82,30 +84,34 @@ public class ImportReceiptBUS {
             }
         }
         return result;
-}
-  // Cac ham tim kiem theo ngay gio
-    public ArrayList<ImportReceiptDTO> searchBySupplierID( int ID, Date s, Date e){
+    }
+
+    // Cac ham tim kiem theo ngay gio
+    public ArrayList<ImportReceiptDTO> searchBySupplierID(int ID, Date s, Date e) {
         try {
-           
+
             return dao.searchBySupplierID(s, e, ID);
         } catch (Exception ex) {
             return new ArrayList<>();
         }
     }
-    public ArrayList<ImportReceiptDTO> searchByEmployeeID( int ID , Date s, Date e){
+
+    public ArrayList<ImportReceiptDTO> searchByEmployeeID(int ID, Date s, Date e) {
         try {
-            
+
             return dao.searchByEmployeeID(s, e, ID);
         } catch (Exception ex) {
             return new ArrayList<>();
         }
     }
-    public ArrayList<ImportReceiptDTO> searchByDate (Date s, Date e){
+
+    public ArrayList<ImportReceiptDTO> searchByDate(Date s, Date e) {
         return dao.searchByDate(s, e);
     }
-    public ArrayList<ImportReceiptDTO> searchByImportID(int ID, Date s, Date e){
+
+    public ArrayList<ImportReceiptDTO> searchByImportID(int ID, Date s, Date e) {
         try {
-           
+
             return dao.searchByImportID(ID, s, e);
         } catch (Exception ex) {
             return new ArrayList<>();

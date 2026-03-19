@@ -3,8 +3,7 @@ package BUS;
 import DAO.PermissionGroupDAO;
 import DTO.PermissionGroupDTO;
 import DTO.ValidationResult;
-import DAO.AccountDAO; // Thêm DAO để kiểm tra phụ thuộc tài khoản
-import config.SessionManager;
+import DAO.AccountDAO;
 import java.util.ArrayList;
 
 public class PermissionGroupBUS {
@@ -59,7 +58,6 @@ public class PermissionGroupBUS {
         return vr;
     }
 
-    // 4. Hàm tìm kiếm nhóm quyền theo tên
     public ArrayList<PermissionGroupDTO> search(String text) {
         ArrayList<PermissionGroupDTO> result = new ArrayList<>();
         text = text.toLowerCase(); // Chuyển chữ thường để tìm kiếm không phân biệt hoa/thường

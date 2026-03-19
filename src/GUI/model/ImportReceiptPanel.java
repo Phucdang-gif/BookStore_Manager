@@ -2,7 +2,6 @@ package GUI.model;
 
 import BUS.ImportReceiptBUS;
 import DTO.ImportReceiptDTO;
-import DTO.InvoiceDTO;
 import GUI.dialog.CreateImportDialog;
 import GUI.dialog.ImportDetailDialog;
 import java.awt.GridBagConstraints;
@@ -10,11 +9,9 @@ import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.text.DecimalFormat;
@@ -25,11 +22,11 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
     private ImportReceiptBUS importBUS = new ImportReceiptBUS();
     private JTable table;
     private DefaultTableModel tableModel;
-        private JComboBox<String> cbSearchType;
+    private JComboBox<String> cbSearchType;
     private JTextField txtSearch;
-private com.toedter.calendar.JDateChooser dateStart;
-private com.toedter.calendar.JDateChooser dateEnd;
-private JButton btnSearch;
+    private com.toedter.calendar.JDateChooser dateStart;
+    private com.toedter.calendar.JDateChooser dateEnd;
+    private JButton btnSearch;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
     private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss"); // Định dạng ngày
 
@@ -75,72 +72,72 @@ private JButton btnSearch;
 
         this.add(scrollPane, BorderLayout.CENTER);
         JPanel topPanel = new JPanel(new BorderLayout());
-topPanel.setBackground(Color.WHITE);
+        topPanel.setBackground(Color.WHITE);
 
-// Tạo sub-panel chứa các thành phần và Label
-JPanel searchContainer = new JPanel(new GridBagLayout());
-searchContainer.setBackground(Color.WHITE);
-GridBagConstraints gbc = new GridBagConstraints();
-gbc.insets = new java.awt.Insets(5, 8, 5, 2); // Khoảng cách giữa Label và Component
-gbc.fill = GridBagConstraints.VERTICAL;
-gbc.anchor = GridBagConstraints.WEST;
+        // Tạo sub-panel chứa các thành phần và Label
+        JPanel searchContainer = new JPanel(new GridBagLayout());
+        searchContainer.setBackground(Color.WHITE);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new java.awt.Insets(5, 8, 5, 2); // Khoảng cách giữa Label và Component
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.anchor = GridBagConstraints.WEST;
 
-// 1. Nhóm ComboBox "Tìm theo"
-gbc.gridx = 0;
-searchContainer.add(new JLabel("Tìm theo:"), gbc);
-String[] searchTypes = {"Import ID", "Supplier ID", "Employee ID"};
-cbSearchType = new JComboBox<>(searchTypes);
-cbSearchType.setPreferredSize(new java.awt.Dimension(120, 30));
-gbc.gridx = 1;
-gbc.insets = new java.awt.Insets(5, 2, 5, 15); // Khoảng cách rộng hơn sau mỗi nhóm
-searchContainer.add(cbSearchType, gbc);
+        // 1. Nhóm ComboBox "Tìm theo"
+        gbc.gridx = 0;
+        searchContainer.add(new JLabel("Tìm theo:"), gbc);
+        String[] searchTypes = { "Import ID", "Supplier ID", "Employee ID" };
+        cbSearchType = new JComboBox<>(searchTypes);
+        cbSearchType.setPreferredSize(new java.awt.Dimension(120, 30));
+        gbc.gridx = 1;
+        gbc.insets = new java.awt.Insets(5, 2, 5, 15); // Khoảng cách rộng hơn sau mỗi nhóm
+        searchContainer.add(cbSearchType, gbc);
 
-// 2. Nhóm Ô nhập "ID"
-gbc.gridx = 2;
-gbc.insets = new java.awt.Insets(5, 5, 5, 2);
-searchContainer.add(new JLabel("ID:"), gbc);
-txtSearch = new JTextField(10);
-txtSearch.setPreferredSize(new java.awt.Dimension(100, 30));
-gbc.gridx = 3;
-gbc.insets = new java.awt.Insets(5, 2, 5, 15);
-searchContainer.add(txtSearch, gbc);
+        // 2. Nhóm Ô nhập "ID"
+        gbc.gridx = 2;
+        gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+        searchContainer.add(new JLabel("ID:"), gbc);
+        txtSearch = new JTextField(10);
+        txtSearch.setPreferredSize(new java.awt.Dimension(100, 30));
+        gbc.gridx = 3;
+        gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+        searchContainer.add(txtSearch, gbc);
 
-// 3. Nhóm "Từ ngày"
-gbc.gridx = 4;
-gbc.insets = new java.awt.Insets(5, 5, 5, 2);
-searchContainer.add(new JLabel("Từ:"), gbc);
-dateStart = new com.toedter.calendar.JDateChooser();
-dateStart.setPreferredSize(new java.awt.Dimension(130, 30));
-gbc.gridx = 5;
-gbc.insets = new java.awt.Insets(5, 2, 5, 15);
-searchContainer.add(dateStart, gbc);
+        // 3. Nhóm "Từ ngày"
+        gbc.gridx = 4;
+        gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+        searchContainer.add(new JLabel("Từ:"), gbc);
+        dateStart = new com.toedter.calendar.JDateChooser();
+        dateStart.setPreferredSize(new java.awt.Dimension(130, 30));
+        gbc.gridx = 5;
+        gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+        searchContainer.add(dateStart, gbc);
 
-// 4. Nhóm "Đến ngày"
-gbc.gridx = 6;
-gbc.insets = new java.awt.Insets(5, 5, 5, 2);
-searchContainer.add(new JLabel("Đến:"), gbc);
-dateEnd = new com.toedter.calendar.JDateChooser();
-dateEnd.setPreferredSize(new java.awt.Dimension(130, 30));
-gbc.gridx = 7;
-gbc.insets = new java.awt.Insets(5, 2, 5, 15);
-searchContainer.add(dateEnd, gbc);
+        // 4. Nhóm "Đến ngày"
+        gbc.gridx = 6;
+        gbc.insets = new java.awt.Insets(5, 5, 5, 2);
+        searchContainer.add(new JLabel("Đến:"), gbc);
+        dateEnd = new com.toedter.calendar.JDateChooser();
+        dateEnd.setPreferredSize(new java.awt.Dimension(130, 30));
+        gbc.gridx = 7;
+        gbc.insets = new java.awt.Insets(5, 2, 5, 15);
+        searchContainer.add(dateEnd, gbc);
 
-// 5. Nút tìm
-btnSearch = new JButton("Tìm");
-btnSearch.setBackground(new Color(0, 123, 255));
-btnSearch.setForeground(Color.WHITE);
-btnSearch.setFocusPainted(false);
-btnSearch.setPreferredSize(new java.awt.Dimension(80, 30));
-btnSearch.addActionListener(e -> executeSearch());
-gbc.gridx = 8;
-gbc.insets = new java.awt.Insets(5, 5, 5, 5);
-searchContainer.add(btnSearch, gbc);
+        // 5. Nút tìm
+        btnSearch = new JButton("Tìm");
+        btnSearch.setBackground(new Color(0, 123, 255));
+        btnSearch.setForeground(Color.WHITE);
+        btnSearch.setFocusPainted(false);
+        btnSearch.setPreferredSize(new java.awt.Dimension(80, 30));
+        btnSearch.addActionListener(e -> executeSearch());
+        gbc.gridx = 8;
+        gbc.insets = new java.awt.Insets(5, 5, 5, 5);
+        searchContainer.add(btnSearch, gbc);
 
-// Đưa toàn bộ cụm sang bên phải
-topPanel.add(searchContainer, BorderLayout.EAST);
-topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        // Đưa toàn bộ cụm sang bên phải
+        topPanel.add(searchContainer, BorderLayout.EAST);
+        topPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
 
-this.add(topPanel, BorderLayout.NORTH);
+        this.add(topPanel, BorderLayout.NORTH);
     }
 
     private void loadDataToTable(ArrayList<ImportReceiptDTO> list) {
@@ -230,15 +227,16 @@ this.add(topPanel, BorderLayout.NORTH);
         // Có thể gọi hàm search của BUS ở đây
         ArrayList<ImportReceiptDTO> result = importBUS.search(text);
         loadDataToTable(result);
-       
+
     }
+
     private void executeSearch() {
         String text = txtSearch.getText().trim();
-        
+
         Date s = dateStart.getDate();
         Date eDate = dateEnd.getDate();
         String type = (String) cbSearchType.getSelectedItem();
-        
+
         // Chuyển đổi sang java.sql.Date để làm việc với DB
         java.sql.Date sqlStart = (s != null) ? new java.sql.Date(s.getTime()) : null;
         java.sql.Date sqlEnd = (eDate != null) ? new java.sql.Date(eDate.getTime()) : null;
@@ -268,12 +266,12 @@ this.add(topPanel, BorderLayout.NORTH);
             }
         }
         loadDataToTable(result);
-}
-@Override
-public boolean hasSearch(){
-    return false;
-}
+    }
 
+    @Override
+    public boolean hasSearch() {
+        return false;
+    }
 
     @Override
     public void onRefresh() {

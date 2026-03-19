@@ -113,9 +113,6 @@ public class PermissionDialog extends JDialog {
             int currentLoggedInGroupId = -1;
 
             if (currentUser != null) {
-                // LƯU Ý: Bạn hãy thay đổi .getGroupId() thành tên phương thức (getter)
-                // chính xác được định nghĩa bên trong class AccountDTO của bạn nhé
-                // (ví dụ: getRoleId(), getMaNhomQuyen(), v.v.)
                 currentLoggedInGroupId = currentUser.getPermissionGroupId();
             }
 
@@ -162,8 +159,6 @@ public class PermissionDialog extends JDialog {
                     listNewPerms.add(new PermissionDetailDTO(permissionGroupId, funcCode, combinedActions));
                 }
             }
-
-            // Gọi xuống BUS để lưu dữ liệu
             boolean isSuccess = permissionDetailBUS.saveAllPermissions(permissionGroupId, listNewPerms);
 
             if (isSuccess) {
