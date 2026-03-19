@@ -27,8 +27,6 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
     private com.toedter.calendar.JDateChooser dateEnd;
     private JButton btnSearch;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
-    private BUS.CustomerBUS customerBUS = new BUS.CustomerBUS();
-    private BUS.EmployeeBUS employeeBUS = new BUS.EmployeeBUS();
 
     public InvoicePanel() {
         initUI();
@@ -134,27 +132,6 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         if (list != null) {
             for (InvoiceDTO dto : list) {
                 String statusStr = dto.getStatus().equals("Completed") ? "Hoàn Thành" : "Đã Hủy";
-
-                // 1. Dịch Customer ID -> Tên Khách Hàng
-                String customerName = "Khách Vãng Lai"; // Mặc định nếu ID = 0
-                if (dto.getCustomerId() > 0) {
-                    for (DTO.CustomerDTO cus : customerBUS.getAll()) {
-                        if (cus.getCustomerId() == dto.getCustomerId()) {
-                            customerName = cus.getFullName();
-                            break;
-                        }
-                    }
-                }
-
-                // 2. Dịch Employee ID -> Tên Nhân Viên
-                String employeeName = "Không xác định";
-                for (DTO.EmployeeDTO emp : employeeBUS.getAll()) {
-                    if (emp.getEmployeeId() == dto.getEmployeeId()) {
-                        employeeName = emp.getFullName();
-                        break;
-                    }
-                }
-
                 tableModel.addRow(new Object[] {
                         dto.getInvoiceId(),
                         dto.getCustomerId(),
