@@ -169,6 +169,6 @@ public class PermissionGroupPanel extends JPanel implements FeatureControllerInt
         boolean canEdit = config.SessionManager.hasPermission(458, "Sửa");
         boolean canDelete = config.SessionManager.hasPermission(458, "Xóa");
 
-        return new boolean[] { canAdd, canEdit, canDelete, true, true, false };
+        return new boolean[] { canAdd, canEdit, canDelete, canEdit, true, false };
     }
 }

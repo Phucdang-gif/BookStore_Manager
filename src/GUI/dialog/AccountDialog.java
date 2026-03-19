@@ -154,6 +154,13 @@ public class AccountDialog extends JDialog {
                 btnSave.setVisible(false);
                 btnCancel.setText("Đóng");
             }
+            if(mode.equals("update")) {
+                cbEmployee.setEnabled(false); 
+                if(currentAccount.getAccountId()==151||currentAccount.getAccountId()==config.SessionManager.getCurrentAccount().getAccountId()) {
+                    cbPermissionGroup.setEnabled(false); // Không cho đổi nhóm quyền khi chỉnh sửa tài khoản Admin mặc định hoặc tài khoản thuộc nhóm quyền chung với tài khoản đang đăng nhập
+                }
+            }
+
         }
     }
 
@@ -173,7 +180,12 @@ public class AccountDialog extends JDialog {
 
             } else if (mode.equals("update")) {
                 currentAccount.setPassword(password);
+
+                
+                       
+                
                 currentAccount.setPermissionGroupId(selectedGroup.getPermissionGroupId());
+                
                 currentAccount.setUsername(username);
                 result = accountBUS.updateAccount(currentAccount);
             } else {

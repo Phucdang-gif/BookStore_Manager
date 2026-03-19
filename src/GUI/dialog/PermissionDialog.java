@@ -72,7 +72,14 @@ public class PermissionDialog extends JDialog {
 
         btnCancel.addActionListener(e -> dispose());
         btnSave.addActionListener(e -> savePermissions());
-
+        if(permissionGroupId==151||permissionGroupId==config.SessionManager.getCurrentAccount().getPermissionGroupId()) {
+            btnSave.setEnabled(false);
+            JOptionPane.showMessageDialog(this,
+                    "Nhóm quyền này là nhóm quản trị viên mặc định hoặc nhóm quyền của bạn đang sử dụng.\nBạn không thể chỉnh sửa phân quyền cho nhóm này để đảm bảo an toàn hệ thống.",
+                    "Thông báo bảo mật",
+                    JOptionPane.INFORMATION_MESSAGE);
+                    btnSave.setToolTipText("Không thể chỉnh sửa phân quyền cho nhóm này để đảm bảo an toàn hệ thống.");
+        }
         pnlButtons.add(btnSave);
         pnlButtons.add(btnCancel);
         add(pnlButtons, BorderLayout.SOUTH);
