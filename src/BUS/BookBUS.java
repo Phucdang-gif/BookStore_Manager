@@ -2,12 +2,7 @@ package BUS;
 
 import DAO.BookDAO;
 import DTO.BookDTO;
-import DTO.CategoryDTO;
-import DTO.PublisherDTO;
 import DTO.ValidationResult;
-import GUI.util.ExcelHelper;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -193,69 +188,6 @@ public class BookBUS {
         }).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    // ===================== IMPORT EXCEL =====================
-
-    public String importBooksFromExcel(File file) {
-        List<BookDTO> listImport = ExcelHelper.importBooksFromExcel(file);
-        if (listImport.isEmpty())
-            return "File rỗng hoặc lỗi định dạng!";
-
-        PublisherBUS pubBUS = new PublisherBUS();
-        CategoryBUS catBUS = new CategoryBUS();
-        List<PublisherDTO> listPub = pubBUS.getAll();
-        List<CategoryDTO> listCat = catBUS.getAll();
-
-        int countSuccess = 0, countFail = 0;
-
-        for (BookDTO excelBook : listImport) {
-            for (PublisherDTO p : listPub) {
-                if (p.getName().equalsIgnoreCase(excelBook.getPublisherName())) {
-                    excelBook.setPublisherId(p.getId());
-                    break;
-                }
-            }
-            for (CategoryDTO c : listCat) {
-                if (c.getName().equalsIgnoreCase(excelBook.getCategoryName())) {
-                    excelBook.setCategoryId(c.getId());
-                    break;
-                }
-            }
-
-            ValidationResult result;
-            BookDTO currentDbBook = null;
-            if (excelBook.getBookId() > 0) {
-                currentDbBook = getBookDetails(excelBook.getBookId());
-            }
-
-            if (currentDbBook != null) {
-                currentDbBook.setIsbn(excelBook.getIsbn());
-                currentDbBook.setBookTitle(excelBook.getBookTitle());
-                currentDbBook.setAuthorNames(excelBook.getAuthorNames());
-                currentDbBook.setPublisherId(excelBook.getPublisherId());
-                currentDbBook.setCategoryId(excelBook.getCategoryId());
-                currentDbBook.setImportPrice(excelBook.getImportPrice());
-                currentDbBook.setSellingPrice(excelBook.getSellingPrice());
-                currentDbBook.setStockQuantity(excelBook.getStockQuantity());
-                currentDbBook.setMinimumStock(excelBook.getMinimumStock());
-                currentDbBook.setStatus(excelBook.getStatus());
-                if (excelBook.getImage() != null && !excelBook.getImage().isEmpty()) {
-                    currentDbBook.setImage(excelBook.getImage());
-                }
-                result = updateBook(currentDbBook);
-            } else {
-                excelBook.setBookId(0);
-                result = addBook(excelBook);
-            }
-
-            if (result.isValid())
-                countSuccess++;
-            else
-                countFail++;
-        }
-
-        return "Kết quả nhập:\n- Thành công: " + countSuccess + "\n- Thất bại: " + countFail;
-    }
-
     // ===================== QUẢN LÝ TRẠNG THÁI =====================
 
     public void checkAndUpdateStatus(BookDTO book) {
@@ -299,6 +231,7 @@ public class BookBUS {
             }
         }
     }
+
     public void updateStockAndPrice(int bookId, int quantityAdded, double newImportPrice) {
         try {
             BookDTO book = getBookDetails(bookId);
@@ -314,6 +247,7 @@ public class BookBUS {
             e.printStackTrace();
         }
     }
+
     public void updateQuantity(int bookId, int quantityChange) {
         try {
             BookDTO book = getBookDetails(bookId);
@@ -322,7 +256,7 @@ public class BookBUS {
                 bookDAO.updateQuantity(bookId, quantityChange);
                 book.setStockQuantity(newStock);
                 checkAndUpdateStatus(book);
-             }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

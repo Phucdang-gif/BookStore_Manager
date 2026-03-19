@@ -16,7 +16,7 @@ public class BookDAO {
     public BookDAO() {
     }
 
-    // --- CÁC HÀM THÊM MỚI (CREATE)
+    // --- HÀM THÊM MỚI (CREATE)
     public int insertBook(BookDTO book) throws SQLException {
         Connection conn = DatabaseConnection.getInstance().getConnection();
         int generatedBookId = -1;
