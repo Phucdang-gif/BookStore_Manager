@@ -3,7 +3,6 @@ package BUS;
 import DAO.PermissionGroupDAO;
 import DTO.PermissionGroupDTO;
 import DTO.ValidationResult;
-import config.SessionManager;
 import DAO.AccountDAO;
 import java.util.ArrayList;
 
@@ -35,7 +34,7 @@ public class PermissionGroupBUS {
 
         // 1. Kiểm tra xem Nhóm quyền này có phải là nhóm Quản trị tối cao không (Tránh
         // việc tự xóa nhóm Admin)
-        if (groupId == 151||groupId==config.SessionManager.getCurrentAccount().getPermissionGroupId()) {
+        if (groupId == 151 || groupId == config.SessionManager.getCurrentAccount().getPermissionGroupId()) {
             vr.addError("groupId", "Lỗi: Không được phép xóa Nhóm quyền Quản trị viên mặc định và Nhóm quyền của bạn!");
             return vr;
         }

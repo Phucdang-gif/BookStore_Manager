@@ -293,17 +293,14 @@ INSERT INTO functions (function_name, system_function_code, function_group) VALU
 -- 451=BOOK, 452=CUSTOMER, 453=IMPORT, 454=INVOICE, 455=PROMOTION
 -- 456=EMPLOYEE, 457=ACCOUNT, 458=PERMISSION, 459=SETTING, 460=STATISTIC
 
--- Quản trị viên: full quyền (trừ SETTING chỉ Xem+Sửa, STATISTIC chỉ Xem)
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 451, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- BOOK
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 452, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- CUSTOMER
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 453, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- IMPORT
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 454, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- INVOICE
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 455, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- PROMOTION
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 456, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- EMPLOYEE
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 457, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- ACCOUNT
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 458, 'Xem,Thêm,Sửa,Xóa' FROM permission_groups WHERE group_name='Quản trị viên'; -- PERMISSION
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 459, 'Xem,Sửa'          FROM permission_groups WHERE group_name='Quản trị viên'; -- SETTING
-INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 460, 'Xem'              FROM permission_groups WHERE group_name='Quản trị viên'; -- STATISTIC
+-- 5. PHÂN QUYỀN
+-- Quản trị viên: Tự động lấy tất cả các chức năng trong bảng functions và gán full quyền
+INSERT INTO permission_details (permission_group_id, function_id, actions)
+SELECT 
+    (SELECT permission_group_id FROM permission_groups WHERE group_name = 'Quản trị viên'),
+    function_id, 
+    'Xem,Thêm,Sửa,Xóa'
+FROM functions;
 
 -- Nhân viên bán hàng
 INSERT INTO permission_details (permission_group_id, function_id, actions) SELECT permission_group_id, 451, 'Xem'          FROM permission_groups WHERE group_name='Nhân viên bán hàng'; -- BOOK
