@@ -41,7 +41,7 @@ public class InvoiceDetailDialog extends JDialog {
         add(lblHeader, BorderLayout.NORTH);
 
         // THÊM CỘT "TÊN SÁCH" VÀO BẢNG
-        String[] columns = { "Mã Sách", "Tên Sách", "Số Lượng", "Đơn Giá", "Giảm Giá", "Thành Tiền" };
+        String[] columns = { "Mã sách", "Tên sách", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -145,7 +145,7 @@ public class InvoiceDetailDialog extends JDialog {
             parameters.put("finalAmount", df.format(invoice.getFinalAmount()));
 
             // 4. Compile & Print (Biên dịch và hiển thị)
-            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml";
+            String reportPath = "src\\reports\\Invoice.jrxml";
             net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager
                     .compileReport(reportPath);
             net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager

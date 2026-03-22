@@ -377,110 +377,121 @@ public class CreateInvoiceDialog extends JDialog {
     }
 
     // private void saveInvoice() {
-    //     try {
-    //         // 1. GOM DỮ LIỆU TỪ GIAO DIỆN (Gốc 100%)
-    //         boolean hasDetails = detailModel.getRowCount() > 0;
+    // try {
+    // // 1. GOM DỮ LIỆU TỪ GIAO DIỆN (Gốc 100%)
+    // boolean hasDetails = detailModel.getRowCount() > 0;
 
-    //         CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
-    //         int customerId = (customer != null && customer.getCustomerId() > 0) ? customer.getCustomerId() : 0;
+    // CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
+    // int customerId = (customer != null && customer.getCustomerId() > 0) ?
+    // customer.getCustomerId() : 0;
 
-    //         int employeeId = config.SessionManager.getCurrentAccount() != null
-    //                 ? config.SessionManager.getCurrentAccount().getEmployeeId()
-    //                 : 1;
+    // int employeeId = config.SessionManager.getCurrentAccount() != null
+    // ? config.SessionManager.getCurrentAccount().getEmployeeId()
+    // : 1;
 
-    //         DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
-    //         String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
+    // DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
+    // String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
 
-    //         updateTotals();
-    //         String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
-    //         String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
-    //         double finalToPay = Double.parseDouble(finalStr);
-    //         double discountApplied = Double.parseDouble(discStr); // Tổng giảm (bao gồm cả mã + điểm)
+    // updateTotals();
+    // String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",",
+    // "").trim();
+    // String discStr = lblDiscountAmount.getText().replace("- ", "").replace("
+    // VNĐ", "").replace(",", "").trim();
+    // double finalToPay = Double.parseDouble(finalStr);
+    // double discountApplied = Double.parseDouble(discStr); // Tổng giảm (bao gồm
+    // cả mã + điểm)
 
-    //         // --- THÊM: Lấy số liệu điểm ---
-    //         int pointsUsed = 0;
-    //         try {
-    //             pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
-    //         } catch (Exception e) {
-    //         }
-    //         double pointsValue = pointsUsed * getDiemToTien();
+    // // --- THÊM: Lấy số liệu điểm ---
+    // int pointsUsed = 0;
+    // try {
+    // pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
+    // } catch (Exception e) {
+    // }
+    // double pointsValue = pointsUsed * getDiemToTien();
 
-    //         int pointsEarned = 0;
-    //         try {
-    //             pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim());
-    //         } catch (Exception e) {
-    //         }
-    //         // ------------------------------
+    // int pointsEarned = 0;
+    // try {
+    // pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+",
+    // "").replace(" điểm", "").trim());
+    // } catch (Exception e) {
+    // }
+    // // ------------------------------
 
-    //         // Đóng gói DTO (Gốc)
-    //         InvoiceDTO invoice = new InvoiceDTO();
-    //         invoice.setCustomerId(customerId);
-    //         invoice.setEmployeeId(employeeId);
-    //         invoice.setTotalAmount(currentTotal);
-    //         invoice.setTotalDiscount(discountApplied);
-    //         invoice.setFinalAmount(finalToPay);
-    //         invoice.setPaymentMethod(paymentMethod);
+    // // Đóng gói DTO (Gốc)
+    // InvoiceDTO invoice = new InvoiceDTO();
+    // invoice.setCustomerId(customerId);
+    // invoice.setEmployeeId(employeeId);
+    // invoice.setTotalAmount(currentTotal);
+    // invoice.setTotalDiscount(discountApplied);
+    // invoice.setFinalAmount(finalToPay);
+    // invoice.setPaymentMethod(paymentMethod);
 
-    //         // --- THÊM: Gắn điểm vào DTO ---
-    //         invoice.setPointsUsed(pointsUsed);
-    //         invoice.setPointsValue(pointsValue);
-    //         invoice.setPointsEarned(pointsEarned);
-    //         // ------------------------------
+    // // --- THÊM: Gắn điểm vào DTO ---
+    // invoice.setPointsUsed(pointsUsed);
+    // invoice.setPointsValue(pointsValue);
+    // invoice.setPointsEarned(pointsEarned);
+    // // ------------------------------
 
-    //         // 2. GỌI LỚP BUS KIỂM DUYỆT (Gốc)
-    //         DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails, customer);
+    // // 2. GỌI LỚP BUS KIỂM DUYỆT (Gốc)
+    // DTO.ValidationResult result = invoiceBUS.addInvoice(invoice, hasDetails,
+    // customer);
 
-    //         // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ (Gốc)
-    //         if (result.isValid()) {
-    //             ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
-    //             for (int i = 0; i < detailModel.getRowCount(); i++) {
-    //                 int bId = (int) detailModel.getValueAt(i, 0);
-    //                 double price = (double) detailModel.getValueAt(i, 2);
-    //                 int qty = (int) detailModel.getValueAt(i, 3);
-    //                 double subTotal = (double) detailModel.getValueAt(i, 4);
+    // // 3. XỬ LÝ KẾT QUẢ HIỂN THỊ (Gốc)
+    // if (result.isValid()) {
+    // ArrayList<InvoiceDetailDTO> listDetails = new ArrayList<>();
+    // for (int i = 0; i < detailModel.getRowCount(); i++) {
+    // int bId = (int) detailModel.getValueAt(i, 0);
+    // double price = (double) detailModel.getValueAt(i, 2);
+    // int qty = (int) detailModel.getValueAt(i, 3);
+    // double subTotal = (double) detailModel.getValueAt(i, 4);
 
-    //                 listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty, price, 0, subTotal));
+    // listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty,
+    // price, 0, subTotal));
 
-    //                 bookBUS.updateQuantity(bId, qty); // Trừ tồn kho qua BUS
-    //             }
-    //             detailBUS.insertBatch(listDetails); // Lưu chi tiết qua BUS
+    // bookBUS.updateQuantity(bId, qty); // Trừ tồn kho qua BUS
+    // }
+    // detailBUS.insertBatch(listDetails); // Lưu chi tiết qua BUS
 
-    //             if (promo != null && promo.getServiceId() != 0) {
-    //                 InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
-    //                 serviceLog.setInvoiceId(invoice.getInvoiceId());
-    //                 serviceLog.setServiceId(promo.getServiceId());
-    //                 serviceLog.setServiceType(promo.getDiscountType());
-    //                 // Chỉ lưu tiền giảm của Mã Khuyến Mãi (Tổng giảm - Tiền của điểm)
-    //                 serviceLog.setDiscountValue(discountApplied - pointsValue);
-    //                 serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
+    // if (promo != null && promo.getServiceId() != 0) {
+    // InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
+    // serviceLog.setInvoiceId(invoice.getInvoiceId());
+    // serviceLog.setServiceId(promo.getServiceId());
+    // serviceLog.setServiceType(promo.getDiscountType());
+    // // Chỉ lưu tiền giảm của Mã Khuyến Mãi (Tổng giảm - Tiền của điểm)
+    // serviceLog.setDiscountValue(discountApplied - pointsValue);
+    // serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
 
-    //                 invoiceServiceBUS.insert(serviceLog); // Lưu qua BUS
-    //             }
+    // invoiceServiceBUS.insert(serviceLog); // Lưu qua BUS
+    // }
 
-    //             JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #" + invoice.getInvoiceId());
-    //             if (GUI.model.BookTablePanel.getInstance() != null) {
-    //                 GUI.model.BookTablePanel.getInstance().refreshTable();
-    //             }
-    //             bookBUS.loadDataFromDB();
-    //             dispose();
+    // JOptionPane.showMessageDialog(this, "LƯU HÓA ĐƠN THÀNH CÔNG!\nMã Hóa đơn: #"
+    // + invoice.getInvoiceId());
+    // if (GUI.model.BookTablePanel.getInstance() != null) {
+    // GUI.model.BookTablePanel.getInstance().refreshTable();
+    // }
+    // bookBUS.loadDataFromDB();
+    // dispose();
 
-    //         } else {
-    //             GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
-    //             txtPointsUsed.setBorder(UIManager.getBorder("TextField.border"));
+    // } else {
+    // GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
+    // txtPointsUsed.setBorder(UIManager.getBorder("TextField.border"));
 
-    //             if (result.getError("details") != null) {
-    //                 GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
-    //             }
-    //             if (result.getError("pointsUsed") != null) {
-    //                 GUI.util.ValidationUI.setError(txtPointsUsed, result.getError("pointsUsed"));
-    //             }
+    // if (result.getError("details") != null) {
+    // GUI.util.ValidationUI.setError(tblInvoiceDetails,
+    // result.getError("details"));
+    // }
+    // if (result.getError("pointsUsed") != null) {
+    // GUI.util.ValidationUI.setError(txtPointsUsed, result.getError("pointsUsed"));
+    // }
 
-    //             JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi Thanh Toán", JOptionPane.WARNING_MESSAGE);
-    //         }
-    //     } catch (Exception ex) {
-    //         ex.printStackTrace();
-    //         JOptionPane.showMessageDialog(this, "Lỗi hệ thống: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-    //     }
+    // JOptionPane.showMessageDialog(this, result.getSummary(), "Lỗi Thanh Toán",
+    // JOptionPane.WARNING_MESSAGE);
+    // }
+    // } catch (Exception ex) {
+    // ex.printStackTrace();
+    // JOptionPane.showMessageDialog(this, "Lỗi hệ thống: " + ex.getMessage(),
+    // "Lỗi", JOptionPane.ERROR_MESSAGE);
+    // }
     // }
     // --- HÀM 1: XỬ LÝ THANH TOÁN (PAYMENT) ---
     private void processPaymentAndPrint() {
@@ -489,7 +500,8 @@ public class CreateInvoiceDialog extends JDialog {
             CustomerDTO customer = (CustomerDTO) cbCustomer.getSelectedItem();
             int customerId = (customer != null && customer.getCustomerId() > 0) ? customer.getCustomerId() : 0;
             int employeeId = config.SessionManager.getCurrentAccount() != null
-                    ? config.SessionManager.getCurrentAccount().getEmployeeId() : 1;
+                    ? config.SessionManager.getCurrentAccount().getEmployeeId()
+                    : 1;
 
             DiscountServiceDTO promo = (DiscountServiceDTO) cbDiscount.getSelectedItem();
             String paymentMethod = (String) cbPaymentMethod.getSelectedItem();
@@ -498,14 +510,20 @@ public class CreateInvoiceDialog extends JDialog {
             String finalStr = lblFinalAmount.getText().replace(" VNĐ", "").replace(",", "").trim();
             String discStr = lblDiscountAmount.getText().replace("- ", "").replace(" VNĐ", "").replace(",", "").trim();
             double finalToPay = Double.parseDouble(finalStr);
-            double discountApplied = Double.parseDouble(discStr); 
+            double discountApplied = Double.parseDouble(discStr);
 
             int pointsUsed = 0;
-            try { pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim()); } catch (Exception e) {}
+            try {
+                pointsUsed = Integer.parseInt(txtPointsUsed.getText().trim());
+            } catch (Exception e) {
+            }
             double pointsValue = pointsUsed * getDiemToTien();
 
             int pointsEarned = 0;
-            try { pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim()); } catch (Exception e) {}
+            try {
+                pointsEarned = Integer.parseInt(lblPointsEarned.getText().replace("+", "").replace(" điểm", "").trim());
+            } catch (Exception e) {
+            }
 
             // Set data to DTO
             InvoiceDTO invoice = new InvoiceDTO();
@@ -531,9 +549,9 @@ public class CreateInvoiceDialog extends JDialog {
                     int qty = (int) detailModel.getValueAt(i, 3);
                     double subTotal = (double) detailModel.getValueAt(i, 4);
                     listDetails.add(new InvoiceDetailDTO(0, invoice.getInvoiceId(), bId, qty, price, 0, subTotal));
-                    bookBUS.updateQuantity(bId, qty); 
+                    bookBUS.updateQuantity(bId, qty);
                 }
-                detailBUS.insertBatch(listDetails); 
+                detailBUS.insertBatch(listDetails);
 
                 if (promo != null && promo.getServiceId() != 0) {
                     InvoiceServiceDTO serviceLog = new InvoiceServiceDTO();
@@ -542,7 +560,7 @@ public class CreateInvoiceDialog extends JDialog {
                     serviceLog.setServiceType(promo.getDiscountType());
                     serviceLog.setDiscountValue(discountApplied - pointsValue);
                     serviceLog.setDescription("Áp dụng mã KM khi lập Hóa đơn");
-                    invoiceServiceBUS.insert(serviceLog); 
+                    invoiceServiceBUS.insert(serviceLog);
                 }
 
                 // ==========================================
@@ -550,8 +568,9 @@ public class CreateInvoiceDialog extends JDialog {
                 // ==========================================
                 printReceipt(invoice, customer, paymentMethod);
 
-                JOptionPane.showMessageDialog(this, "Payment success! (Thanh toán thành công!)\nInvoice ID: #" + invoice.getInvoiceId());
-                
+                JOptionPane.showMessageDialog(this,
+                        "Payment success! (Thanh toán thành công!)\nInvoice ID: #" + invoice.getInvoiceId());
+
                 // Refresh data
                 if (GUI.model.BookTablePanel.getInstance() != null) {
                     GUI.model.BookTablePanel.getInstance().refreshTable();
@@ -562,8 +581,10 @@ public class CreateInvoiceDialog extends JDialog {
             } else {
                 GUI.util.ValidationUI.resetAll(tblInvoiceDetails);
                 txtPointsUsed.setBorder(UIManager.getBorder("TextField.border"));
-                if (result.getError("details") != null) GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
-                if (result.getError("pointsUsed") != null) GUI.util.ValidationUI.setError(txtPointsUsed, result.getError("pointsUsed"));
+                if (result.getError("details") != null)
+                    GUI.util.ValidationUI.setError(tblInvoiceDetails, result.getError("details"));
+                if (result.getError("pointsUsed") != null)
+                    GUI.util.ValidationUI.setError(txtPointsUsed, result.getError("pointsUsed"));
                 JOptionPane.showMessageDialog(this, result.getSummary(), "Payment Error", JOptionPane.WARNING_MESSAGE);
             }
         } catch (Exception ex) {
@@ -578,13 +599,14 @@ public class CreateInvoiceDialog extends JDialog {
             // Lấy data từ JTable
             JRTableModelDataSource dataSource = new JRTableModelDataSource(detailModel);
             java.util.Map<String, Object> parameters = new java.util.HashMap<>();
-            
+
             // Lấy tên thật của nhân viên từ Session
-            String empName = config.SessionManager.getCurrentAccount() != null ? 
-                             config.SessionManager.getCurrentAccount().getUsername() : "Nhân viên";
-            String cusName = (customer != null && customer.getCustomerId() > 0) ? 
-                             customer.getFullName() : "Khách vãng lai";
-                             
+            String empName = config.SessionManager.getCurrentAccount() != null
+                    ? config.SessionManager.getCurrentAccount().getUsername()
+                    : "Nhân viên";
+            String cusName = (customer != null && customer.getCustomerId() > 0) ? customer.getFullName()
+                    : "Khách vãng lai";
+
             // Format ngày giờ hiện tại
             String currentDate = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date());
 
@@ -594,18 +616,20 @@ public class CreateInvoiceDialog extends JDialog {
             parameters.put("customerName", cusName);
             parameters.put("employeeName", empName);
             parameters.put("paymentMethod", paymentMethod);
-            
+
             parameters.put("totalAmount", lblTotalAmount.getText());
             parameters.put("totalDiscount", lblDiscountAmount.getText());
             parameters.put("pointsUsed", txtPointsUsed.getText());
-            parameters.put("pointsValue", df.format(invoice.getPointsValue())); 
+            parameters.put("pointsValue", df.format(invoice.getPointsValue()));
             parameters.put("finalAmount", lblFinalAmount.getText());
 
             // Compile & Print
-            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml"; 
-            net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager.compileReport(reportPath);
-            net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-            
+            String reportPath = "src\\reports\\Invoice.jrxml";
+            net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager
+                    .compileReport(reportPath);
+            net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager
+                    .fillReport(jasperReport, parameters, dataSource);
+
             net.sf.jasperreports.view.JasperViewer.viewReport(jasperPrint, false);
 
         } catch (Exception ex) {
