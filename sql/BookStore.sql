@@ -338,7 +338,8 @@ INSERT INTO customers (full_name, phone, loyalty_points, registration_date) VALU
 ('Tạ Văn Khải',        '0905555666',   40, '2024-09-14'),
 ('Phan Thị Bạch',      '0904666777',  280, '2024-10-05'),
 ('Trương Văn Hiếu',    '0903777888',  160, '2024-11-17'),
-('Mai Thị Thơ',        '0902888999',  480, '2024-12-01');
+('Mai Thị Thơ',        '0902888999',  480, '2024-12-01'),
+('Khách vãng lai',     '0000000000',    0, '2023-01-01');
 
 -- 7. LỊCH SỬ QUY ĐỔI ĐIỂM (20)
 INSERT INTO point_redemption_history (customer_id, points_redeemed, value_received, redemption_date, redemption_type)
