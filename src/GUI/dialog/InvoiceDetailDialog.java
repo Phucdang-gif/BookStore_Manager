@@ -14,9 +14,9 @@ import java.text.DecimalFormat;
 public class InvoiceDetailDialog extends JDialog {
 
     private int invoiceId;
-    private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS(); 
+    private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS();
     private BookBUS bookBUS = new BookBUS(); // Khai báo BookBUS để lấy Tên Sách
-    
+
     private JTable table;
     private DefaultTableModel tableModel;
     private DecimalFormat df = new DecimalFormat("#,### VNĐ");
@@ -34,42 +34,42 @@ public class InvoiceDetailDialog extends JDialog {
 
     private void initUI() {
         setLayout(new BorderLayout(10, 10));
-        
+
         JLabel lblHeader = new JLabel("CÁC SẢN PHẨM TRONG HÓA ĐƠN #" + invoiceId, SwingConstants.CENTER);
         lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblHeader.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(lblHeader, BorderLayout.NORTH);
 
         // THÊM CỘT "TÊN SÁCH" VÀO BẢNG
-        String[] columns = {"Mã Sách", "Tên Sách", "Số Lượng", "Đơn Giá", "Giảm Giá", "Thành Tiền"};
+        String[] columns = { "Mã Sách", "Tên Sách", "Số Lượng", "Đơn Giá", "Giảm Giá", "Thành Tiền" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; 
+                return false;
             }
         };
         table = new JTable(tableModel);
         table.setRowHeight(30);
-        
+
         // Chỉnh độ rộng để tên sách hiển thị thoải mái
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
         table.getColumnModel().getColumn(1).setPreferredWidth(230); // Tên sách rộng nhất
         table.getColumnModel().getColumn(2).setPreferredWidth(80);
-        
+
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         JPanel pnlBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnPrint = new JButton("IN LẠI HÓA ĐƠN");
-btnPrint.setBackground(new Color(0, 123, 255));
-btnPrint.setForeground(Color.WHITE);
-btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 13));
-btnPrint.setFocusPainted(false);
-btnPrint.addActionListener(e -> printOldInvoice()); // Gọi hàm in
-pnlBottom.add(btnPrint);
+        btnPrint.setBackground(new Color(0, 123, 255));
+        btnPrint.setForeground(Color.WHITE);
+        btnPrint.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnPrint.setFocusPainted(false);
+        btnPrint.addActionListener(e -> printOldInvoice()); // Gọi hàm in
+        pnlBottom.add(btnPrint);
         JButton btnClose = new JButton("Đóng");
         btnClose.addActionListener(e -> dispose());
         pnlBottom.add(btnClose);
-        
+
         add(pnlBottom, BorderLayout.SOUTH);
     }
 
@@ -85,30 +85,31 @@ pnlBottom.add(btnPrint);
                 }
 
                 // 2. Nạp dữ liệu lên bảng (Có thêm cột Tên Sách)
-                tableModel.addRow(new Object[]{
-                    dto.getBookId(), 
-                    bookTitle,        // <--- Hiển thị tên sách 
-                    dto.getQuantity(),
-                    df.format(dto.getUnitPrice()),
-                    df.format(dto.getDiscount()),
-                    df.format(dto.getSubtotal())
+                tableModel.addRow(new Object[] {
+                        dto.getBookId(),
+                        bookTitle, // <--- Hiển thị tên sách
+                        dto.getQuantity(),
+                        df.format(dto.getUnitPrice()),
+                        df.format(dto.getDiscount()),
+                        df.format(dto.getSubtotal())
                 });
             }
         }
     }
+
     // --- HÀM XỬ LÝ IN LẠI (REPRINT) ---
     private void printOldInvoice() {
         try {
             // 1. Lấy dữ liệu bảng từ JTable đang hiển thị sẵn trên màn hình
-            net.sf.jasperreports.engine.data.JRTableModelDataSource dataSource = 
-                new net.sf.jasperreports.engine.data.JRTableModelDataSource(tableModel);
+            net.sf.jasperreports.engine.data.JRTableModelDataSource dataSource = new net.sf.jasperreports.engine.data.JRTableModelDataSource(
+                    tableModel);
             java.util.Map<String, Object> parameters = new java.util.HashMap<>();
 
             // 2. Query (Truy vấn) lại hóa đơn gốc từ Database
             // Giả sử InvoiceBUS của em có hàm getById(id) để lấy ra InvoiceDTO
             InvoiceBUS invoiceBus = new InvoiceBUS();
-            DTO.InvoiceDTO invoice = invoiceBus.getById(this.invoiceId); 
-            
+            DTO.InvoiceDTO invoice = invoiceBus.getById(this.invoiceId);
+
             if (invoice == null) {
                 JOptionPane.showMessageDialog(this, "Error (Lỗi): Không tìm thấy dữ liệu hóa đơn gốc!");
                 return;
@@ -119,7 +120,8 @@ pnlBottom.add(btnPrint);
             if (invoice.getCustomerId() > 0) {
                 BUS.CustomerBUS customerBus = new BUS.CustomerBUS();
                 DTO.CustomerDTO cus = customerBus.getById(invoice.getCustomerId());
-                if (cus != null) cusName = cus.getFullName();
+                if (cus != null)
+                    cusName = cus.getFullName();
             }
 
             // Định dạng ngày giờ
@@ -132,7 +134,8 @@ pnlBottom.add(btnPrint);
             parameters.put("invoiceId", String.valueOf(invoice.getInvoiceId()));
             parameters.put("createdAt", createdAtStr);
             parameters.put("customerName", cusName);
-            parameters.put("employeeName", "Nhân viên ID: " + invoice.getEmployeeId()); // Em có thể gọi EmployeeBUS để lấy tên thật
+            parameters.put("employeeName", "Nhân viên ID: " + invoice.getEmployeeId()); // Em có thể gọi EmployeeBUS để
+                                                                                        // lấy tên thật
             parameters.put("paymentMethod", invoice.getPaymentMethod());
 
             parameters.put("totalAmount", df.format(invoice.getTotalAmount()));
@@ -142,10 +145,12 @@ pnlBottom.add(btnPrint);
             parameters.put("finalAmount", df.format(invoice.getFinalAmount()));
 
             // 4. Compile & Print (Biên dịch và hiển thị)
-            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml"; 
-            net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager.compileReport(reportPath);
-            net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-            
+            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml";
+            net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager
+                    .compileReport(reportPath);
+            net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager
+                    .fillReport(jasperReport, parameters, dataSource);
+
             net.sf.jasperreports.view.JasperViewer.viewReport(jasperPrint, false);
 
         } catch (Exception ex) {
