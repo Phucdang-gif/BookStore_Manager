@@ -23,10 +23,13 @@ public class RevenueReportBUS {
         return dao.EmployeeReport(startDate, endDate);
     }
 
-    // Thống kê sách theo ngày bắt đầu và kết thúc
-    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate, int categoryId, int publisherId,
-            int authorId) {
-        return dao.BookReport(startDate, endDate, categoryId, publisherId, authorId);
+    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate, int categoryId, int authorId,
+            int publisherId) {
+        return dao.getBookReport(startDate, endDate, categoryId, authorId, publisherId);
+    }
+
+    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate) {
+        return getBookReport(startDate, endDate, 0, 0, 0);
     }
 
     // Thống kê doanh thu theo tháng
@@ -58,8 +61,5 @@ public class RevenueReportBUS {
 
     public ArrayList<Object[]> getRevenueByYearRange(Date startDate, Date endDate) {
         return dao.getRevenueByYearRange(startDate, endDate);
-    }
-    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate) {
-        return dao.getBookReport(startDate, endDate);
     }
 }

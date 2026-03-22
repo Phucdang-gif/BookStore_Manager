@@ -381,7 +381,10 @@ public class RevenueReportDAO {
         }
         return list;
     }
-    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate) {
+
+    // 3. THỐNG KÊ SÁCH (Đã đồng bộ thứ tự: Category -> Author -> Publisher)
+    public ArrayList<BookRevenueDTO> getBookReport(Date startDate, Date endDate, int categoryId, int authorId,
+            int publisherId) {
         ArrayList<BookRevenueDTO> list = new ArrayList<>();
         String sql = "SELECT b.book_id, b.book_title, "
                 + "SUM(id.quantity) AS total_quantity, "
@@ -391,16 +394,27 @@ public class RevenueReportDAO {
                 + "JOIN invoices i ON id.invoice_id = i.invoice_id "
                 + "WHERE (? IS NULL OR DATE(i.created_at) >= ?) "
                 + "AND (? IS NULL OR DATE(i.created_at) <= ?) "
+                + "AND (? = 0 OR b.category_id = ?) "
+                + "AND (? = 0 OR EXISTS (" // Lọc Tác giả trước
+                + "    SELECT 1 FROM book_authors ba WHERE ba.book_id = b.book_id AND ba.author_id = ?"
+                + ")) "
+                + "AND (? = 0 OR b.publisher_id = ?) " // Lọc NXB sau
                 + "GROUP BY b.book_id, b.book_title "
                 + "ORDER BY total_quantity DESC";
         try (Connection con = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
 
-            // Set params Ngày
             ps.setDate(1, startDate);
             ps.setDate(2, startDate);
             ps.setDate(3, endDate);
             ps.setDate(4, endDate);
+            ps.setInt(5, categoryId);
+            ps.setInt(6, categoryId);
+            // THỨ TỰ MỚI: Author (7,8) -> Publisher (9,10)
+            ps.setInt(7, authorId);
+            ps.setInt(8, authorId);
+            ps.setInt(9, publisherId);
+            ps.setInt(10, publisherId);
 
             try (ResultSet rs = ps.executeQuery()) {
                 int number = 1;
@@ -418,6 +432,5 @@ public class RevenueReportDAO {
             e.printStackTrace();
         }
         return list;
-    
     }
 }

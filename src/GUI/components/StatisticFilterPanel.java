@@ -47,12 +47,14 @@ public class StatisticFilterPanel extends JPanel {
     }
 
     // Constructor 3 tham số (backward compatible)
-    public StatisticFilterPanel(boolean showTimeFilter, boolean showBookFilters, FilterListener listener) {
-        this(showTimeFilter, showBookFilters, false, listener);
+    public StatisticFilterPanel(boolean showTimeFilter, boolean showDetailedTime, boolean showBookFilters,
+            FilterListener listener) {
+        this(showTimeFilter, showDetailedTime, showBookFilters, false, listener);
     }
 
     // Constructor đầy đủ
-    public StatisticFilterPanel(boolean showTimeFilter, boolean showBookFilters, boolean showViewMode,
+    public StatisticFilterPanel(boolean showTimeFilter, boolean showDetailedTime, boolean showBookFilters,
+            boolean showViewMode,
             FilterListener listener) {
         this.listener = listener;
         this.showBookFilters = showBookFilters;
@@ -83,7 +85,7 @@ public class StatisticFilterPanel extends JPanel {
         // FILTER THỜI GIAN
         // ----------------------------------------------------------------
         if (showTimeFilter) {
-            String[] times = { "Tất cả", "3 ngày qua", "7 ngày qua", "30 ngày qua", "3 tháng qua", "Năm nay",
+            String[] times = { "Tất cả", "3 ngày qua", "7 ngày qua",
                     "Tùy chỉnh..." };
             cbTimeRange = new JComboBox<>(times);
             cbTimeRange.setPreferredSize(new Dimension(115, 30));
@@ -250,13 +252,15 @@ public class StatisticFilterPanel extends JPanel {
             contentPanel.add(new JLabel("Thời gian:"));
             contentPanel.add(cbTimeRange);
             contentPanel.add(makeSeparator());
-            contentPanel.add(new JLabel("Quý:"));
-            contentPanel.add(cbQuarter);
-            contentPanel.add(new JLabel("Tháng:"));
-            contentPanel.add(cbMonth);
-            contentPanel.add(new JLabel("Năm:"));
-            contentPanel.add(cbYear);
-            contentPanel.add(makeSeparator());
+            if (showDetailedTime) {
+                contentPanel.add(new JLabel("Quý:"));
+                contentPanel.add(cbQuarter);
+                contentPanel.add(new JLabel("Tháng:"));
+                contentPanel.add(cbMonth);
+                contentPanel.add(new JLabel("Năm:"));
+                contentPanel.add(cbYear);
+                contentPanel.add(makeSeparator());
+            }
             contentPanel.add(new JLabel("Từ:"));
             contentPanel.add(dcStart);
             contentPanel.add(new JLabel("Đến:"));

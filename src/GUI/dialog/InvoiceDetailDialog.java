@@ -26,7 +26,7 @@ public class InvoiceDetailDialog extends JDialog {
         this.invoiceId = invoiceId;
 
         setTitle("Chi Tiết Hóa Đơn #" + invoiceId);
-        setSize(750, 450); // Mở rộng chiều ngang một chút cho tên sách khỏi bị cắt
+        setSize(750, 450);
         setLocationRelativeTo(null);
         initUI();
         loadDetails();

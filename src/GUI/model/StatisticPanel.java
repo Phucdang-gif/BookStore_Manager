@@ -241,9 +241,6 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         return card;
     }
 
-    // ====================================================================
-    // TAB DOANH THU (CÓ BIỂU ĐỒ CỘT - KẾT HỢP FILTER CÓ XEM THEO)
-    // ====================================================================
     private JPanel createRevenueTab() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(Color.WHITE);
@@ -265,7 +262,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         panel.add(splitPane, BorderLayout.CENTER);
 
         final GUI.components.StatisticFilterPanel[] filterHolder = new GUI.components.StatisticFilterPanel[1];
-        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, false, false,
+        filterHolder[0] = new GUI.components.StatisticFilterPanel(true, true, false, true,
                 (startDate, endDate, catId, auId, pubId) -> {
 
                     String mode = filterHolder[0].getViewMode();
@@ -375,26 +372,17 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
 
             new GUI.dialog.ImportDetailDialog(parentFrame, true, receiptId).setVisible(true);
         });
-
-        // Sử dụng bộ lọc cũ (không có showViewMode -> tự ẩn đi)
-        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, false,
+        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(true, false, false,
+                false,
                 (startDate, endDate, catId, auId, pubId) -> {
-
                     BUS.ImportReceiptBUS importBus = new BUS.ImportReceiptBUS();
                     ArrayList<DTO.ImportReceiptDTO> allReceipts = importBus.getAll();
-
                     model.setRowCount(0);
 
                     if (allReceipts != null) {
                         for (DTO.ImportReceiptDTO receipt : allReceipts) {
-                            java.util.Calendar cal = java.util.Calendar.getInstance();
-                            cal.setTime(receipt.getReceiptDate());
-                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                            cal.set(java.util.Calendar.MINUTE, 0);
-                            cal.set(java.util.Calendar.SECOND, 0);
-                            cal.set(java.util.Calendar.MILLISECOND, 0);
-                            java.sql.Date receiptDate = new java.sql.Date(cal.getTimeInMillis());
-
+                            java.sql.Date receiptDate = new java.sql.Date(receipt.getReceiptDate().getTime());
+                            // Logic lọc ngày thủ công tại BUS/DAO hoặc tại đây
                             boolean passStart = (startDate == null) || !receiptDate.before(startDate);
                             boolean passEnd = (endDate == null) || !receiptDate.after(endDate);
 
@@ -404,7 +392,7 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
                                         sdf.format(receipt.getReceiptDate()),
                                         "NCC " + receipt.getSupplierId(),
                                         "NV " + receipt.getEmployeeId(),
-                                        receipt.getTotalAmount(), // Double → sort đúng
+                                        receipt.getTotalAmount(),
                                         receipt.getStatus()
                                 });
                             }
@@ -418,13 +406,11 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
     }
 
     private JPanel createTopBooksTab() {
-        JPanel panel = new JPanel(new BorderLayout());
-        JTextField txtStart = new JTextField(firstDayOfMonth), txtEnd = new JTextField(lastDayOfMonth);
-        JButton btnFilter = new JButton("Lọc Sách Bán Chạy");
-        panel.add(createFilterFrame(new JLabel("Từ ngày:"), txtStart, new JLabel("Đến ngày:"), txtEnd, btnFilter),
-                BorderLayout.WEST);
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBackground(Color.WHITE);
 
-        String[] cols = { "Thứ Hạng", "Mã Sách", "Tên Sách", "Số Lượng Đã Bán", "Doanh Thu Thu Về" };
+        // 1. Thiết lập bảng dữ liệu
+        String[] cols = { "Thứ Hạng", "Mã Sách", "Tên Sách", "Số Lượng Đã Bán", "Doanh Thu" };
         DefaultTableModel model = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -433,21 +419,31 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         };
         JTable table = createCustomTable(model);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
+        GUI.components.StatisticFilterPanel filterPanel = new GUI.components.StatisticFilterPanel(
+                true,
+                false,
+                true,
+                false,
+                (startDate, endDate, catId, auId, pubId) -> {
+                    ArrayList<BookRevenueDTO> list = reportBUS.getBookReport(startDate, endDate, catId, auId, pubId);
 
-        btnFilter.addActionListener(e -> {
-            try {
-                ArrayList<BookRevenueDTO> list = reportBUS.getBookReport(
-                        new java.sql.Date(sdf.parse(txtStart.getText()).getTime()),
-                        new java.sql.Date(sdf.parse(txtEnd.getText()).getTime()));
-                model.setRowCount(0);
-                for (BookRevenueDTO dto : list)
-                    model.addRow(new Object[] { "Top " + dto.getOrdinalNumber(), dto.getBookID(), dto.getBookTitle(),
-                            dto.getTotalSold() + " Cuốn", df.format(dto.getTotalRevenue()) });
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Ngày không hợp lệ!");
-            }
-        });
-        btnFilter.doClick();
+                    model.setRowCount(0);
+                    if (list != null) {
+                        for (BookRevenueDTO dto : list) {
+                            model.addRow(new Object[] {
+                                    "Top " + dto.getOrdinalNumber(),
+                                    dto.getBookID(),
+                                    dto.getBookTitle(),
+                                    dto.getTotalSold() + " Cuốn",
+                                    df.format(dto.getTotalRevenue())
+                            });
+                        }
+                    }
+                });
+
+        panel.add(filterPanel, BorderLayout.NORTH);
+        SwingUtilities.invokeLater(() -> filterPanel.triggerFilter());
+
         return panel;
     }
 
@@ -551,7 +547,6 @@ public class StatisticPanel extends JPanel implements FeatureControllerInterface
         this.revalidate();
         this.repaint();
     }
-
 
     @Override
     public void onAdd() {
