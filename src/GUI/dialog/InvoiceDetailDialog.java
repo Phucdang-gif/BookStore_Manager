@@ -89,9 +89,9 @@ public class InvoiceDetailDialog extends JDialog {
                         dto.getBookId(),
                         bookTitle, // <--- Hiển thị tên sách
                         dto.getQuantity(),
-                        df.format(dto.getUnitPrice()),
-                        df.format(dto.getDiscount()),
-                        df.format(dto.getSubtotal())
+                        dto.getUnitPrice(),
+                        dto.getDiscount(),
+                        dto.getSubtotal()
                 });
             }
         }
