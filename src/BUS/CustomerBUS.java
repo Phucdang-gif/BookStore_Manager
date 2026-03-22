@@ -75,4 +75,12 @@ public class CustomerBUS {
         this.listCustomer = customerDAO.getAll();
         return this.listCustomer;
     }
+    public CustomerDTO getById(int id) {
+        for (CustomerDTO cus : listCustomer) {
+            if (cus.getCustomerId() == id) {
+                return cus;
+            }
+        }
+        return null;
+    }
 }

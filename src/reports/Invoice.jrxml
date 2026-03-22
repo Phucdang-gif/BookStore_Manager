@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6d113a36-20b8-474a-90ad-4e9c61835862">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<parameter name="customerName" class="java.lang.String"/>
+	<parameter name="employeeName" class="java.lang.String"/>
+	<parameter name="invoiceId" class="java.lang.String"/>
+	<parameter name="totalAmount" class="java.lang.String"/>
+	<parameter name="createdAt" class="java.lang.String"/>
+	<parameter name="paymentMethod" class="java.lang.String"/>
+	<parameter name="totalDiscount" class="java.lang.String"/>
+	<parameter name="pointsUsed" class="java.lang.String"/>
+	<parameter name="pointsValue" class="java.lang.String"/>
+	<parameter name="finalAmount" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="Mã sách" class="java.lang.Integer"/>
+	<field name="Tên sách" class="java.lang.String"/>
+	<field name="Số lượng" class="java.lang.Integer"/>
+	<field name="Đơn giá" class="java.lang.Double"/>
+	<field name="Thành tiền" class="java.lang.Double"/>
+	<title>
+		<band height="96" splitType="Stretch">
+			<textField>
+				<reportElement x="110" y="60" width="90" height="23" uuid="27bc1286-e102-4f80-bd01-74cab56b28bc"/>
+				<textFieldExpression><![CDATA[$P{customerName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="30" width="90" height="20" uuid="0e7aaa11-03fc-4521-9f29-3b2670d7e81b"/>
+				<textFieldExpression><![CDATA[$P{employeeName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="30" width="90" height="20" uuid="9ba52ffb-a0be-40ee-8fe3-baeed1bffcb8"/>
+				<textFieldExpression><![CDATA[$P{invoiceId}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="20" y="30" width="70" height="20" uuid="269caaf5-4773-4e29-8e89-487170ca77b4"/>
+				<text><![CDATA[Mã Hóa Đơn:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="20" y="58" width="80" height="23" uuid="4bbf789b-1143-4a7d-95a1-ded7e68e54c4"/>
+				<text><![CDATA[Tên Khách Hàng:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="410" y="58" width="80" height="15" uuid="ef50d43b-d4b7-4687-b83c-4bb741acab21"/>
+				<textFieldExpression><![CDATA[$P{createdAt}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="320" y="30" width="80" height="20" uuid="97dd3cc5-2821-4a43-82d0-64177b2be392"/>
+				<text><![CDATA[Tên Nhân Viên:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="320" y="55" width="60" height="20" uuid="3e899c2e-8e8c-4011-a182-a53e31edfb50"/>
+				<text><![CDATA[Ngày Tạo:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="170" y="0" width="180" height="30" uuid="42166540-0fe4-44d7-84b9-46067c6bd6c4"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[HÓA ĐƠN THANH TOÁN]]></text>
+			</staticText>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="60" splitType="Stretch">
+			<staticText>
+				<reportElement x="61" y="30" width="70" height="20" uuid="898c468f-1a73-4d42-bf95-92de083444a8"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<text><![CDATA[Mã sách]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="131" y="30" width="149" height="20" uuid="0f82008d-5080-49fc-9582-c92b076eed61"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<text><![CDATA[Tên sách]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="280" y="30" width="60" height="20" uuid="0e12b939-a1ae-454e-9839-e5a22ecd2e8f"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<text><![CDATA[Số lượng]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="340" y="30" width="80" height="20" uuid="970c1d65-8165-4b34-8d7c-4bf5d76f2dd5"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<text><![CDATA[Đơn giá]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="420" y="30" width="90" height="20" uuid="373cdec7-1fa3-4909-8df5-f1d5fd5a1ebd"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<text><![CDATA[Thành Tiền]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="199" splitType="Stretch">
+			<textField>
+				<reportElement x="61" y="0" width="70" height="30" uuid="7da12236-8ec6-4a70-9c11-e50d8f54db82">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a419c890-c303-4224-a6be-9b043a07b10e"/>
+				</reportElement>
+				<box>
+					<pen lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{Mã sách}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="131" y="0" width="148" height="30" uuid="f4ea487b-69e8-4f77-a131-0ebf7713fab0">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b3a1ff7f-b94a-4cac-adff-895ce723a406"/>
+				</reportElement>
+				<box>
+					<pen lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{Tên sách}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="0" width="60" height="30" uuid="3320913e-3556-4ab2-9ca8-8d33f9c89869">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="55e6017d-39cc-42d2-bfa6-823c9ded76ed"/>
+				</reportElement>
+				<box>
+					<pen lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{Số lượng}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="340" y="0" width="80" height="30" uuid="f8354017-201a-4bcd-9ef8-239f639101c2">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="58319325-563f-4422-8057-804c100d58a1"/>
+				</reportElement>
+				<box>
+					<pen lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{Đơn giá}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="420" y="0" width="90" height="30" uuid="c40b85c5-68e1-4f1b-9b56-802c87e77768">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="408a30eb-f88d-48bf-a315-7c7f2395db11"/>
+				</reportElement>
+				<box>
+					<pen lineStyle="Solid"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{Thành tiền}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="185" splitType="Stretch">
+			<textField>
+				<reportElement x="120" y="40" width="100" height="30" uuid="239f0b02-eaef-4df8-ae23-03f491ad44d4"/>
+				<textFieldExpression><![CDATA[$P{paymentMethod}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="40" width="100" height="30" uuid="15bd7952-76c0-4508-a35f-6fd0362bd0e5"/>
+				<textFieldExpression><![CDATA[$P{totalAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="80" width="100" height="30" uuid="2539d03f-0d80-4af4-bac7-61c41ea16511"/>
+				<textFieldExpression><![CDATA[$P{totalDiscount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="80" width="100" height="30" uuid="8efae6fd-2701-45c5-94ce-53d26629f3ab"/>
+				<textFieldExpression><![CDATA[$P{pointsUsed}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="120" y="120" width="100" height="30" uuid="07d726aa-29d7-4042-88ba-976b5e369a00"/>
+				<textFieldExpression><![CDATA[$P{pointsValue}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="410" y="120" width="100" height="30" uuid="8d176277-9519-4b6b-aed5-d20e583b9056"/>
+				<textFieldExpression><![CDATA[$P{finalAmount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="300" y="40" width="100" height="30" uuid="68107da9-2dfd-410a-9b47-a5f1ecebcdaf"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[tổng tiền hàng:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="80" width="100" height="30" uuid="852a05a3-9453-4f41-abf4-67c84e2b397f"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[tổng giảm giá:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="300" y="120" width="100" height="30" uuid="6c843bcf-7f72-4fa0-84f9-390aecb985d3"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[KHÁCH CẦN TRẢ:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="40" width="100" height="30" uuid="2127191e-5629-4b7d-ac0b-ffc0242db91d"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[phương thức thanh toán]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="77" width="100" height="30" uuid="a742a8f4-50a3-401d-9bef-56c0a99318bc"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[điểm đã sử dụng:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="10" y="120" width="100" height="30" uuid="581415f6-12d2-451a-9110-ffb1a7c98a5f"/>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[số điểm còn lại:]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

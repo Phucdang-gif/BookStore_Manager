@@ -116,4 +116,12 @@ public class InvoiceBUS {
             return new ArrayList<>();
         }
     }
+    public InvoiceDTO getById(int id) {
+        for (InvoiceDTO inv : listInvoice) {
+            if (inv.getInvoiceId() == id) {
+                return inv;
+            }
+        }
+        return null;
+    }
 }
