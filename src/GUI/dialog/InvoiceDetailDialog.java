@@ -41,7 +41,7 @@ public class InvoiceDetailDialog extends JDialog {
         add(lblHeader, BorderLayout.NORTH);
 
         // THÊM CỘT "TÊN SÁCH" VÀO BẢNG
-        String[] columns = {"Mã Sách", "Tên Sách", "Số Lượng", "Đơn Giá", "Giảm Giá", "Thành Tiền"};
+        String[] columns = {"Mã sách", "Tên sách", "Số lượng", "Đơn giá", "Giảm giá", "Thành tiền"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
