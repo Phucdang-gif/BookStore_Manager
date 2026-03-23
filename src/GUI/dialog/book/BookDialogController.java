@@ -3,18 +3,12 @@ package GUI.dialog.book;
 import BUS.AuthorBUS;
 import BUS.BookBUS;
 import BUS.CategoryBUS;
-import BUS.ImportReceiptBUS;
-import BUS.ImportReceiptDetailBUS;
 import BUS.PublisherBUS;
-import BUS.SupplierBUS;
 import BUS.SystemParameterBUS;
 import DTO.AuthorDTO;
 import DTO.BookDTO;
 import DTO.CategoryDTO;
-import DTO.ImportReceiptDTO;
-import DTO.ImportReceiptDetailDTO;
 import DTO.PublisherDTO;
-import DTO.SupplierDTO;
 import DTO.ValidationResult;
 import GUI.util.ImageHelper;
 
@@ -253,11 +247,6 @@ public class BookDialogController {
         }
     }
 
-    /**
-     * Xử lý thêm mới sách.
-     * Nếu tồn kho ban đầu > 0 → yêu cầu chọn NCC → tạo phiếu nhập tự động.
-     * Nếu tồn kho = 0 → lưu thẳng, không cần phiếu nhập.
-     */
     private void handleAdd(BookDTO temp) {
         ValidationResult vr = bookBUS.addBook(temp);
 
@@ -267,103 +256,12 @@ public class BookDialogController {
             return;
         }
 
-        // Sách đã lưu thành công, temp.getBookId() đã được BookBUS gán ID mới
-        if (temp.getStockQuantity() > 0) {
-            // Có tồn kho ban đầu → tạo phiếu nhập tự động để truy xuất nguồn gốc
-            boolean receiptCreated = createInitialImportReceipt(temp);
-            if (receiptCreated) {
-
-                JOptionPane.showMessageDialog(view,
-                        "Thêm sách thành công!\nĐã tạo Phiếu Nhập ban đầu để lưu nguồn gốc hàng hóa.",
-                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
-
-            } else {
-                // Sách vẫn đã lưu, chỉ phiếu nhập thất bại → cảnh báo nhưng không rollback
-                JOptionPane.showMessageDialog(view,
-                        "Thêm sách thành công!\nTuy nhiên không thể tạo Phiếu Nhập ban đầu.\n"
-                                + "Vui lòng tạo thủ công trong mục Quản lý Phiếu Nhập.",
-                        "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            }
-        } else {
-            // Tồn kho = 0, không cần phiếu nhập
-            JOptionPane.showMessageDialog(view, "Thêm sách thành công!");
-        }
+        // Sách đã lưu thành công với tồn kho mặc định là 0
+        JOptionPane.showMessageDialog(view, "Thêm sách mới thành công!");
 
         this.bookDTO = temp;
         isSuccess = true;
         ((JDialog) SwingUtilities.getWindowAncestor(view)).dispose();
-    }
-
-    /**
-     * Tạo phiếu nhập tự động cho tồn kho ban đầu của sách mới.
-     * Yêu cầu người dùng chọn Nhà Cung Cấp.
-     * 
-     * @return true nếu tạo phiếu thành công, false nếu người dùng hủy hoặc lỗi.
-     */
-    private boolean createInitialImportReceipt(BookDTO book) {
-        // Lấy danh sách NCC
-        SupplierBUS supplierBUS = new SupplierBUS();
-        List<SupplierDTO> suppliers = supplierBUS.getAll();
-
-        if (suppliers == null || suppliers.isEmpty()) {
-            JOptionPane.showMessageDialog(view,
-                    "Không có Nhà Cung Cấp nào trong hệ thống!\nKhông thể tạo Phiếu Nhập ban đầu.",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-
-        SupplierDTO[] arr = suppliers.toArray(new SupplierDTO[0]);
-
-        // Hỏi người dùng chọn NCC
-        SupplierDTO chosen = (SupplierDTO) JOptionPane.showInputDialog(
-                view,
-                "Sách có tồn kho ban đầu: " + book.getStockQuantity() + " cuốn\n"
-                        + "Vui lòng chọn Nhà Cung Cấp để lưu Phiếu Nhập nguồn gốc:",
-                "Chọn Nhà Cung Cấp",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                arr,
-                arr[0]);
-
-        // Người dùng bấm Cancel
-        if (chosen == null)
-            return false;
-
-        // Lấy employee ID từ session
-        int employeeId = 1; // mặc định
-        if (config.SessionManager.getCurrentAccount() != null) {
-            employeeId = config.SessionManager.getCurrentAccount().getEmployeeId();
-        }
-
-        double totalAmount = book.getImportPrice() * book.getStockQuantity();
-
-        // Tạo ImportReceiptDTO
-        ImportReceiptDTO receipt = new ImportReceiptDTO();
-        receipt.setSupplierId(chosen.getSupplierId());
-        receipt.setEmployeeId(employeeId);
-        receipt.setTotalAmount(totalAmount);
-        receipt.setStatus("Completed");
-
-        // Lưu phiếu nhập
-        ImportReceiptBUS importBUS = new ImportReceiptBUS();
-        int receiptId = importBUS.addReceipt(receipt);
-
-        if (receiptId <= 0)
-            return false;
-
-        // Tạo chi tiết phiếu nhập
-        ImportReceiptDetailDTO detail = new ImportReceiptDetailDTO(
-                receiptId,
-                book.getBookId(),
-                book.getStockQuantity(),
-                book.getImportPrice(),
-                totalAmount);
-
-        ArrayList<ImportReceiptDetailDTO> details = new ArrayList<>();
-        details.add(detail);
-
-        ImportReceiptDetailBUS detailBUS = new ImportReceiptDetailBUS();
-        return detailBUS.saveAllDetails(details);
     }
 
     /**
@@ -412,6 +310,7 @@ public class BookDialogController {
         if (mode == DialogMode.ADD) {
             // ADD: đọc tồn kho và giá nhập từ GUI
             tempBook.setImportPrice(parseDouble(view.txtPriceImport.getText()));
+            tempBook.setStockQuantity(0);
             int stock = parseInt(view.txtQuantity.getText());
 
             // Tự tính status theo stock — không dùng cbStatus
@@ -470,7 +369,6 @@ public class BookDialogController {
             // Chỉ validate 2 field này khi ADD
             if (mode == DialogMode.ADD) {
                 fieldMap.put("importPrice", view.txtPriceImport);
-                fieldMap.put("stockQuantity", view.txtQuantity);
             }
         }
 
