@@ -18,6 +18,7 @@ public class CreateInvoiceDialog extends JDialog {
     private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS();
     private InvoiceServiceBUS invoiceServiceBUS = new InvoiceServiceBUS();
     private InvoiceBUS invoiceBUS = new InvoiceBUS();
+    private EmployeeBUS employeeBUS = new EmployeeBUS();
 
     // Các thành phần giao diện
     private JTable tblBooks, tblInvoiceDetails;
@@ -602,7 +603,7 @@ public class CreateInvoiceDialog extends JDialog {
 
             // Lấy tên thật của nhân viên từ Session
             String empName = config.SessionManager.getCurrentAccount() != null
-                    ? config.SessionManager.getCurrentAccount().getUsername()
+                    ? employeeBUS.getEmployeeName(config.SessionManager.getCurrentAccount().getEmployeeId())
                     : "Nhân viên";
             String cusName = (customer != null && customer.getCustomerId() > 0) ? customer.getFullName()
                     : "Khách vãng lai";
@@ -624,7 +625,7 @@ public class CreateInvoiceDialog extends JDialog {
             parameters.put("finalAmount", lblFinalAmount.getText());
 
             // Compile & Print
-            String reportPath = "src\\reports\\Invoice.jrxml";
+            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml";
             net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager
                     .compileReport(reportPath);
             net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager
