@@ -257,7 +257,7 @@ public class BookDialogView extends JPanel {
         p.add(Box.createVerticalStrut(12));
         p.add(createRow("Giá bán (*)", txtPriceExport));
         p.add(Box.createVerticalStrut(12));
-        p.add(createRow("Tồn kho", txtQuantity));
+        p.add(createRow("Số lượng", txtQuantity));
         p.add(Box.createVerticalStrut(12));
         p.add(createRow("Trạng thái", cbStatus));
         p.add(Box.createVerticalStrut(12));

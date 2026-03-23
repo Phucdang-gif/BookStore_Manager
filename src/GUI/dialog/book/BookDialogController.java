@@ -88,6 +88,10 @@ public class BookDialogController {
                 view.btnSave.setVisible(true);
                 view.btnCancel.setText("Hủy bỏ");
                 setFormEditable(true);
+                // Khóa các field liên quan đến kho — chỉ thay đổi qua Phiếu Nhập
+                view.txtQuantity.setEditable(false);
+                view.txtQuantity.setBackground(new Color(230, 230, 230));
+                view.txtQuantity.setToolTipText("Tồn kho chỉ thay đổi qua Phiếu Nhập");
 
                 // Ẩn cbStatus khi ADD vì hệ thống tự tính
                 view.cbStatus.setEnabled(false);
@@ -101,7 +105,6 @@ public class BookDialogController {
                 view.btnSave.setText("Cập nhật");
                 view.btnSave.setVisible(true);
                 setFormEditable(true);
-
                 // Khóa các field liên quan đến kho — chỉ thay đổi qua Phiếu Nhập
                 view.txtQuantity.setEditable(false);
                 view.txtQuantity.setBackground(new Color(230, 230, 230));
