@@ -89,4 +89,8 @@ public class EmployeeBUS {
         }
         return null; // Nếu không tìm thấy
     }
+    public String getEmployeeName(int employeeId) {
+        EmployeeDTO emp = getById(employeeId);
+        return emp != null ? emp.getFullName() : "Nhân viên không xác định";
+    }
 }

@@ -275,9 +275,9 @@ public class InvoicePanel extends JPanel implements FeatureControllerInterface {
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
         boolean canAdd = config.SessionManager.hasPermission(455, "Thêm");
 
-        boolean canDelete = config.SessionManager.hasPermission(455, "Xóa");
+     
 
-        return new boolean[] { canAdd, false, canDelete, true, true, false };
+        return new boolean[] { canAdd, false, false, true, true, false };
     }
 
     @Override

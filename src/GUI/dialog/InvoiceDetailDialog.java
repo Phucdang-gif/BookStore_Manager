@@ -2,6 +2,7 @@ package GUI.dialog;
 
 import BUS.InvoiceDetailBUS;
 import BUS.BookBUS; // Thêm BookBUS
+import BUS.EmployeeBUS;
 import BUS.InvoiceBUS;
 import DTO.BookDTO; // Thêm BookDTO
 import DTO.InvoiceDetailDTO;
@@ -16,6 +17,7 @@ public class InvoiceDetailDialog extends JDialog {
     private int invoiceId;
     private InvoiceDetailBUS detailBUS = new InvoiceDetailBUS();
     private BookBUS bookBUS = new BookBUS(); // Khai báo BookBUS để lấy Tên Sách
+    private EmployeeBUS employeeBUS = new EmployeeBUS(); // Khai báo EmployeeBUS để lấy Tên Nhân Viên
 
     private JTable table;
     private DefaultTableModel tableModel;
@@ -134,7 +136,7 @@ public class InvoiceDetailDialog extends JDialog {
             parameters.put("invoiceId", String.valueOf(invoice.getInvoiceId()));
             parameters.put("createdAt", createdAtStr);
             parameters.put("customerName", cusName);
-            parameters.put("employeeName", "Nhân viên ID: " + invoice.getEmployeeId()); // Em có thể gọi EmployeeBUS để
+            parameters.put("employeeName", employeeBUS.getEmployeeName(invoice.getEmployeeId())); // Em có thể gọi EmployeeBUS để
                                                                                         // lấy tên thật
             parameters.put("paymentMethod", invoice.getPaymentMethod());
 
@@ -145,7 +147,7 @@ public class InvoiceDetailDialog extends JDialog {
             parameters.put("finalAmount", df.format(invoice.getFinalAmount()));
 
             // 4. Compile & Print (Biên dịch và hiển thị)
-            String reportPath = "src\\reports\\Invoice.jrxml";
+            String reportPath = "BookStore_Manager\\src\\reports\\Invoice.jrxml";
             net.sf.jasperreports.engine.JasperReport jasperReport = net.sf.jasperreports.engine.JasperCompileManager
                     .compileReport(reportPath);
             net.sf.jasperreports.engine.JasperPrint jasperPrint = net.sf.jasperreports.engine.JasperFillManager
