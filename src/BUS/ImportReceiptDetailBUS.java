@@ -15,7 +15,8 @@ public class ImportReceiptDetailBUS {
 
     // Lưu danh sách các chi tiết khi vừa tạo phiếu nhập xong
     public boolean saveAllDetails(ArrayList<ImportReceiptDetailDTO> details) {
-        if (details == null || details.isEmpty()) return false;
+        if (details == null || details.isEmpty())
+            return false;
         return dao.insertBatch(details);
     }
 
@@ -27,8 +28,10 @@ public class ImportReceiptDetailBUS {
         }
         return total;
     }
+
     public boolean insertBatch(ArrayList<ImportReceiptDetailDTO> details) {
-        if (details == null || details.isEmpty()) return false;
+        if (details == null || details.isEmpty())
+            return false;
         return dao.insertBatch(details);
     }
 }

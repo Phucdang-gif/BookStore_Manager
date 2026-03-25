@@ -11,17 +11,15 @@ import GUI.util.ThemeColor;
 
 public class BookDialogView extends JPanel {
     // --- COMPONENTS ---
-    public JTextField txtTitle, txtIsbn, txtYear, txtPage, txtPriceImport, txtPriceExport, txtQuantity, txtLanguage,
+    public JTextField txtTitle, txtIsbn, txtYear, txtPage, txtPriceImport, txtPriceExport, txtQuantity,
             txtMinStock;
-    public JComboBox<String> cbCategory, cbPublisher, cbStatus, cbCoverType;
+    public JComboBox<String> cbCategory, cbPublisher, cbStatus, cbCoverType, cbLanguage;
 
     // UI TÁC GIẢ
     public JTextField txtAuthorSearch;
-    public JButton btnAuthorAdd;
     public JPopupMenu popupAuthorSuggestions;
     public JList<AuthorDTO> listAuthorSuggestions;
     public JPanel pnlAuthorTags;
-    public JLabel lblAddNewAuthor;
 
     public JLabel lblImagePreview, lblTitle;
     public JButton btnUpload, btnSave, btnCancel;
@@ -185,10 +183,7 @@ public class BookDialogView extends JPanel {
         JPanel pSearchBox = new JPanel(new BorderLayout(5, 0));
         pSearchBox.setOpaque(false);
         txtAuthorSearch = new JTextField();
-        btnAuthorAdd = new JButton("+");
-        btnAuthorAdd.setPreferredSize(new Dimension(40, 30));
         pSearchBox.add(txtAuthorSearch, BorderLayout.CENTER);
-        pSearchBox.add(btnAuthorAdd, BorderLayout.EAST);
 
         popupAuthorSuggestions = new JPopupMenu();
         listAuthorSuggestions = new JList<>();
@@ -201,11 +196,6 @@ public class BookDialogView extends JPanel {
         scrollTags.setPreferredSize(new Dimension(200, 70));
         scrollTags.setBorder(null);
 
-        lblAddNewAuthor = new JLabel("<html><u>Thêm tác giả mới...</u></html>");
-        lblAddNewAuthor.setForeground(new Color(0, 102, 204));
-        lblAddNewAuthor.setBorder(new EmptyBorder(5, 0, 5, 0));
-        lblAddNewAuthor.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         JPanel pAuthContainer = new JPanel(new BorderLayout(5, 5));
         pAuthContainer.setOpaque(false);
         pAuthContainer.add(lblAuth, BorderLayout.NORTH);
@@ -214,7 +204,6 @@ public class BookDialogView extends JPanel {
         pAuthBody.setOpaque(false);
         pAuthBody.add(pSearchBox, BorderLayout.NORTH);
         pAuthBody.add(scrollTags, BorderLayout.CENTER);
-        pAuthBody.add(lblAddNewAuthor, BorderLayout.SOUTH);
         pAuthContainer.add(pAuthBody, BorderLayout.CENTER);
 
         p.add(pAuthContainer);
@@ -243,14 +232,15 @@ public class BookDialogView extends JPanel {
         txtPriceExport = new JTextField();
         txtQuantity = new JTextField("0");
         cbStatus = new JComboBox<>(new String[] { "Còn hàng", "Ngừng kinh doanh" });
-        txtLanguage = new JTextField();
+        cbLanguage = new JComboBox<>();
+        styleControl(cbLanguage);
         txtMinStock = new JTextField("0");
 
         styleControl(txtPriceImport);
         styleControl(txtPriceExport);
         styleControl(txtQuantity);
         styleControl(cbStatus);
-        styleControl(txtLanguage);
+        styleControl(cbLanguage);
         styleControl(txtMinStock);
 
         p.add(createRow("Giá nhập", txtPriceImport));
@@ -261,7 +251,7 @@ public class BookDialogView extends JPanel {
         p.add(Box.createVerticalStrut(12));
         p.add(createRow("Trạng thái", cbStatus));
         p.add(Box.createVerticalStrut(12));
-        p.add(createRow("Ngôn ngữ", txtLanguage));
+        p.add(createRow("Ngôn ngữ", cbLanguage));
         p.add(Box.createVerticalStrut(12));
         p.add(createRow("Số lượng tối thiểu", txtMinStock));
         return p;

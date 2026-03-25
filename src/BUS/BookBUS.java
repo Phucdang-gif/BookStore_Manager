@@ -261,4 +261,16 @@ public class BookBUS {
             e.printStackTrace();
         }
     }
+
+    public void updateAfterImport(int bookId, double newImportPrice) {
+        BookDTO book = getBookDetails(bookId);
+        if (book != null) {
+            book.setImportPrice(newImportPrice);
+            if (book.getSellingPrice() < newImportPrice) {
+                System.out.println("CẢNH BÁO: Sách " + book.getBookTitle() + " cần cập nhật lại giá bán!");
+            }
+
+            bookDAO.updateStockAndPrice(bookId, book.getStockQuantity(), newImportPrice);
+        }
+    }
 }

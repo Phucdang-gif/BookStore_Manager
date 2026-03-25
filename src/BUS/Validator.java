@@ -8,6 +8,7 @@ import DTO.CustomerDTO;
 import DTO.DiscountServiceDTO;
 import DTO.EmployeeDTO;
 import DTO.ImportReceiptDTO;
+import DTO.ImportReceiptDetailDTO;
 import DTO.InvoiceDTO;
 import DTO.PublisherDTO;
 import DTO.ValidationResult;
@@ -124,10 +125,11 @@ public class Validator {
                 .requirePositive("categoryId", book.getCategoryId(), "Vui lòng chọn danh mục")
                 .requirePositive("publisherId", book.getPublisherId(), "Vui lòng chọn nhà xuất bản")
                 .requireNonNegative("importPrice", book.getImportPrice(), "Giá nhập không được âm")
-                .requirePositive("sellingPrice", book.getSellingPrice(), "Giá bán phải lớn hơn 0")
+                .requireNonNegative("sellingPrice", book.getSellingPrice(), "Giá bán không được âm")
                 .requireCondition("sellingPrice",
-                        book.getImportPrice() < 0 || book.getSellingPrice() >= book.getImportPrice(),
-                        "Giá bán không được nhỏ hơn giá nhập")
+                        book.getImportPrice() <= 0 || book.getSellingPrice() >= book.getImportPrice(),
+                        "Giá bán hiện tại (" + book.getSellingPrice() + ") đang thấp hơn giá vốn ("
+                                + book.getImportPrice() + ")!")
                 .requireNonNegative("stockQuantity", book.getStockQuantity(), "Số lượng tồn kho không được âm")
                 .requireNonNegative("minimumStock", book.getMinimumStock(), "Tồn kho tối thiểu không được âm")
                 .requireNotEmpty("authors", book.getAuthors(), "Vui lòng chọn ít nhất một tác giả")
@@ -239,9 +241,19 @@ public class Validator {
                         "Lỗi bảo mật: Không xác định được nhân viên lập phiếu!")
                 // 3. Tổng tiền không được âm
                 .requireNonNegative("totalAmount", receipt.getTotalAmount(), "Tổng tiền phiếu nhập không được âm!")
-                // 4. Bảng chi tiết không được để trống
                 .requireCondition("details", hasDetails,
                         "Phiếu nhập đang trống! Vui lòng chọn ít nhất 1 cuốn sách để nhập kho.")
+                .getResult();
+    }
+
+    public static ValidationResult validateImportDetail(ImportReceiptDetailDTO detail, double sellingPrice) {
+        return new Validator()
+                .requirePositive("unitPrice", detail.getUnitPrice(), "Giá nhập phải lớn hơn 0!")
+                .requirePositive("quantity", detail.getQuantity(), "Số lượng nhập phải lớn hơn 0!")
+                .requireCondition("unitPrice",
+                        sellingPrice <= 0 || detail.getUnitPrice() <= sellingPrice,
+                        "Giá nhập (" + detail.getUnitPrice() + ") không được vượt quá giá bán hiện tại (" + sellingPrice
+                                + ")!")
                 .getResult();
     }
 

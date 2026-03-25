@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Locale;
+import java.util.TreeSet;
 
 public class BookDialogController {
     private BookDialogView view;
@@ -68,6 +70,22 @@ public class BookDialogController {
 
         view.cbStatus.setSelectedItem("Còn hàng");
         view.cbCoverType.setSelectedItem("Bìa mềm");
+        view.cbLanguage.removeAllItems();
+        view.cbLanguage.addItem("-- Chọn ngôn ngữ --");
+
+        // Dùng TreeSet để lọc trùng và tự động sắp xếp theo Alphabet
+        TreeSet<String> languages = new TreeSet<>();
+        for (Locale locale : Locale.getAvailableLocales()) {
+            String name = locale.getDisplayLanguage(Locale.of("vi"));
+            if (!name.isEmpty()) {
+                languages.add(toTitleCase(name));
+            }
+        }
+        for (String lang : languages) {
+            view.cbLanguage.addItem(lang);
+        }
+        // chọn sẵn Tiếng Việt
+        view.cbLanguage.setSelectedItem("Tiếng Việt");
     }
 
     public void applyModeSettings() {
@@ -82,14 +100,18 @@ public class BookDialogController {
                 view.btnSave.setVisible(true);
                 view.btnCancel.setText("Hủy bỏ");
                 setFormEditable(true);
-                // Khóa các field liên quan đến kho — chỉ thay đổi qua Phiếu Nhập
-                view.txtQuantity.setEditable(false);
-                view.txtQuantity.setBackground(new Color(230, 230, 230));
-                view.txtQuantity.setToolTipText("Tồn kho chỉ thay đổi qua Phiếu Nhập");
 
-                // Ẩn cbStatus khi ADD vì hệ thống tự tính
-                view.cbStatus.setEnabled(false);
-                view.cbStatus.setToolTipText("Trạng thái tự động tính theo tồn kho ban đầu");
+                if (view.txtQuantity.getParent() != null) {
+                    view.txtQuantity.getParent().setVisible(false);
+                }
+                if (view.txtPriceExport.getParent() != null) {
+                    view.txtPriceExport.getParent().setVisible(false);
+                }
+                if (view.txtPriceImport.getParent() != null) {
+                    view.txtPriceImport.getParent().setVisible(false);
+                }
+                view.cbStatus.getParent().setVisible(false);
+
                 int defaultMinStock = SystemParameterBUS.getInstance().getInt("SO_LUONG_TOI_THIEU_CANH_BAO", 10);
                 view.txtMinStock.setText(String.valueOf(defaultMinStock));
                 break;
@@ -127,7 +149,7 @@ public class BookDialogController {
         view.txtPriceImport.setText(String.valueOf(bookDTO.getImportPrice()));
         view.txtPriceExport.setText(String.valueOf(bookDTO.getSellingPrice()));
         view.txtQuantity.setText(String.valueOf(bookDTO.getStockQuantity()));
-        view.txtLanguage.setText(bookDTO.getLanguage());
+        view.cbLanguage.setSelectedItem(bookDTO.getLanguage());
         view.txtMinStock.setText(String.valueOf(bookDTO.getMinimumStock()));
         view.cbCategory.setSelectedItem(bookDTO.getCategoryName());
         view.cbPublisher.setSelectedItem(bookDTO.getPublisherName());
@@ -180,41 +202,6 @@ public class BookDialogController {
                 AuthorDTO selected = view.listAuthorSuggestions.getSelectedValue();
                 if (selected != null)
                     addAuthorToSelection(selected);
-            }
-        });
-
-        // Nút thêm tác giả từ ô tìm kiếm
-        view.btnAuthorAdd.addActionListener(e -> {
-            String keyword = view.txtAuthorSearch.getText().trim();
-            if (!keyword.isEmpty()) {
-                AuthorDTO match = allAuthors.stream()
-                        .filter(a -> a.getAuthorName().equalsIgnoreCase(keyword))
-                        .findFirst().orElse(null);
-                if (match != null)
-                    addAuthorToSelection(match);
-                else
-                    JOptionPane.showMessageDialog(view, "Tác giả chưa có trong hệ thống! Vui lòng thêm mới.");
-            }
-        });
-
-        // Label "Thêm tác giả mới"
-        view.lblAddNewAuthor.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                String name = JOptionPane.showInputDialog(view, "Nhập tên tác giả mới:");
-                if (name != null && !name.trim().isEmpty()) {
-                    AuthorDTO newAuth = new AuthorDTO(0, name.trim());
-                    ValidationResult vr = authorBUS.addAuthor(newAuth);
-                    if (vr.isValid()) {
-                        allAuthors = authorBUS.getAll();
-                        AuthorDTO saved = allAuthors.stream()
-                                .filter(a -> a.getAuthorName().equalsIgnoreCase(name.trim()))
-                                .findFirst().orElse(newAuth);
-                        addAuthorToSelection(saved);
-                        JOptionPane.showMessageDialog(view, "Thêm tác giả thành công!");
-                    } else {
-                        JOptionPane.showMessageDialog(view, vr.getSummary(), "Lỗi", JOptionPane.WARNING_MESSAGE);
-                    }
-                }
             }
         });
 
@@ -286,51 +273,43 @@ public class BookDialogController {
 
     private BookDTO collectFormData() {
         BookDTO tempBook = new BookDTO();
-
-        if (this.bookDTO != null && mode == DialogMode.EDIT) {
-            // EDIT: giữ nguyên ID và các field kho từ DB, không đọc từ GUI
+        // 1. XỬ LÝ THEO CHẾ ĐỘ (ADD/EDIT)
+        if (mode == DialogMode.ADD) {
+            // Khi thêm mới: Gán mặc định bằng 0 để vượt qua Validator vì các ô này đã bị ẩn
+            // Các thông tin này sẽ được cập nhật chính xác qua Phiếu Nhập sau này
+            tempBook.setImportPrice(0.0);
+            tempBook.setSellingPrice(0.0);
+            tempBook.setStockQuantity(0);
+            tempBook.setStatus("out_of_stock");
+        } else if (this.bookDTO != null) {
+            // Khi chỉnh sửa: Giữ nguyên ID và các thông tin kho/giá nhập từ DB
             tempBook.setBookId(this.bookDTO.getBookId());
-            tempBook.setStockQuantity(this.bookDTO.getStockQuantity());
             tempBook.setImportPrice(this.bookDTO.getImportPrice());
+            tempBook.setStockQuantity(this.bookDTO.getStockQuantity());
             tempBook.setStatus(this.bookDTO.getStatus());
+
+            // Cho phép cập nhật Giá bán từ giao diện ở chế độ EDIT
+            tempBook.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
         }
 
-        // Các field metadata — luôn đọc từ GUI
+        // 2. THU THẬP THÔNG TIN CƠ BẢN (METADATA)
         tempBook.setBookTitle(toTitleCase(view.txtTitle.getText()));
         tempBook.setIsbn(view.txtIsbn.getText().trim().replace("-", ""));
-        tempBook.setLanguage(toTitleCase(view.txtLanguage.getText()));
         tempBook.setPublicationYear(parseInt(view.txtYear.getText()));
         tempBook.setPageCount(parseInt(view.txtPage.getText()));
-        tempBook.setSellingPrice(parseDouble(view.txtPriceExport.getText()));
         tempBook.setMinimumStock(parseInt(view.txtMinStock.getText()));
         tempBook.setCoverType(view.cbCoverType.getSelectedItem().toString());
-        tempBook.setAuthors(currentAuthors);
         tempBook.setImage(selectedImagePath);
 
-        if (mode == DialogMode.ADD) {
-            // ADD: đọc tồn kho và giá nhập từ GUI
-            tempBook.setImportPrice(parseDouble(view.txtPriceImport.getText()));
-            tempBook.setStockQuantity(0);
-            int stock = parseInt(view.txtQuantity.getText());
-
-            // Tự tính status theo stock — không dùng cbStatus
-            if (stock <= 0) {
-                tempBook.setStockQuantity(0);
-                tempBook.setStatus("out_of_stock");
-            } else {
-                tempBook.setStockQuantity(stock);
-                tempBook.setStatus("in_stock");
-            }
-        }
-        if (currentAuthors != null && !currentAuthors.isEmpty()) {
-            List<Integer> authorIds = currentAuthors.stream()
-                    .map(AuthorDTO::getAuthorId)
-                    .collect(Collectors.toList());
-
-            tempBook.setAuthorIds(authorIds);
+        // 3. XỬ LÝ NGÔN NGỮ (Tránh lấy placeholder "-- Chọn ngôn ngữ --")
+        Object selectedLang = view.cbLanguage.getSelectedItem();
+        if (selectedLang != null && !selectedLang.toString().startsWith("--")) {
+            tempBook.setLanguage(selectedLang.toString());
+        } else {
+            tempBook.setLanguage("Tiếng Việt"); // Mặc định nếu không chọn
         }
 
-        // Category
+        // 4. XỬ LÝ DANH MỤC (Lấy ID từ listCategories)
         String selectedCat = view.cbCategory.getSelectedItem().toString();
         for (CategoryDTO cat : listCategories) {
             if (cat.getName().equals(selectedCat)) {
@@ -340,7 +319,7 @@ public class BookDialogController {
             }
         }
 
-        // Publisher
+        // 5. XỬ LÝ NHÀ XUẤT BẢN (Lấy ID từ listPublishers)
         String selectedPub = view.cbPublisher.getSelectedItem().toString();
         for (PublisherDTO pub : listPublishers) {
             if (pub.getName().equals(selectedPub)) {
@@ -348,6 +327,15 @@ public class BookDialogController {
                 tempBook.setPublisherName(pub.getName());
                 break;
             }
+        }
+
+        // 6. XỬ LÝ DANH SÁCH TÁC GIẢ
+        if (currentAuthors != null && !currentAuthors.isEmpty()) {
+            tempBook.setAuthors(new ArrayList<>(currentAuthors));
+            List<Integer> authorIds = currentAuthors.stream()
+                    .map(AuthorDTO::getAuthorId)
+                    .collect(Collectors.toList());
+            tempBook.setAuthorIds(authorIds);
         }
 
         return tempBook;
@@ -453,7 +441,7 @@ public class BookDialogController {
         view.txtPriceImport.setEditable(editable);
         view.txtPriceExport.setEditable(editable);
         view.txtQuantity.setEditable(editable);
-        view.txtLanguage.setEditable(editable);
+        view.cbLanguage.setEnabled(editable);
         view.txtMinStock.setEditable(editable);
         view.cbCategory.setEnabled(editable);
         view.cbPublisher.setEnabled(editable);
@@ -461,9 +449,6 @@ public class BookDialogController {
         view.cbCoverType.setEnabled(editable);
         view.btnUpload.setEnabled(editable);
         view.txtAuthorSearch.setVisible(editable);
-        view.btnAuthorAdd.setVisible(editable);
-        boolean canAddAuthor = editable && config.SessionManager.hasPermission(451, "Thêm");
-        view.lblAddNewAuthor.setVisible(canAddAuthor);
         renderAuthorTags(editable);
     }
 
