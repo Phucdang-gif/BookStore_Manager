@@ -296,8 +296,8 @@ public class ImportReceiptPanel extends JPanel implements FeatureControllerInter
 
         // Thay mã 452 bằng đúng function_id của Hóa Đơn trong DB
         boolean canAdd = config.SessionManager.hasPermission(454, "Thêm");
-        boolean canDelete = config.SessionManager.hasPermission(454, "Xóa");
+       
 
-        return new boolean[] { canAdd, false, canDelete, true, true, false };
+        return new boolean[] { canAdd, false, false, true, true, false };
     }
 }
